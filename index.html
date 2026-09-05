@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plain English Offline Game</title>
+  <title>Plain English Survival Game</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -12,6 +12,7 @@
       --text: #0f172a;
       --success: #10b981;
       --error: #ef4444;
+      --warning: #f59e0b;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -38,9 +39,25 @@
       border: none;
       border-radius: 10px;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .btn-audio-player {
+      width: 100%;
+      padding: 12px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 13px;
       cursor: pointer;
       margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
     .header-bar {
       display: flex;
@@ -70,6 +87,20 @@
       padding: 14px;
       margin-bottom: 14px;
     }
+    .hint-btn {
+      display: block;
+      width: 100%;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+      color: #475569;
+      cursor: pointer;
+      margin-top: 8px;
+      text-align: center;
+      font-weight: bold;
+    }
     .weapon-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
@@ -79,6 +110,7 @@
       color: var(--primary);
       font-size: 13px;
       margin-top: 6px;
+      display: none;
     }
     .choice-container { display: flex; flex-direction: column; gap: 8px; }
     .choice-btn {
@@ -90,17 +122,30 @@
       text-align: left;
       font-size: 13px;
       cursor: pointer;
+      line-height: 1.4;
     }
-    .choice-btn.correct { border-color: var(--success); background: #ecfdf5; font-weight: bold; }
-    .choice-btn.incorrect { border-color: var(--error); background: #fef2f2; }
+    .choice-btn.PERFECT { border-color: var(--success); background: #ecfdf5; font-weight: bold; }
+    .choice-btn.TOO_COMPLEX { border-color: var(--warning); background: #fffbeb; }
+    .choice-btn.TOO_DIRECT { border-color: var(--error); background: #fef2f2; }
     .result-card {
       margin-top: 16px;
       padding: 14px;
       border-radius: 12px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
       display: none;
     }
+    .status-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      color: white;
+    }
+    .status-tag.PERFECT { background: var(--success); }
+    .status-tag.TOO_COMPLEX { background: var(--warning); }
+    .status-tag.TOO_DIRECT { background: var(--error); }
     .btn-next {
       width: 100%;
       padding: 12px;
@@ -117,9 +162,12 @@
 <body>
 
 <div class="container">
-  <!-- 家のWi-Fiで押すボタン -->
   <button class="btn-download" id="downloadBtn" onclick="downloadDailyScenarios()">
-    🔄 出かけ前に生成（今日の15分コースを取得）
+    🔄 出かけ前に生成（本日のコースを取得）
+  </button>
+
+  <button class="btn-audio-player" id="autoPlayBtn" onclick="toggleAutoPlay()">
+    🎧 ストーリー聞き流しスタート
   </button>
 
   <div class="header-bar">
@@ -127,14 +175,16 @@
   </div>
 
   <div class="ai-card">
-    <div class="ai-name" id="aiName">Rajesh (Tech Lead)</div>
+    <div class="ai-name" id="aiName">...</div>
     <div class="ai-text" id="aiResponseEn">...</div>
     <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">...</div>
   </div>
 
   <div class="guide-card">
     <div style="font-size: 11px; color: #64748b; font-weight: bold;">あなたのミッション</div>
-    <div style="font-size: 13px; margin: 4px 0;" id="japaneseGuide">...</div>
+    <div style="font-size: 14px; font-weight: bold; margin: 6px 0;" id="japaneseGuide">...</div>
+    
+    <button class="hint-btn" id="hintToggleBtn" onclick="toggleHint()">💡 使いたい表現のヒントを表示</button>
     <div class="weapon-card" id="targetPhrase">...</div>
   </div>
 
@@ -146,10 +196,9 @@
 
   <div class="result-card" id="resultCard">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: bold;" id="resultTitle">判定結果</span>
-      <span style="font-size: 20px; font-weight: bold;" id="scoreText">100点</span>
+      <span class="status-tag" id="statusBadge">PERFECT</span>
     </div>
-    <p style="font-size: 13px; margin: 8px 0 0 0;" id="adviceText"></p>
+    <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
     <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
   </div>
 </div>
@@ -158,11 +207,11 @@
   let scenarios = [];
   let currentStageIndex = 0;
   let currentChoices = [];
+  let isAutoPlay = false;
 
-  // 15分分（5問題）を通信して事前取得＆ローカル保存
   async function downloadDailyScenarios() {
     const btn = document.getElementById('downloadBtn');
-    btn.innerText = "⏳ AIが本日の問題セットを生成中... (約10秒)";
+    btn.innerText = "⏳ AIが本日の問題セットを生成中...";
     btn.disabled = true;
 
     try {
@@ -170,7 +219,6 @@
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      // スマホ（ローカル）にデータを保存
       localStorage.setItem('daily_english_scenarios', JSON.stringify(data));
       scenarios = data;
       currentStageIndex = 0;
@@ -185,7 +233,6 @@
     }
   }
 
-  // アプリ起動時にローカルストレージからロード
   function initApp() {
     const saved = localStorage.getItem('daily_english_scenarios');
     if (saved) {
@@ -204,11 +251,13 @@
     document.getElementById('aiResponseEn').innerText = `"${data.ai_en}"`;
     document.getElementById('aiResponseJp').innerText = `（${data.ai_jp}）`;
     document.getElementById('japaneseGuide').innerText = data.guide;
-    document.getElementById('targetPhrase').innerText = data.target;
+    document.getElementById('targetPhrase').innerText = `★ ヒント: ${data.target}`;
+
+    document.getElementById('targetPhrase').style.display = 'none';
+    document.getElementById('hintToggleBtn').innerText = "💡 使いたい表現のヒントを表示";
 
     document.getElementById('resultCard').style.display = 'none';
 
-    // 選択肢のシャッフル（正解位置をランダム化）
     currentChoices = [...data.choices];
     for (let i = currentChoices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -222,38 +271,89 @@
       btn.disabled = false;
     }
 
+    // 音声の再生
     speakText(data.ai_en);
   }
 
-  // 通信無しの即時ローカル判定
+  // 聞き流しオート再生機能
+  function toggleAutoPlay() {
+    isAutoPlay = !isAutoPlay;
+    const btn = document.getElementById('autoPlayBtn');
+    if (isAutoPlay) {
+      btn.innerText = "⏹️ 聞き流し停止";
+      btn.style.background = "#ef4444";
+      playCurrentAudio();
+    } else {
+      btn.innerText = "🎧 ストーリー聞き流しスタート";
+      btn.style.background = "#6366f1";
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function playCurrentAudio() {
+    if (!scenarios || scenarios.length === 0) return;
+    const data = scenarios[currentStageIndex];
+    speakText(data.ai_en, () => {
+      if (isAutoPlay) {
+        // 音声が終わったら少し待ってガイドを日本語読み上げ
+        setTimeout(() => {
+          speakText(data.guide, null, 'ja-JP');
+        }, 500);
+      }
+    });
+  }
+
+  function toggleHint() {
+    const hintBox = document.getElementById('targetPhrase');
+    const hintBtn = document.getElementById('hintToggleBtn');
+    if (hintBox.style.display === 'none') {
+      hintBox.style.display = 'block';
+      hintBtn.innerText = "🙈 ヒントを隠す";
+    } else {
+      hintBox.style.display = 'none';
+      hintBtn.innerText = "💡 使いたい表現のヒントを表示";
+    }
+  }
+
+  // 判定処理（点数表記を排除）
   function checkChoice(index) {
     const selected = currentChoices[index];
 
     for (let i = 0; i < 3; i++) {
       const btn = document.getElementById(`choice${i}`);
       btn.disabled = true;
-      if (currentChoices[i].isCorrect) {
-        btn.classList.add('correct');
+      if (currentChoices[i].type === 'PERFECT') {
+        btn.classList.add('PERFECT');
       } else if (i === index) {
-        btn.classList.add('incorrect');
+        btn.classList.add(selected.type);
       }
     }
 
     const resultCard = document.getElementById('resultCard');
+    const statusBadge = document.getElementById('statusBadge');
+    
     resultCard.style.display = 'block';
-    document.getElementById('scoreText').innerText = `${selected.score}点`;
+    statusBadge.innerText = selected.type.replace('_', ' ');
+    statusBadge.className = `status-tag ${selected.type}`;
+    
     document.getElementById('adviceText').innerText = selected.advice;
-    document.getElementById('resultTitle').innerText = selected.isCorrect ? "✅ GREAT!" : "❌ TRY AGAIN";
   }
 
   function nextStage() {
     currentStageIndex = (currentStageIndex + 1) % scenarios.length;
     loadStage();
+    if (isAutoPlay) {
+      playCurrentAudio();
+    }
   }
 
-  function speakText(text) {
+  function speakText(text, onEndCallback = null, lang = 'en-US') {
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
+    utterance.lang = lang;
+    if (onEndCallback) {
+      utterance.onend = onEndCallback;
+    }
     window.speechSynthesis.speak(utterance);
   }
 
