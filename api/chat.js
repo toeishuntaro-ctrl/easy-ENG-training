@@ -5,8 +5,7 @@ export default async function handler(req, res) {
 
   const { userText, targetPhrase, japaneseGuide, scenario } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
-  // エラーメッセージの指示に従い、gemini-3.6-flash を使用
-  const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel.' });
@@ -44,8 +43,22 @@ Context: ${scenario || "Negotiating deadline"}
   ]
 }`;
 
+  // 503エラー（混雑時）に自動リトライする関数（最大3回・間隔を空けて再試行）
+  async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+      const response = await fetch(url, options);
+      if (response.status !== 503 && response.status !== 429) {
+        return response;
+      }
+      if (i < retries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)));
+      }
+    }
+    return fetch(url, options);
+  }
+
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
@@ -60,6 +73,11 @@ Context: ${scenario || "Negotiating deadline"}
     const data = await response.json();
 
     if (!response.ok) {
+      if (response.status === 503) {
+        return res.status(503).json({
+          error: "サーバーが一時的に混雑しています。恐れ入りますが、もう一度タップしてください。"
+        });
+      }
       return res.status(response.status).json({
         error: `Gemini API Error (${response.status}): ${data.error?.message || JSON.stringify(data)}`
       });
