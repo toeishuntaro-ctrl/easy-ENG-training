@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
+    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel.' });
   }
 
   const prompt = `You are an AI game engine and business English coach for global non-native professionals.
@@ -56,7 +56,22 @@ Context: ${scenario || "Negotiating deadline"}
     );
 
     const data = await response.json();
-    const result = JSON.parse(data.candidates[0].content.parts[0].text);
+
+    // API側からエラーが返った場合の安全処理
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: `Gemini API Error (${response.status}): ${data.error?.message || JSON.stringify(data)}`
+      });
+    }
+
+    if (!data.candidates || !data.candidates[0]) {
+      return res.status(500).json({
+        error: "Gemini APIからの応答データが空でした。APIキーの権限を確認してください。"
+      });
+    }
+
+    const resultText = data.candidates[0].content.parts[0].text;
+    const result = JSON.parse(resultText);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({ error: error.message });
