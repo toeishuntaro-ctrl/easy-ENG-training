@@ -5,8 +5,8 @@ export default async function handler(req, res) {
 
   const { userText, targetPhrase, japaneseGuide, scenario } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
-  // Vercelの環境変数 GEMINI_MODEL があればそれを使い、無ければデフォルトモデルを使用
-  const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  // Vercelの環境変数 GEMINI_MODEL が設定されていればそれを使い、なければデフォルトで gemini-2.5-flash を指定
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel.' });
