@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plain English Survival Game EX</title>
+  <title>Plain English Offline Game</title>
   <style>
     :root {
       --primary: #2563eb;
       --bg: #f8fafc;
       --card: #ffffff;
       --text: #0f172a;
-      --accent: #10b981;
+      --success: #10b981;
+      --error: #ef4444;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -29,6 +30,18 @@
       padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+    .btn-download {
+      width: 100%;
+      padding: 12px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
     .header-bar {
       display: flex;
       justify-content: space-between;
@@ -43,59 +56,14 @@
       padding: 4px 8px;
       border-radius: 6px;
     }
-    .timer-bar {
-      width: 100%;
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 3px;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .timer-progress {
-      width: 100%;
-      height: 100%;
-      background: var(--primary);
-      transition: width 1s linear;
-    }
-    .mode-toggle {
-      display: flex;
-      background: #f1f5f9;
-      padding: 4px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-    .mode-btn {
-      flex: 1;
-      padding: 8px;
-      border: none;
-      background: transparent;
-      font-size: 13px;
-      font-weight: bold;
-      color: #64748b;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-    .mode-btn.active {
-      background: #ffffff;
-      color: var(--primary);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
     .ai-card {
       background: #f1f5f9;
       border-radius: 12px;
       padding: 14px;
       margin-bottom: 14px;
     }
-    .ai-name {
-      font-weight: bold;
-      color: #475569;
-      font-size: 13px;
-    }
-    .ai-text {
-      font-size: 15px;
-      line-height: 1.4;
-      margin-top: 4px;
-    }
+    .ai-name { font-weight: bold; color: #475569; font-size: 13px; }
+    .ai-text { font-size: 15px; line-height: 1.4; margin-top: 4px; }
     .guide-card {
       border: 2px dashed #cbd5e1;
       border-radius: 12px;
@@ -112,22 +80,7 @@
       font-size: 13px;
       margin-top: 6px;
     }
-    .btn-mic {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      background: var(--primary);
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .choice-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .choice-container { display: flex; flex-direction: column; gap: 8px; }
     .choice-btn {
       width: 100%;
       padding: 12px;
@@ -137,12 +90,9 @@
       text-align: left;
       font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .choice-btn:hover {
-      border-color: var(--primary);
-      background: #f0f7ff;
-    }
+    .choice-btn.correct { border-color: var(--success); background: #ecfdf5; font-weight: bold; }
+    .choice-btn.incorrect { border-color: var(--error); background: #fef2f2; }
     .result-card {
       margin-top: 16px;
       padding: 14px;
@@ -151,188 +101,154 @@
       border: 1px solid #bbf7d0;
       display: none;
     }
-    .score-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #166534;
-      margin-top: 4px;
+    .btn-next {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <!-- 家のWi-Fiで押すボタン -->
+  <button class="btn-download" id="downloadBtn" onclick="downloadDailyScenarios()">
+    🔄 出かけ前に生成（今日の15分コースを取得）
+  </button>
+
   <div class="header-bar">
-    <span class="badge" id="turnBadge">DEFENSE & STRIKE 1 / 5</span>
-    <select id="scenarioSelect" onchange="changeScenario()" style="font-size: 11px; padding: 2px;">
-      <option value="納期交渉（ラジェシュ）">1. 納期交渉 (Rajesh)</option>
-      <option value="仕様変更の拒否（サラ）">2. 仕様変更拒否 (Sarah)</option>
-      <option value="会議での割り込み（アレックス）">3. 会議での発言 (Alex)</option>
-    </select>
+    <span class="badge" id="turnBadge">STAGE 1 / 5</span>
   </div>
 
-  <!-- タイマーゲージ -->
-  <div class="timer-bar"><div class="timer-progress" id="timerProgress"></div></div>
-
-  <!-- モード切り替えタブ -->
-  <div class="mode-toggle">
-    <button class="mode-btn active" id="btnVoiceMode" onclick="switchMode('voice')">🎤 音声発話</button>
-    <button class="mode-btn" id="btnChoiceMode" onclick="switchMode('choice')">👆 3択選択 (サイレント)</button>
-  </div>
-
-  <!-- AI対話表示エリア -->
   <div class="ai-card">
     <div class="ai-name" id="aiName">Rajesh (Tech Lead)</div>
-    <div class="ai-text" id="aiResponseEn">"Tomorrow's deployment is completely impossible. My team is packed."</div>
-    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">（明日までの対応は完全に不可能です。チームは手一杯です。）</div>
+    <div class="ai-text" id="aiResponseEn">...</div>
+    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">...</div>
   </div>
 
-  <!-- 日本語ガイド & キーフレーズ -->
   <div class="guide-card">
     <div style="font-size: 11px; color: #64748b; font-weight: bold;">あなたのミッション</div>
-    <div style="font-size: 13px; margin: 4px 0;" id="japaneseGuide">
-      「（相手の話を受け止めつつ否定する）おっしゃることは分かりますが、締切は金曜です」
-    </div>
-    <div class="weapon-card" id="targetPhrase">
-      ★ I totally see your point, but ...
-    </div>
+    <div style="font-size: 13px; margin: 4px 0;" id="japaneseGuide">...</div>
+    <div class="weapon-card" id="targetPhrase">...</div>
   </div>
 
-  <!-- 操作エリア: 音声入力 -->
-  <div id="voiceSection">
-    <button class="btn-mic" id="micBtn" onclick="toggleRecording()">🎤 タップして話す</button>
-    <div id="userSpeech" style="font-size: 11px; color: #64748b; margin-top: 6px; text-align: center; min-height: 16px;"></div>
+  <div id="choiceSection" class="choice-container">
+    <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
+    <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
+    <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
   </div>
 
-  <!-- 操作エリア: 3択カード選択 -->
-  <div id="choiceSection" class="choice-container" style="display: none;">
-    <button class="choice-btn" onclick="selectChoice(this)" id="choice0">I totally see your point, but the deadline is Friday.</button>
-    <button class="choice-btn" onclick="selectChoice(this)" id="choice1">No, you must finish this tomorrow without excuse.</button>
-    <button class="choice-btn" onclick="selectChoice(this)" id="choice2">We should negotiate the timeline thoroughly for this task.</button>
-  </div>
-
-  <!-- 結果フィードバック表示 -->
   <div class="result-card" id="resultCard">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: bold; color: #166534;">評価スコア</span>
-      <span style="font-size: 20px; font-weight: bold; color: #166534;" id="scoreText">85点</span>
+      <span style="font-weight: bold;" id="resultTitle">判定結果</span>
+      <span style="font-size: 20px; font-weight: bold;" id="scoreText">100点</span>
     </div>
-    <div class="score-row">
-      <span id="clarityScore">明確さ: 90点</span>
-      <span id="politenessScore">丁寧さ: 80点</span>
-    </div>
-    <p style="font-size: 13px; color: #15803d; margin: 8px 0 0 0;" id="adviceText"></p>
+    <p style="font-size: 13px; margin: 8px 0 0 0;" id="adviceText"></p>
+    <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
   </div>
 </div>
 
 <script>
-  let currentMode = 'voice';
-  let recognition;
-  let isRecording = false;
-  let timerInterval;
-  let timeLeft = 10;
+  let scenarios = [];
+  let currentStageIndex = 0;
+  let currentChoices = [];
 
-  // タイマーの開始
-  function resetTimer() {
-    clearInterval(timerInterval);
-    timeLeft = 10;
-    document.getElementById('timerProgress').style.width = '100%';
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      document.getElementById('timerProgress').style.width = (timeLeft * 10) + '%';
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        alert("タイムアップ！相手にプレッシャーを与えてしまいました。");
-      }
-    }, 1000);
-  }
-
-  // モード切り替え（音声 vs 3択）
-  function switchMode(mode) {
-    currentMode = mode;
-    document.getElementById('btnVoiceMode').classList.toggle('active', mode === 'voice');
-    document.getElementById('btnChoiceMode').classList.toggle('active', mode === 'choice');
-    document.getElementById('voiceSection').style.display = mode === 'voice' ? 'block' : 'none';
-    document.getElementById('choiceSection').style.display = mode === 'choice' ? 'flex' : 'none';
-  }
-
-  // 音声認識の初期化
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      document.getElementById('userSpeech').innerText = `認識音声: "${transcript}"`;
-      sendToBackend(transcript);
-    };
-    recognition.onend = () => stopRecording();
-  }
-
-  function toggleRecording() {
-    if (!isRecording) {
-      recognition.start();
-      isRecording = true;
-      document.getElementById('micBtn').innerText = "🛑 録音中...";
-    } else {
-      recognition.stop();
-      stopRecording();
-    }
-  }
-
-  function stopRecording() {
-    isRecording = false;
-    document.getElementById('micBtn').innerText = "🎤 タップして話す";
-  }
-
-  function selectChoice(btnElement) {
-    sendToBackend(btnElement.innerText);
-  }
-
-  async function sendToBackend(userText) {
-    clearInterval(timerInterval);
-    const targetPhrase = document.getElementById('targetPhrase').innerText;
-    const japaneseGuide = document.getElementById('japaneseGuide').innerText;
-    const scenario = document.getElementById('scenarioSelect').value;
+  // 15分分（5問題）を通信して事前取得＆ローカル保存
+  async function downloadDailyScenarios() {
+    const btn = document.getElementById('downloadBtn');
+    btn.innerText = "⏳ AIが本日の問題セットを生成中... (約10秒)";
+    btn.disabled = true;
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userText, targetPhrase, japaneseGuide, scenario })
-      });
-
+      const res = await fetch('/api/generate', { method: 'POST' });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      // 評価結果の表示
-      document.getElementById('resultCard').style.display = 'block';
-      document.getElementById('scoreText').innerText = `${data.total_score}点`;
-      document.getElementById('clarityScore').innerText = `明確さ: ${data.clarity_score || 80}点`;
-      document.getElementById('politenessScore').innerText = `丁寧さ: ${data.politeness_score || 80}点`;
-      document.getElementById('adviceText').innerText = data.advice;
-
-      // 次ターンデータの更新
-      document.getElementById('aiResponseEn').innerText = `"${data.ai_response_en}"`;
-      document.getElementById('aiResponseJp').innerText = `（${data.ai_response_jp}）`;
-      document.getElementById('targetPhrase').innerText = `★ ${data.next_target_phrase}`;
-      document.getElementById('japaneseGuide').innerText = data.next_japanese_guide;
-
-      // 3択選択肢の更新
-      if (data.next_choices && data.next_choices.length >= 3) {
-        document.getElementById('choice0').innerText = data.next_choices[0];
-        document.getElementById('choice1').innerText = data.next_choices[1];
-        document.getElementById('choice2').innerText = data.next_choices[2];
-      }
-
-      speakText(data.ai_response_en);
-      resetTimer();
-
+      // スマホ（ローカル）にデータを保存
+      localStorage.setItem('daily_english_scenarios', JSON.stringify(data));
+      scenarios = data;
+      currentStageIndex = 0;
+      
+      btn.innerText = "✅ ダウンロード完了！(通信オフでプレイ可能)";
+      btn.style.background = "#4b5563";
+      loadStage();
     } catch (e) {
-      alert("エラー: " + e.message);
+      alert("生成エラー: " + e.message);
+      btn.innerText = "🔄 出かけ前に生成（再試行）";
+      btn.disabled = false;
     }
+  }
+
+  // アプリ起動時にローカルストレージからロード
+  function initApp() {
+    const saved = localStorage.getItem('daily_english_scenarios');
+    if (saved) {
+      scenarios = JSON.parse(saved);
+      document.getElementById('downloadBtn').innerText = "✅ 本日の問題を取得済み (タップで再更新)";
+      loadStage();
+    }
+  }
+
+  function loadStage() {
+    if (!scenarios || scenarios.length === 0) return;
+
+    const data = scenarios[currentStageIndex];
+    document.getElementById('turnBadge').innerText = `STAGE ${currentStageIndex + 1} / ${scenarios.length}`;
+    document.getElementById('aiName').innerText = data.ai_name;
+    document.getElementById('aiResponseEn').innerText = `"${data.ai_en}"`;
+    document.getElementById('aiResponseJp').innerText = `（${data.ai_jp}）`;
+    document.getElementById('japaneseGuide').innerText = data.guide;
+    document.getElementById('targetPhrase').innerText = data.target;
+
+    document.getElementById('resultCard').style.display = 'none';
+
+    // 選択肢のシャッフル（正解位置をランダム化）
+    currentChoices = [...data.choices];
+    for (let i = currentChoices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [currentChoices[i], currentChoices[j]] = [currentChoices[j], currentChoices[i]];
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`choice${i}`);
+      btn.innerText = currentChoices[i].text;
+      btn.className = 'choice-btn';
+      btn.disabled = false;
+    }
+
+    speakText(data.ai_en);
+  }
+
+  // 通信無しの即時ローカル判定
+  function checkChoice(index) {
+    const selected = currentChoices[index];
+
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`choice${i}`);
+      btn.disabled = true;
+      if (currentChoices[i].isCorrect) {
+        btn.classList.add('correct');
+      } else if (i === index) {
+        btn.classList.add('incorrect');
+      }
+    }
+
+    const resultCard = document.getElementById('resultCard');
+    resultCard.style.display = 'block';
+    document.getElementById('scoreText').innerText = `${selected.score}点`;
+    document.getElementById('adviceText').innerText = selected.advice;
+    document.getElementById('resultTitle').innerText = selected.isCorrect ? "✅ GREAT!" : "❌ TRY AGAIN";
+  }
+
+  function nextStage() {
+    currentStageIndex = (currentStageIndex + 1) % scenarios.length;
+    loadStage();
   }
 
   function speakText(text) {
@@ -341,12 +257,7 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  function changeScenario() {
-    resetTimer();
-    alert("シナリオを変更しました。");
-  }
-
-  resetTimer();
+  initApp();
 </script>
 
 </body>
