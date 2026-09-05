@@ -5,7 +5,8 @@ export default async function handler(req, res) {
 
   const { userText, targetPhrase, japaneseGuide, scenario } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
-  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  // デフォルトモデルをエラー指示通りの gemini-3.6-flash に設定
+  const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel.' });
@@ -43,7 +44,6 @@ Context: ${scenario || "Negotiating deadline"}
   ]
 }`;
 
-  // 503エラー（混雑時）に自動リトライする関数（最大3回・間隔を空けて再試行）
   async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
       const response = await fetch(url, options);
