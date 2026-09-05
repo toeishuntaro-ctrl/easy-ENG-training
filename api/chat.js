@@ -5,6 +5,8 @@ export default async function handler(req, res) {
 
   const { userText, targetPhrase, japaneseGuide, scenario } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
+  // Vercelの環境変数 GEMINI_MODEL があればそれを使い、無ければデフォルトモデルを使用
+  const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel.' });
@@ -44,7 +46,7 @@ Context: ${scenario || "Negotiating deadline"}
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,7 +59,6 @@ Context: ${scenario || "Negotiating deadline"}
 
     const data = await response.json();
 
-    // API側からエラーが返った場合の安全処理
     if (!response.ok) {
       return res.status(response.status).json({
         error: `Gemini API Error (${response.status}): ${data.error?.message || JSON.stringify(data)}`
@@ -66,7 +67,7 @@ Context: ${scenario || "Negotiating deadline"}
 
     if (!data.candidates || !data.candidates[0]) {
       return res.status(500).json({
-        error: "Gemini APIからの応答データが空でした。APIキーの権限を確認してください。"
+        error: "Gemini APIからの応答データが空でした。"
       });
     }
 
