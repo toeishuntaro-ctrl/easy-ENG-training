@@ -304,6 +304,7 @@
     .btn-play { background: #dbeafe; color: #1e40af; }
     .btn-delete { background: #fee2e2; color: #991b1b; }
 
+    /* 耳トレ・音読タブ専用CSS */
     .script-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -316,6 +317,12 @@
       border-color: var(--primary);
       background-color: #eff6ff;
     }
+    .script-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
     .script-stage-tag {
       font-size: 10px;
       font-weight: bold;
@@ -323,8 +330,38 @@
       background: #dbeafe;
       padding: 2px 6px;
       border-radius: 4px;
-      display: inline-block;
-      margin-bottom: 6px;
+    }
+    .btn-single-loop {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #475569;
+    }
+    .btn-single-loop.looping {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+    .mask-text {
+      background: #0f172a;
+      color: #0f172a !important;
+      border-radius: 4px;
+      user-select: none;
+      cursor: pointer;
+    }
+    .mask-text:hover, .mask-text.revealed {
+      background: transparent;
+      color: inherit !important;
+    }
+    .mask-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .top-dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
@@ -435,7 +472,6 @@
         <span id="logStatusBadgeDisplay" class="log-status-badge unplayed">🔵 未学習</span>
       </div>
       <select class="mode-select" id="quickModeSelect" onchange="quickSwitchMode(this.value)">
-        <!-- JavaScriptで過去ログ一覧（日時＋ステータス付き）を動的生成 -->
       </select>
     </div>
 
@@ -500,7 +536,7 @@
     </div>
 
     <div class="result-card" id="resultCard">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; justify-content: space-between; align- items: center;">
         <span class="status-tag" id="statusBadge">PERFECT</span>
       </div>
       <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
@@ -520,12 +556,30 @@
     </div>
   </div>
 
-  <!-- 3. 全スクリプト & ハンズフリービュー -->
+  <!-- 3. 耳トレ・音読特化ビュー (強化版) -->
   <div id="viewScript" style="display: none;">
+    
+    <!-- 過去ログ呼び出しバー -->
+    <div class="mode-switcher-bar">
+      <div class="mode-label-row">
+        <span>🎧 音読対象ログの選択</span>
+      </div>
+      <select class="mode-select" id="scriptLogSelect" onchange="switchScriptLog(this.value)">
+      </select>
+    </div>
+
+    <!-- 再生モード切替ボタン -->
     <button class="btn-audio-player" id="handsFreeBtn" onclick="toggleHandsFree()" style="background:#059669;">
-      ▶️ ハンズフリー自動連続再生（全話ノンストップ）
+      ▶️ Listen & Repeat（ポーズ付き音読連続再生）
     </button>
-    <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📖 本日のセッション・スクリプト一覧</div>
+
+    <!-- 英文・和訳マスクコントローラー -->
+    <div class="mask-controls">
+      <button class="micro-btn" id="maskEnBtn" onclick="toggleMask('en')">🙈 英文を隠す</button>
+      <button class="micro-btn" id="maskJpBtn" onclick="toggleMask('jp')">🙈 和訳を隠す</button>
+    </div>
+
+    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #334155;">📖 スクリプトカード一覧（タップでマスク解除）</div>
     <div id="scriptListContainer"></div>
   </div>
 
@@ -554,8 +608,8 @@
     <div>クイズ</div>
   </button>
   <button class="nav-item" id="navScript" onclick="switchTab('script')">
-    <div class="nav-icon">📖</div>
-    <div>スクリプト</div>
+    <div class="nav-icon">🎧</div>
+    <div>耳トレ</div>
   </button>
   <button class="nav-item" id="navHistory" onclick="switchTab('history')">
     <div class="nav-icon">📁</div>
@@ -588,6 +642,11 @@
   let isHandsFree = false;
   let handsFreeIndex = 0;
   let speechRate = 1.0;
+
+  // 耳トレ用ステート
+  let isMaskEn = false;
+  let isMaskJp = false;
+  let singleLoopIndex = null;
 
   const STATS_KEY = 'english_learning_stats_v3';
   const SKILL_KEY = 'english_ctm_skills_v4';
@@ -631,7 +690,6 @@
     populateQuickModeSelect();
   }
 
-  // 過去ログドロップダウンの更新（日時・ステータス表示付き）
   function populateQuickModeSelect() {
     const select = document.getElementById('quickModeSelect');
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -651,7 +709,6 @@
 
     select.innerHTML = optionsHtml;
 
-    // バッジ表示の更新
     const currentItem = history.find(item => item.id === currentHistoryId);
     const badgeEl = document.getElementById('logStatusBadgeDisplay');
     if (currentItem && badgeEl) {
@@ -661,7 +718,6 @@
     }
   }
 
-  // クイズ画面からの指定過去ログ切り替え
   function quickSwitchMode(selectedId) {
     const idNum = Number(selectedId);
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -1007,7 +1063,7 @@
       id: id,
       date: dateStr,
       mode: trainingMode,
-      status: 'unplayed', // 'unplayed', 'needs_review', 'completed'
+      status: 'unplayed',
       answered: 0,
       correct: 0,
       data: data
@@ -1020,7 +1076,6 @@
     return id;
   }
 
-  // ログのステータス更新処理
   function updateHistoryStatus(isCorrect) {
     if (!currentHistoryId) return;
     let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -1139,42 +1194,131 @@
     speakText(data.ai_en);
   }
 
+  // --- 耳トレ・音読タブ専用機能群 ---
+
   function renderScript() {
+    populateScriptLogSelect();
     const container = document.getElementById('scriptListContainer');
     if (!scenarios || scenarios.length === 0) {
-      container.innerHTML = '<div class="empty-state">セッションデータがありません。生成ボタンを押してください。</div>';
+      container.innerHTML = '<div class="empty-state">セッションデータがありません。ホームでコースを生成してください。</div>';
       return;
     }
 
+    const maskEnClass = isMaskEn ? 'mask-text' : '';
+    const maskJpClass = isMaskJp ? 'mask-text' : '';
+
     container.innerHTML = scenarios.map((item, idx) => `
       <div class="script-card" id="scriptCard_${idx}">
-        <span class="script-stage-tag">STAGE ${idx + 1} - ${item.ai_name || ''}</span>
-        <div style="font-weight:bold; font-size:14px; margin-bottom:2px;">"${item.ai_en}"</div>
-        <div style="font-size:11px; color:#64748b; margin-bottom:8px;">（${item.ai_jp}）</div>
+        <div class="script-header-row">
+          <span class="script-stage-tag">STAGE ${idx + 1} - ${item.ai_name || ''}</span>
+          <button class="btn-single-loop ${singleLoopIndex === idx ? 'looping' : ''}" onclick="toggleSingleLoop(${idx})">
+            ${singleLoopIndex === idx ? '⏹️ ループ停止' : '🔁 1文ループ再生'}
+          </button>
+        </div>
+        <div style="font-weight:bold; font-size:14px; margin-bottom:2px;" class="${maskEnClass}" onclick="this.classList.toggle('revealed')">"${item.ai_en}"</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:8px;" class="${maskJpClass}" onclick="this.classList.toggle('revealed')">（${item.ai_jp}）</div>
         <div style="font-size:12px; color:#334155; font-weight:bold; background:#f1f5f9; padding:6px; border-radius:6px; margin-bottom:6px;">
-          🎯 ミッション: ${item.guide}
+          🎯 ミッション: <span class="${maskJpClass}" onclick="this.classList.toggle('revealed')">${item.guide}</span>
         </div>
         <div style="font-size:13px; color:var(--primary); font-weight:bold; background:#eff6ff; padding:8px; border-radius:6px; border:1px solid #bfdbfe;">
-          ★ 模範解答: ${item.target}
+          ★ 模範解答: <span class="${maskEnClass}" onclick="this.classList.toggle('revealed')">${item.target}</span>
         </div>
       </div>
     `).join('');
   }
 
+  function populateScriptLogSelect() {
+    const select = document.getElementById('scriptLogSelect');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+
+    if (!history || history.length === 0) {
+      select.innerHTML = '<option value="">(過去ログがありません)</option>';
+      return;
+    }
+
+    let optionsHtml = '';
+    history.slice(0, 20).forEach(item => {
+      const modeLabel = getModeLabel(item.mode || 'quiz');
+      const isSelected = item.id === currentHistoryId ? 'selected' : '';
+      optionsHtml += `<option value="${item.id}" ${isSelected}>${modeLabel} - ${item.date}</option>`;
+    });
+
+    select.innerHTML = optionsHtml;
+  }
+
+  function switchScriptLog(selectedId) {
+    const idNum = Number(selectedId);
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const target = history.find(item => item.id === idNum);
+
+    if (target && target.data) {
+      scenarios = target.data;
+      currentHistoryId = target.id;
+      if (target.mode) trainingMode = target.mode;
+      renderScript();
+      toast(`🎧 [${getModeLabel(target.mode)} - ${target.date}] のスクリプトを読み込みました`);
+    }
+  }
+
+  function toggleMask(type) {
+    if (type === 'en') {
+      isMaskEn = !isMaskEn;
+      document.getElementById('maskEnBtn').innerText = isMaskEn ? '👁️ 英文を表示' : '🙈 英文を隠す';
+    } else {
+      isMaskJp = !isMaskJp;
+      document.getElementById('maskJpBtn').innerText = isMaskJp ? '👁️ 和訳を表示' : '🙈 和訳を隠す';
+    }
+    renderScript();
+  }
+
+  function toggleSingleLoop(index) {
+    if (singleLoopIndex === index) {
+      singleLoopIndex = null;
+      window.speechSynthesis.cancel();
+      toast('⏹️ 1文ループ再生を停止しました');
+    } else {
+      if (isHandsFree) toggleHandsFree();
+      singleLoopIndex = index;
+      toast(`🔁 STAGE ${index + 1} の1文ループ再生を開始`);
+      playSingleLoopStep();
+    }
+    renderScript();
+  }
+
+  function playSingleLoopStep() {
+    if (singleLoopIndex === null || !scenarios[singleLoopIndex]) return;
+    const item = scenarios[singleLoopIndex];
+
+    speakText(item.ai_en, () => {
+      if (singleLoopIndex === null) return;
+      setTimeout(() => {
+        speakText(item.target, () => {
+          if (singleLoopIndex === null) return;
+          setTimeout(playSingleLoopStep, 1000);
+        });
+      }, 500);
+    });
+  }
+
+  // Listen & Repeat（3秒間ポーズ入りの音読連続再生）
   function toggleHandsFree() {
+    if (singleLoopIndex !== null) {
+      singleLoopIndex = null;
+    }
     isHandsFree = !isHandsFree;
     const btn = document.getElementById('handsFreeBtn');
     if (isHandsFree) {
-      btn.innerText = "⏹️ ハンズフリー自動再生を停止";
+      btn.innerText = "⏹️ 音読連続再生を停止";
       btn.style.background = "#ef4444";
       handsFreeIndex = 0;
       playHandsFreeStep();
     } else {
-      btn.innerText = "▶️ ハンズフリー自動連続再生（全話ノンストップ）";
+      btn.innerText = "▶️ Listen & Repeat（ポーズ付き音読連続再生）";
       btn.style.background = "#059669";
       window.speechSynthesis.cancel();
       document.querySelectorAll('.script-card').forEach(c => c.classList.remove('active-playing'));
     }
+    renderScript();
   }
 
   function playHandsFreeStep() {
@@ -1188,19 +1332,24 @@
     });
 
     const item = scenarios[handsFreeIndex];
+    
+    // 相手の発言 ➔ 模範解答 ➔ 3秒間の発話ポーズ ➔ 次のステージ
     speakText(item.ai_en, () => {
       if (!isHandsFree) return;
       setTimeout(() => {
         speakText(item.target, () => {
           if (!isHandsFree) return;
-          handsFreeIndex++;
-          setTimeout(playHandsFreeStep, 1500);
+          toast(`🎙️ STAGE ${handsFreeIndex + 1}: 声に出してリピート！（3秒ポーズ）`);
+          setTimeout(() => {
+            if (!isHandsFree) return;
+            handsFreeIndex++;
+            playHandsFreeStep();
+          }, 3000); // 発声用3秒ポーズ
         });
-      }, 800);
+      }, 600);
     });
   }
 
-  // 履歴タブのステータスバッジ付きレンダリング
   function renderHistory() {
     const container = document.getElementById('historyListContainer');
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -1367,7 +1516,6 @@
     }
     else { combo = 0; awardXP(2, false); recordMistake(current); toast('💡 苦手リストに追加しました'); }
 
-    // 現在のログの回答進捗ステータスを更新
     updateHistoryStatus(correct);
 
     for (let i = 0; i < currentChoices.length; i++) {
