@@ -5,11 +5,10 @@ export default async function handler(req, res) {
 
   const { userText, targetPhrase, japaneseGuide, scenario } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
-  // デフォルトモデルをエラー指示通りの gemini-3.6-flash に設定
-  const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel.' });
+    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
   }
 
   const prompt = `You are an AI game engine and business English coach for global non-native professionals.

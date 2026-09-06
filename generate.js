@@ -56,9 +56,7 @@ Return ONLY a raw JSON array containing exactly 5 objects without markdown forma
 
   // 高性能モデル優先リスト（利用可能な中で最上位モデルを自動選択）
   const modelsToTry = [
-    'gemini-3.7-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite',
+    'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-1.5-flash'
   ];

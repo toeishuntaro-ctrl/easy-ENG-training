@@ -1,0 +1,8 @@
+{
+  "name": "Plain English Survival Game",
+  "description": "CTM向け Plain English 15分英会話トレーニング",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
