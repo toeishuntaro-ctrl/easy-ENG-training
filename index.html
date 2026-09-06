@@ -31,6 +31,29 @@
       padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+    .tab-bar {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: bold;
+      color: #64748b;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
     .btn-download {
       width: 100%;
       padding: 12px;
@@ -87,7 +110,7 @@
       padding: 14px;
       margin-bottom: 14px;
     }
-    .hint-btn {
+    .hint-btn, .save-phrase-btn {
       display: block;
       width: 100%;
       background: #f1f5f9;
@@ -100,6 +123,11 @@
       margin-top: 8px;
       text-align: center;
       font-weight: bold;
+    }
+    .save-phrase-btn {
+      background: #fef3c7;
+      border-color: #fde68a;
+      color: #92400e;
     }
     .weapon-card {
       background: #eff6ff;
@@ -157,49 +185,98 @@
       font-weight: bold;
       cursor: pointer;
     }
+    /* 履歴 & ライブラリUI */
+    .list-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .list-info { font-size: 13px; flex-grow: 1; padding-right: 10px; }
+    .list-title { font-weight: bold; margin-bottom: 4px; }
+    .list-sub { font-size: 11px; color: #64748b; }
+    .btn-action {
+      padding: 6px 10px;
+      font-size: 11px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 4px;
+    }
+    .btn-play { background: #dbeafe; color: #1e40af; }
+    .btn-delete { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <button class="btn-download" id="downloadBtn" onclick="downloadDailyScenarios()">
-    🔄 出かけ前に生成（本日のコースを取得）
-  </button>
-
-  <button class="btn-audio-player" id="autoPlayBtn" onclick="toggleAutoPlay()">
-    🎧 ストーリー聞き流しスタート
-  </button>
-
-  <div class="header-bar">
-    <span class="badge" id="turnBadge">STAGE 1 / 5</span>
+  <!-- タブメニュー -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabPlay" onclick="switchTab('play')">🎮 クイズ</button>
+    <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">📁 過去ログ</button>
+    <button class="tab-btn" id="tabLibrary" onclick="switchTab('library')">📚 フレーズ帳</button>
   </div>
 
-  <div class="ai-card">
-    <div class="ai-name" id="aiName">...</div>
-    <div class="ai-text" id="aiResponseEn">...</div>
-    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">...</div>
-  </div>
+  <!-- 1. メインクイズビュー -->
+  <div id="viewPlay">
+    <button class="btn-download" id="downloadBtn" onclick="downloadDailyScenarios()">
+      🔄 出かけ前に生成（本日のコースを取得）
+    </button>
 
-  <div class="guide-card">
-    <div style="font-size: 11px; color: #64748b; font-weight: bold;">あなたのミッション</div>
-    <div style="font-size: 14px; font-weight: bold; margin: 6px 0;" id="japaneseGuide">...</div>
-    
-    <button class="hint-btn" id="hintToggleBtn" onclick="toggleHint()">💡 使いたい表現のヒントを表示</button>
-    <div class="weapon-card" id="targetPhrase">...</div>
-  </div>
+    <button class="btn-audio-player" id="autoPlayBtn" onclick="toggleAutoPlay()">
+      🎧 ストーリー聞き流しスタート
+    </button>
 
-  <div id="choiceSection" class="choice-container">
-    <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
-    <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
-    <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
-  </div>
-
-  <div class="result-card" id="resultCard">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span class="status-tag" id="statusBadge">PERFECT</span>
+    <div class="header-bar">
+      <span class="badge" id="turnBadge">STAGE 1 / 5</span>
     </div>
-    <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
-    <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
+
+    <div class="ai-card">
+      <div class="ai-name" id="aiName">...</div>
+      <div class="ai-text" id="aiResponseEn">...</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">...</div>
+    </div>
+
+    <div class="guide-card">
+      <div style="font-size: 11px; color: #64748b; font-weight: bold;">あなたのミッション</div>
+      <div style="font-size: 14px; font-weight: bold; margin: 6px 0;" id="japaneseGuide">...</div>
+      
+      <button class="hint-btn" id="hintToggleBtn" onclick="toggleHint()">💡 使いたい表現のヒントを表示</button>
+      <div class="weapon-card" id="targetPhrase">...</div>
+      
+      <button class="save-phrase-btn" onclick="saveCurrentPhrase()">⭐ この重要フレーズをストック</button>
+    </div>
+
+    <div id="choiceSection" class="choice-container">
+      <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
+      <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
+      <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="status-tag" id="statusBadge">PERFECT</span>
+      </div>
+      <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
+      <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
+    </div>
+  </div>
+
+  <!-- 2. 過去ログ（履歴）管理ビュー -->
+  <div id="viewHistory" style="display: none;">
+    <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📁 過去生成分の履歴</div>
+    <div id="historyListContainer"></div>
+  </div>
+
+  <!-- 3. 重要フレーズライブラリビュー -->
+  <div id="viewLibrary" style="display: none;">
+    <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📚 保存した重要フレーズ</div>
+    <div id="libraryListContainer"></div>
   </div>
 </div>
 
@@ -209,6 +286,21 @@
   let currentChoices = [];
   let isAutoPlay = false;
 
+  // タブ切り替え処理
+  function switchTab(tabName) {
+    document.getElementById('tabPlay').classList.toggle('active', tabName === 'play');
+    document.getElementById('tabHistory').classList.toggle('active', tabName === 'history');
+    document.getElementById('tabLibrary').classList.toggle('active', tabName === 'library');
+
+    document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
+    document.getElementById('viewHistory').style.display = tabName === 'history' ? 'block' : 'none';
+    document.getElementById('viewLibrary').style.display = tabName === 'library' ? 'block' : 'none';
+
+    if (tabName === 'history') renderHistory();
+    if (tabName === 'library') renderLibrary();
+  }
+
+  // 15分分を通信して取得＆履歴保存
   async function downloadDailyScenarios() {
     const btn = document.getElementById('downloadBtn');
     btn.innerText = "⏳ AIが本日の問題セットを生成中...";
@@ -219,7 +311,15 @@
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      localStorage.setItem('daily_english_scenarios', JSON.stringify(data));
+      // 履歴ストレージに追加
+      const now = new Date();
+      const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const historyItem = { id: Date.now(), date: dateStr, data: data };
+
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      history.unshift(historyItem); // 先頭に追加
+      localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+
       scenarios = data;
       currentStageIndex = 0;
       
@@ -234,10 +334,9 @@
   }
 
   function initApp() {
-    const saved = localStorage.getItem('daily_english_scenarios');
-    if (saved) {
-      scenarios = JSON.parse(saved);
-      document.getElementById('downloadBtn').innerText = "✅ 本日の問題を取得済み (タップで再更新)";
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    if (history.length > 0) {
+      scenarios = history[0].data; // 最新のセットをロード
       loadStage();
     }
   }
@@ -271,11 +370,105 @@
       btn.disabled = false;
     }
 
-    // 音声の再生
     speakText(data.ai_en);
   }
 
-  // 聞き流しオート再生機能
+  // --- 履歴（過去ログ）機能 ---
+  function renderHistory() {
+    const container = document.getElementById('historyListContainer');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+
+    if (history.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">過去の履歴はありません。</div>';
+      return;
+    }
+
+    container.innerHTML = history.map((item, index) => `
+      <div class="list-item">
+        <div class="list-info">
+          <div class="list-title">📅 ${item.date} の生成データ</div>
+          <div class="list-sub">${item.data.length} ステージ収録</div>
+        </div>
+        <div>
+          <button class="btn-action btn-play" onclick="loadHistoryItem(${item.id})">復習する</button>
+          <button class="btn-action btn-delete" onclick="deleteHistoryItem(${item.id})">削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function loadHistoryItem(id) {
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const target = history.find(item => item.id === id);
+    if (target) {
+      scenarios = target.data;
+      currentStageIndex = 0;
+      switchTab('play');
+      loadStage();
+    }
+  }
+
+  function deleteHistoryItem(id) {
+    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    history = history.filter(item => item.id !== id);
+    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+    renderHistory();
+  }
+
+  // --- 重要フレーズライブラリ機能 ---
+  function saveCurrentPhrase() {
+    if (!scenarios || scenarios.length === 0) return;
+    const current = scenarios[currentStageIndex];
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+
+    // 重複チェック
+    if (library.some(item => item.target === current.target)) {
+      alert("このフレーズは既に保存されています。");
+      return;
+    }
+
+    library.push({
+      id: Date.now(),
+      target: current.target,
+      guide: current.guide,
+      ai_en: current.ai_en
+    });
+
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    alert("⭐ ライブラリに追加しました！");
+  }
+
+  function renderLibrary() {
+    const container = document.getElementById('libraryListContainer');
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+
+    if (library.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">保存されたフレーズはありません。</div>';
+      return;
+    }
+
+    container.innerHTML = library.map(item => `
+      <div class="list-item">
+        <div class="list-info">
+          <div class="list-title" style="color:var(--primary);">${item.target}</div>
+          <div class="list-sub">${item.guide}</div>
+        </div>
+        <div>
+          <button class="btn-action btn-play" onclick="speakText('${item.target.replace(/'/g, "\\'")}')">🔊</button>
+          <button class="btn-action btn-delete" onclick="deleteLibraryItem(${item.id})">削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function deleteLibraryItem(id) {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    library = library.filter(item => item.id !== id);
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    renderLibrary();
+  }
+
+  // --- 判定・音声制御 ---
   function toggleAutoPlay() {
     isAutoPlay = !isAutoPlay;
     const btn = document.getElementById('autoPlayBtn');
@@ -295,7 +488,6 @@
     const data = scenarios[currentStageIndex];
     speakText(data.ai_en, () => {
       if (isAutoPlay) {
-        // 音声が終わったら少し待ってガイドを日本語読み上げ
         setTimeout(() => {
           speakText(data.guide, null, 'ja-JP');
         }, 500);
@@ -315,7 +507,6 @@
     }
   }
 
-  // 判定処理（点数表記を排除）
   function checkChoice(index) {
     const selected = currentChoices[index];
 
@@ -342,18 +533,14 @@
   function nextStage() {
     currentStageIndex = (currentStageIndex + 1) % scenarios.length;
     loadStage();
-    if (isAutoPlay) {
-      playCurrentAudio();
-    }
+    if (isAutoPlay) playCurrentAudio();
   }
 
   function speakText(text, onEndCallback = null, lang = 'en-US') {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
-    if (onEndCallback) {
-      utterance.onend = onEndCallback;
-    }
+    if (onEndCallback) utterance.onend = onEndCallback;
     window.speechSynthesis.speak(utterance);
   }
 
