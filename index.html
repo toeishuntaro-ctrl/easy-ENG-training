@@ -33,7 +33,7 @@
       box-sizing: border-box;
     }
 
-    /* ボトムナビゲーションバー */
+    /* 固定ボトムナビゲーションバー */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -110,6 +110,36 @@
       border-radius: 8px;
       font-size: 11px;
       font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* モードインジケーター & クイック切替バー */
+    .mode-switcher-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .mode-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mode-select {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-weight: bold;
+      color: #334155;
       cursor: pointer;
     }
 
@@ -368,7 +398,7 @@
 
       <div class="gen-card">
         <div class="gen-info">
-          <div class="gen-title">✉️ Email / Teams (5問)</div>
+          <div class="gen-title">✉️ Email / Teams (5问)</div>
           <div class="gen-desc">迅速でプロフェッショナルな英文メール・チャット</div>
         </div>
         <button class="btn-gen" style="background:#0284c7;" onclick="generateAndStart('email')">生成して開始</button>
@@ -382,6 +412,19 @@
 
   <!-- 2. メインクイズビュー -->
   <div id="viewPlay" style="display: none;">
+    
+    <!-- 現在のモード表示 & クイック切替バー -->
+    <div class="mode-switcher-bar">
+      <div class="mode-label" id="currentModeLabel">
+        <span>📌 モード:</span> <span id="modeBadgeText" style="color:var(--primary);">🎯 口頭クイズ</span>
+      </div>
+      <select class="mode-select" id="quickModeSelect" onchange="quickSwitchMode(this.value)">
+        <option value="quiz">🎯 口頭クイズ</option>
+        <option value="sim">🧑‍💼 CTM Sim</option>
+        <option value="email">✉️ Email/Teams</option>
+      </select>
+    </div>
+
     <div id="simHeader" style="display:none;">
       <div class="role-card">
         <div class="role-head"><span>YOUR ROLE: CLINICAL TRIAL MANAGER</span><span id="simTimer">10:00</span></div>
@@ -559,6 +602,38 @@
     document.getElementById('simHeader').style.display = mode === 'sim' ? 'block' : 'none';
     if (mode === 'sim') startSimTimer();
     else stopSimTimer();
+    
+    updateModeUI();
+  }
+
+  function updateModeUI() {
+    const labels = {
+      quiz: '🎯 口頭クイズ',
+      sim: '🧑‍💼 CTM Sim',
+      email: '✉️ Email/Teams'
+    };
+    const badgeText = labels[trainingMode] || '🎯 口頭クイズ';
+    document.getElementById('modeBadgeText').innerText = badgeText;
+    document.getElementById('quickModeSelect').value = trainingMode;
+  }
+
+  // クイズ画面からのクイックモード切替
+  function quickSwitchMode(newMode) {
+    setTrainingMode(newMode);
+    
+    // 履歴内に一致するモードがあるか探す
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const matched = history.find(item => item.mode === newMode);
+
+    if (matched) {
+      scenarios = matched.data;
+      currentStageIndex = 0;
+      toast(`📌 [${matched.mode.toUpperCase()}] のデータを読み込みました`);
+      loadStage();
+    } else {
+      // 履歴になければ新規生成またはバックアップ読み込み
+      downloadDailyScenarios();
+    }
   }
 
   function startSimTimer() {
@@ -804,7 +879,6 @@
     loadStage();
   }
 
-  // ボトムナビ対応のタブ切り替え
   function switchTab(tabName) {
     document.getElementById('navHome').classList.toggle('active', tabName === 'home');
     document.getElementById('navPlay').classList.toggle('active', tabName === 'play');
@@ -826,7 +900,6 @@
     if (tabName !== 'script' && isHandsFree) toggleHandsFree();
   }
 
-  // ホームから生成して直接プレイ画面へ移行
   function generateAndStart(selectedMode) {
     setTrainingMode(selectedMode);
     downloadDailyScenarios();
@@ -888,7 +961,7 @@
   function saveScenariosToHistory(data) {
     const now = new Date();
     const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const historyItem = { id: Date.now(), date: dateStr, data: data };
+    const historyItem = { id: Date.now(), date: dateStr, mode: trainingMode, data: data };
 
     let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     history.unshift(historyItem);
@@ -935,6 +1008,7 @@
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     if (history.length > 0) {
       scenarios = history[0].data;
+      if (history[0].mode) trainingMode = history[0].mode;
       loadStage();
     } else {
       scenarios = getFallbackScenarios(trainingMode);
@@ -945,6 +1019,8 @@
 
   function loadStage() {
     if (!scenarios || scenarios.length === 0) return;
+
+    updateModeUI();
 
     const data = scenarios[currentStageIndex];
     if (trainingMode === 'sim') {
@@ -1062,7 +1138,7 @@
     container.innerHTML = history.map((item) => `
       <div class="list-item">
         <div class="list-info">
-          <div class="list-title">📅 ${item.date} の生成データ</div>
+          <div class="list-title">📅 ${item.date} [${(item.mode || 'quiz').toUpperCase()}]</div>
           <div class="list-sub">${item.data.length} ステージ収録</div>
         </div>
         <div>
@@ -1078,6 +1154,7 @@
     const target = history.find(item => item.id === id);
     if (target) {
       scenarios = target.data;
+      if (target.mode) setTrainingMode(target.mode);
       currentStageIndex = 0;
       switchTab('play');
       loadStage();
