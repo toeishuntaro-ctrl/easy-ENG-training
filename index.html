@@ -210,6 +210,63 @@
     }
     .btn-play { background: #dbeafe; color: #1e40af; }
     .btn-delete { background: #fee2e2; color: #991b1b; }
+
+    /* ===== v3 Upgrade ===== */
+    .top-dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+    .stat-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px;text-align:center}
+    .stat-value{font-size:18px;font-weight:800;color:var(--primary)}
+    .stat-label{font-size:10px;color:#64748b;margin-top:2px}
+    .progress-wrap{margin:8px 0 14px;background:#e2e8f0;border-radius:99px;height:8px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:var(--primary);transition:width .3s}
+    .mission-meta{display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:4px}
+    .xp-bar{height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:5px}
+    .xp-fill{height:100%;width:0;background:#f59e0b;transition:width .3s}
+    .combo{font-size:12px;font-weight:800;color:#92400e;background:#fef3c7;padding:4px 8px;border-radius:8px}
+    .choice-btn{transition:transform .12s,box-shadow .12s}
+    .choice-btn:active{transform:scale(.98)}
+    .choice-btn.correct-pick{box-shadow:0 0 0 2px var(--success) inset}
+    .choice-btn.wrong-pick{box-shadow:0 0 0 2px var(--error) inset}
+    .explain-box{margin-top:10px;padding:10px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;font-size:12px;line-height:1.5}
+    .micro-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+    .micro-btn{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:8px;font-size:11px;font-weight:bold;cursor:pointer}
+    .empty-state{padding:24px 12px;text-align:center;color:#64748b;font-size:12px}
+    .section-title{font-size:14px;font-weight:800;color:#334155;margin:4px 0 10px}
+    .search-box{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:9px;padding:9px;font-size:12px;margin-bottom:10px}
+    .difficulty{font-size:10px;padding:3px 6px;border-radius:6px;background:#e0e7ff;color:#3730a3}
+    .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;font-size:12px;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
+    .toast.show{opacity:1}
+    @media(max-width:380px){.top-dashboard{grid-template-columns:1fr 1fr}.top-dashboard .stat-card:last-child{grid-column:span 2}}
+
+
+    /* ===== v4 CTM Simulator / Gamification ===== */
+    .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 14px}
+    .mode-btn{border:1px solid #cbd5e1;background:#fff;border-radius:10px;padding:10px 7px;font-size:11px;font-weight:800;cursor:pointer}
+    .mode-btn.active{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+    .role-card{background:#0f172a;color:#fff;border-radius:12px;padding:13px;margin-bottom:12px}
+    .role-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;opacity:.8}
+    .role-title{font-size:15px;font-weight:900;margin-top:4px}
+    .deadline{font-size:11px;color:#fecaca}
+    .scenario-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+    .scenario-tag{font-size:9px;background:#334155;padding:4px 6px;border-radius:6px}
+    .boss-card{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;margin-bottom:12px}
+    .boss-title{font-weight:900;color:#9a3412;font-size:13px}
+    .boss-sub{font-size:11px;color:#7c2d12;margin-top:3px}
+    .voice-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+    .record-btn{background:#fef2f2;border-color:#fecaca}
+    .record-btn.recording{background:#fee2e2;animation:pulse 1s infinite}
+    @keyframes pulse{50%{transform:scale(.98);opacity:.7}}
+    .confidence{display:flex;gap:5px;margin-top:8px}
+    .confidence button{flex:1;border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:7px;font-size:10px;cursor:pointer}
+    .confidence button.selected{background:#fef3c7;border-color:#f59e0b}
+    .rank-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-top:10px}
+    .rank-name{font-size:18px;font-weight:900}
+    .skill-row{margin-top:8px}
+    .skill-label{display:flex;justify-content:space-between;font-size:10px;color:#475569}
+    .skill-track{height:7px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:3px}
+    .skill-fill{height:100%;width:0;background:var(--primary);transition:width .3s}
+    .streak-reward{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:10px;margin-top:10px;font-size:11px}
+    .small-note{font-size:10px;color:#64748b;line-height:1.5}
+
   </style>
 </head>
 <body>
@@ -221,6 +278,34 @@
     <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">📁 過去ログ</button>
     <button class="tab-btn" id="tabLibrary" onclick="switchTab('library')">📚 フレーズ帳</button>
   </div>
+
+
+    <div class="top-dashboard">
+      <div class="stat-card"><div class="stat-value" id="xpValue">0</div><div class="stat-label">XP</div></div>
+      <div class="stat-card"><div class="stat-value" id="streakValue">0🔥</div><div class="stat-label">連続学習</div></div>
+      <div class="stat-card"><div class="stat-value" id="accuracyValue">--</div><div class="stat-label">正答率</div></div>
+    </div>
+    <div class="mission-meta"><span id="progressText">今日の進捗 0%</span><span id="comboText">Combo ×0</span></div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+
+    <div class="mode-grid">
+      <button class="mode-btn active" id="modeQuiz" onclick="setTrainingMode('quiz')">🎯 CTM英語クイズ</button>
+      <button class="mode-btn" id="modeSim" onclick="setTrainingMode('sim')">🧑‍💼 CTM Simulator</button>
+    </div>
+
+    <div id="simHeader" style="display:none;">
+      <div class="role-card">
+        <div class="role-head"><span>YOUR ROLE: CLINICAL TRIAL MANAGER</span><span id="simTimer">10:00</span></div>
+        <div class="role-title" id="simMission">Today's Mission</div>
+        <div class="deadline" id="simDeadline">Sponsor meetingまでに対応してください</div>
+        <div class="scenario-tags">
+          <span class="scenario-tag">Sponsor</span>
+          <span class="scenario-tag">CRA</span>
+          <span class="scenario-tag">Site</span>
+        </div>
+      </div>
+    </div>
 
   <!-- 1. メインクイズビュー -->
   <div id="viewPlay">
@@ -250,6 +335,16 @@
       <div class="weapon-card" id="targetPhrase">...</div>
       
       <button class="save-phrase-btn" onclick="saveCurrentPhrase()">⭐ この重要フレーズをストック</button>
+      <div class="voice-row">
+        <button class="micro-btn" onclick="speakTarget()">🔊 Targetを聞く</button>
+        <button class="micro-btn record-btn" id="recordBtn" onclick="toggleRecording()">🎙️ 自分で話す</button>
+      </div>
+      <div class="confidence" id="confidenceBox">
+        <button onclick="setConfidence(1)">😰 難しい</button>
+        <button onclick="setConfidence(2)">😐 普通</button>
+        <button onclick="setConfidence(3)">😎 余裕</button>
+      </div>
+
     </div>
 
     <div id="choiceSection" class="choice-container">
@@ -267,6 +362,20 @@
     </div>
   </div>
 
+
+    <div id="quickTools" class="micro-actions">
+      <button class="micro-btn" onclick="startReview()">🔁 間違いだけ復習</button>
+      <button class="micro-btn" onclick="showStats()">📊 学習データ</button>
+      <button class="micro-btn" onclick="showSkills()">🏆 CTMスキル</button>
+    </div>
+
+
+    <div class="boss-card">
+      <div class="boss-title">🔥 CTM Boss Challenge</div>
+      <div class="boss-sub">1問だけ。Sponsorへの報告を、最もプロフェッショナルに返せるか？</div>
+      <button class="btn-next" style="margin-top:8px;background:#9a3412" onclick="launchBoss()">⚡ Boss問題に挑戦</button>
+    </div>
+
   <!-- 2. 過去ログ（履歴）管理ビュー -->
   <div id="viewHistory" style="display: none;">
     <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📁 過去生成分の履歴</div>
@@ -276,276 +385,137 @@
   <!-- 3. 重要フレーズライブラリビュー -->
   <div id="viewLibrary" style="display: none;">
     <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📚 保存した重要フレーズ</div>
+    <input class="search-box" id="librarySearch" placeholder="フレーズを検索…" oninput="renderLibrary()">
     <div id="libraryListContainer"></div>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
   let scenarios = [];
   let currentStageIndex = 0;
   let currentChoices = [];
   let isAutoPlay = false;
+  let combo = 0;
+  let sessionCorrect = 0;
+  let sessionAnswered = 0;
+  let reviewMode = false;
+  let reviewScenarios = [];
+  let trainingMode = 'quiz';
+  let confidenceScore = 0;
+  let recognition = null;
+  let simTimerHandle = null;
+  let simSeconds = 600;
 
-  // タブ切り替え処理
-  function switchTab(tabName) {
-    document.getElementById('tabPlay').classList.toggle('active', tabName === 'play');
-    document.getElementById('tabHistory').classList.toggle('active', tabName === 'history');
-    document.getElementById('tabLibrary').classList.toggle('active', tabName === 'library');
+  const STATS_KEY = 'english_learning_stats_v3';
+  const SKILL_KEY = 'english_ctm_skills_v4';
 
-    document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
-    document.getElementById('viewHistory').style.display = tabName === 'history' ? 'block' : 'none';
-    document.getElementById('viewLibrary').style.display = tabName === 'library' ? 'block' : 'none';
 
-    if (tabName === 'history') renderHistory();
-    if (tabName === 'library') renderLibrary();
+  function getSkills() {
+    return JSON.parse(localStorage.getItem(SKILL_KEY) || JSON.stringify({
+      communication: 0, escalation: 0, negotiation: 0, reporting: 0, meeting: 0
+    }));
   }
 
-  // 15分分を通信して取得＆履歴保存
-  async function downloadDailyScenarios() {
-    const btn = document.getElementById('downloadBtn');
-    btn.innerText = "⏳ AIが本日の問題セットを生成中...";
-    btn.disabled = true;
-
-    try {
-      const res = await fetch('/api/generate', { method: 'POST' });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      // 履歴ストレージに追加
-      const now = new Date();
-      const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-      const historyItem = { id: Date.now(), date: dateStr, data: data };
-
-      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-      history.unshift(historyItem); // 先頭に追加
-      localStorage.setItem('english_scenarios_history', JSON.stringify(history));
-
-      scenarios = data;
-      currentStageIndex = 0;
-      
-      btn.innerText = "✅ ダウンロード完了！(通信オフでプレイ可能)";
-      btn.style.background = "#4b5563";
-      loadStage();
-    } catch (e) {
-      alert("生成エラー: " + e.message);
-      btn.innerText = "🔄 出かけ前に生成（再試行）";
-      btn.disabled = false;
-    }
+  function saveSkills(skills) {
+    localStorage.setItem(SKILL_KEY, JSON.stringify(skills));
   }
 
-  function initApp() {
-    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    if (history.length > 0) {
-      scenarios = history[0].data; // 最新のセットをロード
-      loadStage();
-    }
+  function setTrainingMode(mode) {
+    trainingMode = mode;
+    document.getElementById('modeQuiz').classList.toggle('active', mode === 'quiz');
+    document.getElementById('modeSim').classList.toggle('active', mode === 'sim');
+    document.getElementById('simHeader').style.display = mode === 'sim' ? 'block' : 'none';
+    if (mode === 'sim') startSimTimer();
+    else stopSimTimer();
+    toast(mode === 'sim' ? '🧑‍💼 CTM Simulatorモード' : '🎯 クイズモード');
   }
 
-  function loadStage() {
-    if (!scenarios || scenarios.length === 0) return;
-
-    const data = scenarios[currentStageIndex];
-    document.getElementById('turnBadge').innerText = `STAGE ${currentStageIndex + 1} / ${scenarios.length}`;
-    document.getElementById('aiName').innerText = data.ai_name;
-    document.getElementById('aiResponseEn').innerText = `"${data.ai_en}"`;
-    document.getElementById('aiResponseJp').innerText = `（${data.ai_jp}）`;
-    document.getElementById('japaneseGuide').innerText = data.guide;
-    document.getElementById('targetPhrase').innerText = `★ ヒント: ${data.target}`;
-
-    document.getElementById('targetPhrase').style.display = 'none';
-    document.getElementById('hintToggleBtn').innerText = "💡 使いたい表現のヒントを表示";
-
-    document.getElementById('resultCard').style.display = 'none';
-
-    currentChoices = [...data.choices];
-    for (let i = currentChoices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [currentChoices[i], currentChoices[j]] = [currentChoices[j], currentChoices[i]];
-    }
-
-    for (let i = 0; i < 3; i++) {
-      const btn = document.getElementById(`choice${i}`);
-      btn.innerText = currentChoices[i].text;
-      btn.className = 'choice-btn';
-      btn.disabled = false;
-    }
-
-    speakText(data.ai_en);
+  function startSimTimer() {
+    stopSimTimer();
+    simSeconds = 600;
+    renderSimTimer();
+    simTimerHandle = setInterval(() => {
+      simSeconds--;
+      renderSimTimer();
+      if (simSeconds <= 0) {
+        stopSimTimer();
+        toast('⏰ Time! まずは落ち着いて対応を選びましょう');
+      }
+    }, 1000);
   }
 
-  // --- 履歴（過去ログ）機能 ---
-  function renderHistory() {
-    const container = document.getElementById('historyListContainer');
-    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-
-    if (history.length === 0) {
-      container.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">過去の履歴はありません。</div>';
-      return;
-    }
-
-    container.innerHTML = history.map((item, index) => `
-      <div class="list-item">
-        <div class="list-info">
-          <div class="list-title">📅 ${item.date} の生成データ</div>
-          <div class="list-sub">${item.data.length} ステージ収録</div>
-        </div>
-        <div>
-          <button class="btn-action btn-play" onclick="loadHistoryItem(${item.id})">復習する</button>
-          <button class="btn-action btn-delete" onclick="deleteHistoryItem(${item.id})">削除</button>
-        </div>
-      </div>
-    `).join('');
+  function stopSimTimer() {
+    if (simTimerHandle) clearInterval(simTimerHandle);
+    simTimerHandle = null;
   }
 
-  function loadHistoryItem(id) {
-    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    const target = history.find(item => item.id === id);
-    if (target) {
-      scenarios = target.data;
-      currentStageIndex = 0;
-      switchTab('play');
-      loadStage();
-    }
+  function renderSimTimer() {
+    const m = Math.floor(simSeconds / 60);
+    const s = String(simSeconds % 60).padStart(2,'0');
+    document.getElementById('simTimer').innerText = `${m}:${s}`;
   }
 
-  function deleteHistoryItem(id) {
-    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    history = history.filter(item => item.id !== id);
-    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
-    renderHistory();
-  }
-
-  // --- 重要フレーズライブラリ機能 ---
-  function saveCurrentPhrase() {
-    if (!scenarios || scenarios.length === 0) return;
+  function setConfidence(level) {
+    confidenceScore = level;
+    [...document.querySelectorAll('#confidenceBox button')].forEach((b,i) => b.classList.toggle('selected', i+1 === level));
+    const skills = getSkills();
     const current = scenarios[currentStageIndex];
-    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const text = `${current?.guide || ''} ${current?.target || ''}`.toLowerCase();
+    const key = text.includes('meeting') || text.includes('call') ? 'meeting'
+      : text.includes('delay') || text.includes('timeline') ? 'escalation'
+      : text.includes('report') || text.includes('update') ? 'reporting'
+      : text.includes('negot') ? 'negotiation' : 'communication';
+    skills[key] = Math.min(100, skills[key] + (level === 1 ? 3 : level === 2 ? 1 : 0));
+    saveSkills(skills);
+    if (level === 1) toast('💡 次回、このタイプを重点復習します');
+  }
 
-    // 重複チェック
-    if (library.some(item => item.target === current.target)) {
-      alert("このフレーズは既に保存されています。");
+  function speakTarget() {
+    if (!scenarios.length) return;
+    speakText(scenarios[currentStageIndex].target);
+  }
+
+  function toggleRecording() {
+    const btn = document.getElementById('recordBtn');
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast('🎙️ このブラウザでは音声認識に対応していません');
       return;
     }
-
-    library.push({
-      id: Date.now(),
-      target: current.target,
-      guide: current.guide,
-      ai_en: current.ai_en
-    });
-
-    localStorage.setItem('english_phrase_library', JSON.stringify(library));
-    alert("⭐ ライブラリに追加しました！");
+    if (recognition) { recognition.stop(); return; }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => { btn.innerText='⏹️ 録音停止'; btn.classList.add('recording'); };
+    recognition.onresult = e => {
+      const said = e.results[0][0].transcript;
+      const target = scenarios[currentStageIndex]?.target || '';
+      const clean = x => x.toLowerCase().replace(/[^a-z0-9 ]/g,'').split(/\s+/).filter(Boolean);
+      const a = clean(said), b = clean(target);
+      const overlap = b.length ? b.filter(w => a.includes(w)).length / b.length : 0;
+      const score = Math.round(overlap * 100);
+      toast(`🗣️ 聞き取り結果: ${score}%一致`);
+      const s = getStats(); s.xp += Math.max(5, Math.round(score/10)); saveStats(s);
+    };
+    recognition.onerror = () => toast('もう一度、少しゆっくり話してみましょう');
+    recognition.onend = () => { btn.innerText='🎙️ 自分で話す'; btn.classList.remove('recording'); recognition=null; };
+    recognition.start();
   }
 
-  function renderLibrary() {
-    const container = document.getElementById('libraryListContainer');
-    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-
-    if (library.length === 0) {
-      container.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">保存されたフレーズはありません。</div>';
-      return;
-    }
-
-    container.innerHTML = library.map(item => `
-      <div class="list-item">
-        <div class="list-info">
-          <div class="list-title" style="color:var(--primary);">${item.target}</div>
-          <div class="list-sub">${item.guide}</div>
-        </div>
-        <div>
-          <button class="btn-action btn-play" onclick="speakText('${item.target.replace(/'/g, "\\'")}')">🔊</button>
-          <button class="btn-action btn-delete" onclick="deleteLibraryItem(${item.id})">削除</button>
-        </div>
-      </div>
-    `).join('');
+  function showSkills() {
+    const s = getSkills();
+    const labels = {communication:'Communication', escalation:'Escalation', negotiation:'Negotiation', reporting:'Reporting', meeting:'Meeting'};
+    const body = Object.entries(s).map(([k,v]) => `${labels[k]}: ${v}/100`).join('\\n');
+    alert(`🏆 CTMスキル\\n\\n${body}\\n\\n問題を解き、自己評価するとスキルが伸びます。`);
   }
 
-  function deleteLibraryItem(id) {
-    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-    library = library.filter(item => item.id !== id);
-    localStorage.setItem('english_phrase_library', JSON.stringify(library));
-    renderLibrary();
+  function getStats() {
+    return JSON.parse(localStorage.getItem(STATS_KEY) || JSON.stringify({
+      xp: 0, total: 0, correct: 0, streak: 0, lastDate: '', mistakes: []
+    }));
   }
 
-  // --- 判定・音声制御 ---
-  function toggleAutoPlay() {
-    isAutoPlay = !isAutoPlay;
-    const btn = document.getElementById('autoPlayBtn');
-    if (isAutoPlay) {
-      btn.innerText = "⏹️ 聞き流し停止";
-      btn.style.background = "#ef4444";
-      playCurrentAudio();
-    } else {
-      btn.innerText = "🎧 ストーリー聞き流しスタート";
-      btn.style.background = "#6366f1";
-      window.speechSynthesis.cancel();
-    }
-  }
-
-  function playCurrentAudio() {
-    if (!scenarios || scenarios.length === 0) return;
-    const data = scenarios[currentStageIndex];
-    speakText(data.ai_en, () => {
-      if (isAutoPlay) {
-        setTimeout(() => {
-          speakText(data.guide, null, 'ja-JP');
-        }, 500);
-      }
-    });
-  }
-
-  function toggleHint() {
-    const hintBox = document.getElementById('targetPhrase');
-    const hintBtn = document.getElementById('hintToggleBtn');
-    if (hintBox.style.display === 'none') {
-      hintBox.style.display = 'block';
-      hintBtn.innerText = "🙈 ヒントを隠す";
-    } else {
-      hintBox.style.display = 'none';
-      hintBtn.innerText = "💡 使いたい表現のヒントを表示";
-    }
-  }
-
-  function checkChoice(index) {
-    const selected = currentChoices[index];
-
-    for (let i = 0; i < 3; i++) {
-      const btn = document.getElementById(`choice${i}`);
-      btn.disabled = true;
-      if (currentChoices[i].type === 'PERFECT') {
-        btn.classList.add('PERFECT');
-      } else if (i === index) {
-        btn.classList.add(selected.type);
-      }
-    }
-
-    const resultCard = document.getElementById('resultCard');
-    const statusBadge = document.getElementById('statusBadge');
-    
-    resultCard.style.display = 'block';
-    statusBadge.innerText = selected.type.replace('_', ' ');
-    statusBadge.className = `status-tag ${selected.type}`;
-    
-    document.getElementById('adviceText').innerText = selected.advice;
-  }
-
-  function nextStage() {
-    currentStageIndex = (currentStageIndex + 1) % scenarios.length;
-    loadStage();
-    if (isAutoPlay) playCurrentAudio();
-  }
-
-  function speakText(text, onEndCallback = null, lang = 'en-US') {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang;
-    if (onEndCallback) utterance.onend = onEndCallback;
-    window.speechSynthesis.speak(utterance);
-  }
-
-  initApp();
-</script>
-
-</body>
-</html>
+  function saveStats(stats) {
+    localStorage.setItem(STATS_
