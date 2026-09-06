@@ -54,15 +54,16 @@ Return ONLY a raw JSON array containing exactly 5 objects without markdown forma
 ]
 `;
 
-  // レート制限回避用のフォールバックモデル優先度リスト
+  // 高性能モデル優先リスト（利用可能な中で最上位モデルを自動選択）
   const modelsToTry = [
     'gemini-3.7-flash',
     'gemini-3.6-flash',
     'gemini-3.5-flash-lite',
+    'gemini-2.0-flash',
     'gemini-1.5-flash'
   ];
 
-  let lastError = null;
+  let errors = [];
 
   for (const modelName of modelsToTry) {
     try {
@@ -83,31 +84,34 @@ Return ONLY a raw JSON array containing exactly 5 objects without markdown forma
 
       if (!response.ok) {
         const errText = await response.text();
-        console.warn(`[Model Fallback] ${modelName} failed (${response.status}): ${errText}`);
-        lastError = `${modelName} (${response.status})`;
-        continue; // エラー時は次のモデルへ自動切替
+        console.warn(`[Model Attempt Failed] ${modelName} (${response.status}): ${errText}`);
+        errors.push(`${modelName}: ${response.status}`);
+        continue; // 制限中は次のモデルへ自動切替
       }
 
       const data = await response.json();
       let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!rawText) {
-        throw new Error(`Empty response content from ${modelName}`);
+        errors.push(`${modelName}: Empty response`);
+        continue;
       }
 
-      // マークダウン記法の除去
       rawText = rawText.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
 
       const scenarios = JSON.parse(rawText);
-      console.log(`[Model Success] Generated successfully using: ${modelName}`);
+      console.log(`[Success] Generated with ${modelName}`);
       return res.status(200).json(scenarios);
 
     } catch (err) {
-      console.warn(`[Model Fallback] Error on ${modelName}:`, err.message);
-      lastError = err.message;
+      console.warn(`[Model Exception] ${modelName}:`, err.message);
+      errors.push(`${modelName}: ${err.message}`);
     }
   }
 
-  // 全モデルで失敗した場合
-  return res.status(500).json({ error: `All models rate limited or failed. Last error: ${lastError}` });
+  return res.status(500).json({
+    error: 'All Gemini models failed.',
+    details: errors
+  });
 }
+
