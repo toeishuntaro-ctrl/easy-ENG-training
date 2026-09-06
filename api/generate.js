@@ -6,28 +6,56 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
   
-  // フロントエンドから送信されたトレーニングモード (quiz / sim) を取得
-  const { mode = 'quiz' } = req.body || {};
+  const { mode = 'quiz', excludeTopics = [] } = req.body || {};
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
   }
 
-  // モードごとに生成するシナリオの専門性を制御
+  // CTM/クイズ別のランダムトピックプール
+  const simCategories = [
+    "Site initiation & IRB/EC approval delays",
+    "Protocol deviations & IP (Investigational Product) management",
+    "SAE reporting & Safety queries from Sponsor",
+    "CRA monitoring report findings & Site communication",
+    "Vendor management (Central Lab, eCOA, CRO) & Budget negotiation",
+    "Subject recruitment timeline & Site retention strategies"
+  ];
+  
+  const quizCategories = [
+    "Negotiating deadlines and pushing back respectfully",
+    "Asking for clarification without sounding aggressive",
+    "Politely declining sudden change requests",
+    "Updating status and giving realistic timeframes",
+    "Escalating issues while maintaining good working relationships"
+  ];
+
+  const categories = mode === 'sim' ? simCategories : quizCategories;
+  const selectedCategory = categories[Math.floor(Math.random() * categories.length)];
+  const randomSeed = Math.floor(Math.random() * 100000);
+
   const simInstruction = mode === 'sim'
-    ? 'Focus specifically on Clinical Trial Management (CTM) scenarios involving Sponsor communications, CRA management, Site initiation delays, Protocol deviations, SAE reporting, and Vendor management.'
-    : 'Focus on general Plain English business communication (negotiating deadlines, status updates, polite refusals, clarifying requests).';
+    ? `Focus specifically on Clinical Trial Management (CTM) scenarios. Today's primary focus area: ${selectedCategory}.`
+    : `Focus on general Plain English business communication. Today's primary focus area: ${selectedCategory}.`;
+
+  // 過去に出たフレーズを除外指示に追加
+  const excludeInstruction = excludeTopics.length > 0
+    ? `\n# AVOID REPETITION\nDo NOT reuse or duplicate the following recent targets/topics:\n${excludeTopics.slice(0, 15).map(t => `- ${t}`).join('\n')}\n`
+    : '';
 
   const prompt = `You are a business English game engine for global non-native professionals.
-Generate a set of 5 different roleplay stages for a daily practice session.
+Generate a set of 5 completely unique roleplay stages for a daily practice session.
 Output STRICTLY JSON with no extra text or markdown wrappers.
 
-# MODE SPECIFICITY
+# FOCUS AREA & CONTEXT
 ${simInstruction}
+Random Context ID: ${randomSeed}
+${excludeInstruction}
 
 # RULES FOR GENERATION
 - Target: Non-native business professionals working in global teams.
 - Focus on Plain English: Basic verbs (get, take, check, put) and polite cushion phrases.
+- Vary the roles, names, and scenarios across all 5 stages.
 - Each stage must contain 3 choices with specific types:
   1. "PERFECT": Ideal plain English answer using cushion phrases and simple verbs.
   2. "TOO_COMPLEX": Grammatically correct, but uses overly complex, formal, or stiff vocabulary.
@@ -60,7 +88,10 @@ ${simInstruction}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.85
+          }
         })
       }
     );
