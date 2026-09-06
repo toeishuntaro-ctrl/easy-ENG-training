@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Plain English Survival Game</title>
+  
+  <!-- PWA設定タグ -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="PlainEnglish">
+
   <style>
     :root {
       --primary: #2563eb;
@@ -266,7 +274,6 @@
       cursor: pointer;
     }
 
-    /* 過去ログステータス用タグ */
     .log-status-badge {
       display: inline-block;
       font-size: 10px;
@@ -304,7 +311,6 @@
     .btn-play { background: #dbeafe; color: #1e40af; }
     .btn-delete { background: #fee2e2; color: #991b1b; }
 
-    /* 耳トレ・音読タブ専用CSS */
     .script-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -536,7 +542,7 @@
     </div>
 
     <div class="result-card" id="resultCard">
-      <div style="display: flex; justify-content: space-between; align- items: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
         <span class="status-tag" id="statusBadge">PERFECT</span>
       </div>
       <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
@@ -556,7 +562,7 @@
     </div>
   </div>
 
-  <!-- 3. 耳トレ・音読特化ビュー (強化版) -->
+  <!-- 3. 耳トレ・音読特化ビュー -->
   <div id="viewScript" style="display: none;">
     
     <!-- 過去ログ呼び出しバー -->
@@ -1144,6 +1150,17 @@
       loadStage();
     }
     updateDashboard();
+
+    // PWA Service Worker のブラウザ登録処理
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('SW registered:', reg);
+        }).catch(err => {
+          console.log('SW reg failed:', err);
+        });
+      });
+    }
   }
 
   function loadStage() {
@@ -1193,8 +1210,6 @@
     updateDashboard();
     speakText(data.ai_en);
   }
-
-  // --- 耳トレ・音読タブ専用機能群 ---
 
   function renderScript() {
     populateScriptLogSelect();
@@ -1300,7 +1315,6 @@
     });
   }
 
-  // Listen & Repeat（3秒間ポーズ入りの音読連続再生）
   function toggleHandsFree() {
     if (singleLoopIndex !== null) {
       singleLoopIndex = null;
@@ -1333,7 +1347,6 @@
 
     const item = scenarios[handsFreeIndex];
     
-    // 相手の発言 ➔ 模範解答 ➔ 3秒間の発話ポーズ ➔ 次のステージ
     speakText(item.ai_en, () => {
       if (!isHandsFree) return;
       setTimeout(() => {
@@ -1344,7 +1357,7 @@
             if (!isHandsFree) return;
             handsFreeIndex++;
             playHandsFreeStep();
-          }, 3000); // 発声用3秒ポーズ
+          }, 3000);
         });
       }, 600);
     });
