@@ -3,14 +3,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { mode, excludeTopics } = req.body;
+  const { mode, excludeTopics } = req.body || {};
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel environment variables.' });
   }
 
-  // 毎回異なるシチュエーションを強制選定するテーマプール
   const categories = [
     "Protocol amendment and IRB/IEC approval delay",
     "Investigational Product (IP) temperature excursion or delivery logistics",
@@ -30,7 +29,7 @@ You are an expert Clinical Trial Manager (CTM) English training content generato
 Generate a 5-stage interactive Plain English learning session for CTMs.
 
 [Session Specifications]
-- Training Mode: "${mode}" (quiz, sim, or email)
+- Training Mode: "${mode || 'quiz'}"
 - Main Scenario Theme: "${selectedCategory}"
 - Uniqueness Seed: "${randomSeed}"
 - Strictly Excluded Topics/Phrases (DO NOT USE OR REPEAT THESE):
@@ -64,7 +63,7 @@ Return ONLY a raw JSON array containing exactly 5 objects without markdown forma
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.95, // ランダム性と創造性を高める設定
+            temperature: 0.95,
             responseMimeType: "application/json"
           }
         })
@@ -73,13 +72,16 @@ Return ONLY a raw JSON array containing exactly 5 objects without markdown forma
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`Gemini API Error (${response.status}): ${errText}`);
+      return res.status(response.status).json({ error: `Gemini API Error (${response.status}): ${errText}` });
     }
 
     const data = await response.json();
-    const rawText = data.candidates[0].content.parts[0].text;
-    const scenarios = JSON.parse(rawText);
+    let rawText = data.candidates[0].content.parts[0].text;
 
+    // マークダウン記法（```json ... ```）の自動除去
+    rawText = rawText.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+
+    const scenarios = JSON.parse(rawText);
     return res.status(200).json(scenarios);
   } catch (err) {
     console.error("Generate API Error:", err.message);
