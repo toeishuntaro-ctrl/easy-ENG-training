@@ -518,4 +518,412 @@
   }
 
   function saveStats(stats) {
-    localStorage.setItem(STATS_
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    updateDashboard();
+  }
+
+  function updateDashboard() {
+    const s = getStats();
+    const accuracy = s.total ? Math.round(s.correct / s.total * 100) + '%' : '--';
+    document.getElementById('xpValue').innerText = s.xp;
+    document.getElementById('streakValue').innerText = `${s.streak}🔥`;
+    document.getElementById('accuracyValue').innerText = accuracy;
+    const total = scenarios.length || 1;
+    const pct = Math.min(100, Math.round((currentStageIndex / total) * 100));
+    document.getElementById('progressText').innerText = `今日の進捗 ${pct}%`;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('comboText').innerText = `Combo ×${combo}`;
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.innerText = msg;
+    el.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  function awardXP(amount, correct) {
+    const s = getStats();
+    s.total++;
+    if (correct) { s.correct++; s.xp += amount + Math.min(combo * 2, 20); }
+    else { s.xp += 2; }
+    const today = new Date().toISOString().slice(0,10);
+    if (s.lastDate !== today) {
+      const y = new Date(); y.setDate(y.getDate()-1);
+      const yesterday = y.toISOString().slice(0,10);
+      s.streak = s.lastDate === yesterday ? s.streak + 1 : 1;
+      s.lastDate = today;
+    }
+    saveStats(s);
+  }
+
+  function recordMistake(current) {
+    const s = getStats();
+    const key = current.target || current.ai_en;
+    const old = s.mistakes.find(x => x.key === key);
+    if (old) old.count++;
+    else s.mistakes.push({key, target: current.target, guide: current.guide, ai_en: current.ai_en, count:1});
+    s.mistakes = s.mistakes.slice(-100);
+    saveStats(s);
+  }
+
+  function showStats() {
+    const s = getStats();
+    const acc = s.total ? Math.round(s.correct/s.total*100) : 0;
+    alert(`📊 学習データ\n\nXP: ${s.xp}\n回答数: ${s.total}\n正解: ${s.correct}\n正答率: ${acc}%\n連続学習: ${s.streak}日\n苦手問題: ${s.mistakes.length}件`);
+  }
+
+  function startReview() {
+    const s = getStats();
+    if (!s.mistakes.length) { toast('まだ復習対象がありません 👍'); return; }
+    reviewScenarios = s.mistakes.map(m => ({
+      ai_name: 'Review Coach', ai_en: m.ai_en, ai_jp: '', guide: m.guide,
+      target: m.target,
+      choices: [
+        {text: m.target, type:'PERFECT', advice:'この表現をそのまま使えると強いです。'},
+        {text:'That sounds complicated.', type:'TOO_COMPLEX', advice:'意味は通じても今回の目的には少し遠回りです。'},
+        {text:'Do it now.', type:'TOO_DIRECT', advice:'強すぎる表現です。'}
+      ]
+    }));
+    scenarios = reviewScenarios;
+    currentStageIndex = 0;
+    reviewMode = true;
+    switchTab('play');
+    toast('🔁 苦手問題だけで復習スタート！');
+    loadStage();
+  }
+
+  // タブ切り替え処理
+  function switchTab(tabName) {
+    document.getElementById('tabPlay').classList.toggle('active', tabName === 'play');
+    document.getElementById('tabHistory').classList.toggle('active', tabName === 'history');
+    document.getElementById('tabLibrary').classList.toggle('active', tabName === 'library');
+
+    document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
+    document.getElementById('viewHistory').style.display = tabName === 'history' ? 'block' : 'none';
+    document.getElementById('viewLibrary').style.display = tabName === 'library' ? 'block' : 'none';
+
+    if (tabName === 'history') renderHistory();
+    if (tabName === 'library') renderLibrary();
+    if (tabName !== 'play') stopSimTimer();
+  }
+
+  // 15分分を通信して取得＆履歴保存
+  async function downloadDailyScenarios() {
+    const btn = document.getElementById('downloadBtn');
+    btn.innerText = "⏳ AIが本日の問題セットを生成中...";
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/generate', { method: 'POST' });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // 履歴ストレージに追加
+      const now = new Date();
+      const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const historyItem = { id: Date.now(), date: dateStr, data: data };
+
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      history.unshift(historyItem); // 先頭に追加
+      localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+
+      scenarios = data;
+      currentStageIndex = 0;
+      
+      btn.innerText = "✅ ダウンロード完了！(通信オフでプレイ可能)";
+      btn.style.background = "#4b5563";
+      loadStage();
+    } catch (e) {
+      alert("生成エラー: " + e.message);
+      btn.innerText = "🔄 出かけ前に生成（再試行）";
+      btn.disabled = false;
+    }
+  }
+
+  function initApp() {
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    if (history.length > 0) {
+      scenarios = history[0].data;
+      loadStage();
+    } else {
+      document.getElementById('aiName').innerText = 'まずは本日のコースを生成しよう';
+      document.getElementById('aiResponseEn').innerText = 'Generate today’s mission to start.';
+      document.getElementById('aiResponseJp').innerText = '（本日の問題セットを生成してください）';
+    }
+    updateDashboard();
+  }
+
+  function loadStage() {
+    if (!scenarios || scenarios.length === 0) return;
+
+    const data = scenarios[currentStageIndex];
+    if (trainingMode === 'sim') {
+      const mission = data.guide || 'Handle the situation professionally.';
+      document.getElementById('simMission').innerText = mission;
+      document.getElementById('simDeadline').innerText = `Scenario ${currentStageIndex + 1}: sponsor / site / CRA communication`;
+    }
+    document.getElementById('turnBadge').innerText = `${reviewMode ? '🔁 REVIEW' : 'STAGE'} ${currentStageIndex + 1} / ${scenarios.length}`;
+    document.getElementById('aiName').innerText = data.ai_name;
+    document.getElementById('aiResponseEn').innerText = `"${data.ai_en}"`;
+    document.getElementById('aiResponseJp').innerText = `（${data.ai_jp}）`;
+    document.getElementById('japaneseGuide').innerText = data.guide;
+    document.getElementById('targetPhrase').innerText = `★ ヒント: ${data.target}`;
+
+    document.getElementById('targetPhrase').style.display = 'none';
+    document.getElementById('hintToggleBtn').innerText = "💡 使いたい表現のヒントを表示";
+
+    document.getElementById('resultCard').style.display = 'none';
+    confidenceScore = 0;
+    document.querySelectorAll('#confidenceBox button').forEach(b => b.classList.remove('selected'));
+
+    currentChoices = [...data.choices];
+    for (let i = currentChoices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [currentChoices[i], currentChoices[j]] = [currentChoices[j], currentChoices[i]];
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`choice${i}`);
+      btn.innerText = currentChoices[i].text;
+      btn.className = 'choice-btn';
+      btn.disabled = false;
+    }
+
+    updateDashboard();
+    speakText(data.ai_en);
+  }
+
+  // --- 履歴（過去ログ）機能 ---
+  function renderHistory() {
+    const container = document.getElementById('historyListContainer');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+
+    if (history.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">過去の履歴はありません。</div>';
+      return;
+    }
+
+    container.innerHTML = history.map((item, index) => `
+      <div class="list-item">
+        <div class="list-info">
+          <div class="list-title">📅 ${item.date} の生成データ</div>
+          <div class="list-sub">${item.data.length} ステージ収録</div>
+        </div>
+        <div>
+          <button class="btn-action btn-play" onclick="loadHistoryItem(${item.id})">復習する</button>
+          <button class="btn-action btn-delete" onclick="deleteHistoryItem(${item.id})">削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function loadHistoryItem(id) {
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const target = history.find(item => item.id === id);
+    if (target) {
+      scenarios = target.data;
+      currentStageIndex = 0;
+      switchTab('play');
+      loadStage();
+    }
+  }
+
+  function deleteHistoryItem(id) {
+    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    history = history.filter(item => item.id !== id);
+    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+    renderHistory();
+  }
+
+  // --- 重要フレーズライブラリ機能 ---
+  function saveCurrentPhrase() {
+    if (!scenarios || scenarios.length === 0) return;
+    const current = scenarios[currentStageIndex];
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+
+    // 重複チェック
+    if (library.some(item => item.target === current.target)) {
+      alert("このフレーズは既に保存されています。");
+      return;
+    }
+
+    library.push({
+      id: Date.now(),
+      target: current.target,
+      guide: current.guide,
+      ai_en: current.ai_en
+    });
+
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    toast("⭐ フレーズ帳に追加しました！");
+  }
+
+  function renderLibrary() {
+    const container = document.getElementById('libraryListContainer');
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+
+    const q = (document.getElementById('librarySearch')?.value || '').toLowerCase();
+    const filtered = library.filter(item => `${item.target} ${item.guide} ${item.ai_en}`.toLowerCase().includes(q));
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-state">該当するフレーズがありません。</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+      <div class="list-item">
+        <div class="list-info">
+          <div class="list-title" style="color:var(--primary);">${item.target}</div>
+          <div class="list-sub">${item.guide}</div>
+        </div>
+        <div>
+          <button class="btn-action btn-play" onclick="speakText('${item.target.replace(/'/g, "\\'")}')">🔊</button>
+          <button class="btn-action btn-delete" onclick="deleteLibraryItem(${item.id})">削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function deleteLibraryItem(id) {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    library = library.filter(item => item.id !== id);
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    renderLibrary();
+  }
+
+  // --- 判定・音声制御 ---
+  function toggleAutoPlay() {
+    isAutoPlay = !isAutoPlay;
+    const btn = document.getElementById('autoPlayBtn');
+    if (isAutoPlay) {
+      btn.innerText = "⏹️ 聞き流し停止";
+      btn.style.background = "#ef4444";
+      playCurrentAudio();
+    } else {
+      btn.innerText = "🎧 ストーリー聞き流しスタート";
+      btn.style.background = "#6366f1";
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function playCurrentAudio() {
+    if (!scenarios || scenarios.length === 0) return;
+    const data = scenarios[currentStageIndex];
+    speakText(data.ai_en, () => {
+      if (isAutoPlay) {
+        setTimeout(() => {
+          speakText(data.guide, null, 'ja-JP');
+        }, 500);
+      }
+    });
+  }
+
+  function toggleHint() {
+    const hintBox = document.getElementById('targetPhrase');
+    const hintBtn = document.getElementById('hintToggleBtn');
+    if (hintBox.style.display === 'none') {
+      hintBox.style.display = 'block';
+      hintBtn.innerText = "🙈 ヒントを隠す";
+    } else {
+      hintBox.style.display = 'none';
+      hintBtn.innerText = "💡 使いたい表現のヒントを表示";
+    }
+  }
+
+  function checkChoice(index) {
+    const selected = currentChoices[index];
+    const current = scenarios[currentStageIndex];
+    const correct = selected.type === 'PERFECT';
+
+    sessionAnswered++;
+    if (correct) {
+      combo++; sessionCorrect++;
+      awardXP(trainingMode === 'sim' ? 30 : 20, true);
+      if (trainingMode === 'sim') {
+        const sk = getSkills();
+        const k = current.guide?.toLowerCase().includes('report') ? 'reporting'
+          : current.guide?.toLowerCase().includes('meeting') ? 'meeting'
+          : current.guide?.toLowerCase().includes('delay') ? 'escalation' : 'communication';
+        sk[k] = Math.min(100, sk[k] + 5);
+        saveSkills(sk);
+      }
+      toast(`+XP 🎯 Combo ×${combo}`);
+    }
+    else { combo = 0; awardXP(2, false); recordMistake(current); toast('💡 苦手リストに追加しました'); }
+
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`choice${i}`);
+      btn.disabled = true;
+      if (currentChoices[i].type === 'PERFECT') btn.classList.add('PERFECT');
+      else if (i === index) btn.classList.add(currentChoices[i].type);
+    }
+
+    const resultCard = document.getElementById('resultCard');
+    const statusBadge = document.getElementById('statusBadge');
+    resultCard.style.display = 'block';
+    statusBadge.innerText = selected.type.replace('_', ' ');
+    statusBadge.className = `status-tag ${selected.type}`;
+    document.getElementById('adviceText').innerText = selected.advice;
+
+    // 説明を追加（既存HTMLを壊さず動的に表示）
+    let exp = document.getElementById('explainBox');
+    if (!exp) {
+      exp = document.createElement('div');
+      exp.id = 'explainBox';
+      exp.className = 'explain-box';
+      resultCard.insertBefore(exp, document.querySelector('#resultCard .btn-next'));
+    }
+    exp.innerHTML = `<b>🎓 1ポイント解説</b><br>${correct ? 'Good choice! 実務でそのまま使える自然な表現です。' : '正解の表現をもう一度声に出して、次の問題へ進みましょう。'}<br><span style="color:#475569">Target: ${current.target}</span>`;
+    updateDashboard();
+  }
+
+
+  function launchBoss() {
+    scenarios = [{
+      ai_name:'Sponsor / Project Director',
+      ai_en:'We are concerned about the site activation delay. Can you give us an update and your proposed next steps?',
+      ai_jp:'Site立ち上げの遅延を懸念しています。アップデートと次の対応策を教えてください。',
+      guide:'遅延を認識し、原因・影響・次のアクションを簡潔に報告してください。',
+      target:'We are currently assessing the impact and will provide an updated timeline by Friday.',
+      choices:[
+        {text:'We are currently assessing the impact and will provide an updated timeline by Friday.',type:'PERFECT',advice:'状況・影響・期限を簡潔に示していて、Sponsor向け報告として自然です。'},
+        {text:'The site is slow, so please wait.',type:'TOO_DIRECT',advice:'相手に待つよう求めるだけで、次のアクションがありません。'},
+        {text:'There are many complicated issues regarding the site activation process and various stakeholders are involved.',type:'TOO_COMPLEX',advice:'情報が多く、結論と次のアクションが見えにくいです。'}
+      ]
+    }];
+    currentStageIndex=0; reviewMode=false; combo=0;
+    switchTab('play'); setTrainingMode('sim'); loadStage();
+    toast('🔥 Boss Challenge開始！');
+  }
+
+  function nextStage() {
+    if (!scenarios.length) return;
+    if (currentStageIndex >= scenarios.length - 1) {
+      const pct = sessionAnswered ? Math.round(sessionCorrect/sessionAnswered*100) : 0;
+      toast(`🏁 セッション完了！ ${pct}%`);
+      currentStageIndex = 0;
+      reviewMode = false;
+      combo = 0;
+      setTimeout(loadStage, 700);
+      return;
+    }
+    currentStageIndex++;
+    loadStage();
+    if (isAutoPlay) playCurrentAudio();
+  }
+
+  function speakText(text, onEndCallback = null, lang = 'en-US') {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    if (onEndCallback) utterance.onend = onEndCallback;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  initApp();
+</script>
+
+</body>
+</html>
+
