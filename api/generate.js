@@ -12,7 +12,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
   }
 
-  // CTM/クイズ別のランダムトピックプール
   const simCategories = [
     "Site initiation & IRB/EC approval delays",
     "Protocol deviations & IP (Investigational Product) management",
@@ -30,15 +29,27 @@ export default async function handler(req, res) {
     "Escalating issues while maintaining good working relationships"
   ];
 
-  const categories = mode === 'sim' ? simCategories : quizCategories;
+  const emailCategories = [
+    "Formal status escalation emails to Sponsor",
+    "Polite deadline reminder emails to CRA or Site",
+    "Teams/Slack quick response messages to urgent Sponsor inquiries",
+    "Professional written follow-up after an issue resolution call"
+  ];
+
+  let categories = quizCategories;
+  if (mode === 'sim') categories = simCategories;
+  else if (mode === 'email') categories = emailCategories;
+
   const selectedCategory = categories[Math.floor(Math.random() * categories.length)];
   const randomSeed = Math.floor(Math.random() * 100000);
 
-  const simInstruction = mode === 'sim'
-    ? `Focus specifically on Clinical Trial Management (CTM) scenarios. Today's primary focus area: ${selectedCategory}.`
-    : `Focus on general Plain English business communication. Today's primary focus area: ${selectedCategory}.`;
+  let modeInstruction = `Focus on general Plain English business communication. Today's primary focus area: ${selectedCategory}.`;
+  if (mode === 'sim') {
+    modeInstruction = `Focus specifically on Clinical Trial Management (CTM) spoken scenarios. Today's primary focus area: ${selectedCategory}.`;
+  } else if (mode === 'email') {
+    modeInstruction = `Focus on written CTM & Business English (Emails & Teams chat messages). Target responses should be structured for written professional communications. Today's primary focus area: ${selectedCategory}.`;
+  }
 
-  // 過去に出たフレーズを除外指示に追加
   const excludeInstruction = excludeTopics.length > 0
     ? `\n# AVOID REPETITION\nDo NOT reuse or duplicate the following recent targets/topics:\n${excludeTopics.slice(0, 15).map(t => `- ${t}`).join('\n')}\n`
     : '';
@@ -48,7 +59,7 @@ Generate a set of 5 completely unique roleplay stages for a daily practice sessi
 Output STRICTLY JSON with no extra text or markdown wrappers.
 
 # FOCUS AREA & CONTEXT
-${simInstruction}
+${modeInstruction}
 Random Context ID: ${randomSeed}
 ${excludeInstruction}
 
@@ -104,4 +115,4 @@ ${excludeInstruction}
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
-}
+          }
