@@ -418,6 +418,15 @@
     }
     .word-match { color: #10b981; font-weight: bold; }
     .word-miss { color: #ef4444; text-decoration: line-through; margin-right: 2px; }
+
+    @keyframes genPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.12); opacity: 0.85; }
+    }
+    @keyframes genShimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
   </style>
 </head>
 <body>
@@ -484,6 +493,17 @@
       </select>
     </div>
 
+    <!-- AI問題生成中ローディングインジケーター -->
+    <div id="playLoadingArea" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 32px 20px; text-align: center; margin-bottom: 16px;">
+      <div style="font-size: 34px; animation: genPulse 1.4s infinite ease-in-out;">🤖</div>
+      <div style="font-size: 15px; font-weight: 800; color: #1e40af; margin-top: 10px;" id="genLoadingTitle">AIが臨床試験シナリオを生成中...</div>
+      <div style="font-size: 12px; color: #3b82f6; margin-top: 4px;" id="genLoadingSub">全5ステージの会話・実践的Plain English選択肢・解説を作成しています</div>
+      <div style="margin: 16px auto 0 auto; max-width: 220px; background: #dbeafe; height: 6px; border-radius: 9999px; overflow: hidden; position: relative;">
+        <div style="width: 50%; height: 100%; background: #2563eb; border-radius: 9999px; animation: genShimmer 1.5s infinite ease-in-out;"></div>
+      </div>
+    </div>
+
+    <div id="playStageArea">
     <div id="simHeader" style="display:none;">
       <div class="role-card">
         <div class="role-head"><span>YOUR ROLE: CLINICAL TRIAL MANAGER</span><span id="simTimer">10:00</span></div>
@@ -562,6 +582,7 @@
       <div class="boss-title">🔥 CTM Boss Challenge</div>
       <div class="boss-sub">1問だけ。Sponsorへの報告を、最もプロフェッショナルに返せるか？</div>
       <button class="btn-next" style="margin-top:8px;background:#9a3412" onclick="launchBoss()">⚡ Boss問題に挑戦</button>
+    </div>
     </div>
   </div>
 
@@ -1008,8 +1029,8 @@
 
   function generateAndStart(selectedMode) {
     setTrainingMode(selectedMode);
-    downloadDailyScenarios();
     switchTab('play');
+    downloadDailyScenarios();
   }
 
   function getFallbackScenarios(mode) {
@@ -1106,7 +1127,19 @@
   }
 
   async function downloadDailyScenarios() {
-    toast(`⏳ AIが本日の[${trainingMode}]問題セットを生成中...`);
+    const loadingArea = document.getElementById('playLoadingArea');
+    const stageArea = document.getElementById('playStageArea');
+    const genTitle = document.getElementById('genLoadingTitle');
+    const genSub = document.getElementById('genLoadingSub');
+
+    if (loadingArea) {
+      loadingArea.style.display = 'block';
+      if (genTitle) genTitle.innerText = `Gemini AIが[${getModeLabel(trainingMode)}]コースを生成中...`;
+      if (genSub) genSub.innerText = '実務に即した臨床試験シナリオ（全5ステージ）を準備しています';
+    }
+    if (stageArea) stageArea.style.display = 'none';
+
+    toast(`⏳ AIが本日の[${getModeLabel(trainingMode)}]問題セットを生成中...`);
 
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const excludeTopics = history.flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
@@ -1117,16 +1150,18 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: trainingMode, excludeTopics: excludeTopics })
       });
-      if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `HTTP Error ${res.status}`);
+      }
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (!Array.isArray(data) || data.length === 0) throw new Error("生成データが空でした。");
 
       saveScenariosToHistory(data);
       scenarios = data;
       currentStageIndex = 0;
       
-      toast(`🎯 新しい[${trainingMode}]コースを生成しました！`);
-      loadStage();
+      toast(`🎯 AIが新しい[${getModeLabel(trainingMode)}]コース(全5ステージ)を生成しました！`);
     } catch (e) {
       console.warn("API取得に失敗したため、バックアップ問題を読み込みます:", e.message);
       
@@ -1137,6 +1172,9 @@
       currentStageIndex = 0;
 
       toast("💡 バックアップコースを読み込みました！");
+    } finally {
+      if (loadingArea) loadingArea.style.display = 'none';
+      if (stageArea) stageArea.style.display = 'block';
       loadStage();
     }
   }
