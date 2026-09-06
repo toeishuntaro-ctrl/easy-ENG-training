@@ -398,7 +398,7 @@
 
       <div class="gen-card">
         <div class="gen-info">
-          <div class="gen-title">✉️ Email / Teams (5问)</div>
+          <div class="gen-title">✉️ Email / Teams (5問)</div>
           <div class="gen-desc">迅速でプロフェッショナルな英文メール・チャット</div>
         </div>
         <button class="btn-gen" style="background:#0284c7;" onclick="generateAndStart('email')">生成して開始</button>
@@ -415,7 +415,7 @@
     
     <!-- 現在のモード表示 & クイック切替バー -->
     <div class="mode-switcher-bar">
-      <div class="mode-label" id="currentModeLabel">
+      <div class="mode-label">
         <span>📌 モード:</span> <span id="modeBadgeText" style="color:var(--primary);">🎯 口頭クイズ</span>
       </div>
       <select class="mode-select" id="quickModeSelect" onchange="quickSwitchMode(this.value)">
@@ -606,33 +606,34 @@
     updateModeUI();
   }
 
+  function getModeLabel(mode) {
+    const labels = { quiz: '🎯 口頭クイズ', sim: '🧑‍💼 CTM Sim', email: '✉️ Email/Teams' };
+    return labels[mode] || '🎯 口頭クイズ';
+  }
+
   function updateModeUI() {
-    const labels = {
-      quiz: '🎯 口頭クイズ',
-      sim: '🧑‍💼 CTM Sim',
-      email: '✉️ Email/Teams'
-    };
-    const badgeText = labels[trainingMode] || '🎯 口頭クイズ';
-    document.getElementById('modeBadgeText').innerText = badgeText;
+    document.getElementById('modeBadgeText').innerText = getModeLabel(trainingMode);
     document.getElementById('quickModeSelect').value = trainingMode;
   }
 
-  // クイズ画面からのクイックモード切替
+  // クイズ画面からの即時モード切り替え（自動通信なし）
   function quickSwitchMode(newMode) {
     setTrainingMode(newMode);
     
-    // 履歴内に一致するモードがあるか探す
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const matched = history.find(item => item.mode === newMode);
 
-    if (matched) {
+    if (matched && matched.data) {
       scenarios = matched.data;
       currentStageIndex = 0;
-      toast(`📌 [${matched.mode.toUpperCase()}] のデータを読み込みました`);
+      toast(`📌 [${getModeLabel(newMode)}] に切り替えました`);
       loadStage();
     } else {
-      // 履歴になければ新規生成またはバックアップ読み込み
-      downloadDailyScenarios();
+      // 履歴がない場合も勝手に生成通信を始めず、即座に画面を切り替える
+      scenarios = getFallbackScenarios(newMode);
+      currentStageIndex = 0;
+      toast(`📌 [${getModeLabel(newMode)}] に切り替えました`);
+      loadStage();
     }
   }
 
