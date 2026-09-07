@@ -419,6 +419,231 @@
     .word-match { color: #10b981; font-weight: bold; }
     .word-miss { color: #ef4444; text-decoration: line-through; margin-right: 2px; }
 
+    /* Topic Selection Styles */
+    .topic-selector-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 14px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topic-chip-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .topic-chip {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: all .15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .topic-chip:hover {
+      border-color: #94a3b8;
+    }
+    .topic-chip.active {
+      border-color: var(--primary);
+      background: #eff6ff;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.12);
+    }
+    .topic-chip-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topic-chip-icon {
+      font-size: 16px;
+    }
+    .topic-chip-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+    .topic-chip.active .topic-chip-title {
+      color: var(--primary);
+    }
+    .topic-chip-desc {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+    .mode-pill-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .mode-pill {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      color: #475569;
+      transition: all .15s ease;
+    }
+    .mode-pill:hover {
+      border-color: #94a3b8;
+    }
+    .mode-pill.active {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.2);
+    }
+    .btn-targeted-start {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+      transition: transform .12s, box-shadow .12s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .btn-targeted-start:active {
+      transform: scale(0.98);
+    }
+    .btn-targeted-start-sub {
+      font-size: 11px;
+      font-weight: normal;
+      opacity: 0.9;
+    }
+
+    /* Lesson Pattern Card Styles */
+    .lesson-pattern-card {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 13px;
+      margin-bottom: 12px;
+    }
+    .lesson-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #166534;
+      background: #dcfce7;
+      padding: 3px 8px;
+      border-radius: 99px;
+    }
+    .pattern-formula {
+      font-size: 14px;
+      font-weight: 800;
+      color: #14532d;
+      line-height: 1.35;
+      margin-top: 6px;
+      margin-bottom: 3px;
+    }
+    .pattern-jp {
+      font-size: 11px;
+      color: #166534;
+      margin-bottom: 8px;
+    }
+    .pattern-parts-box {
+      background: #ffffff;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 11px;
+      color: #065f46;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    /* Thinking & Output Trigger Box */
+    .thinking-box {
+      background: #ffffff;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .btn-reveal-choices {
+      width: 100%;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+      transition: all .15s;
+    }
+    .btn-reveal-choices:active {
+      transform: scale(0.98);
+    }
+
+    /* Session Complete Modal / Card */
+    .session-modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .session-modal-content {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .summary-pattern-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    .summary-pattern-en {
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .summary-pattern-jp {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
     @keyframes genPulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.12); opacity: 0.85; }
@@ -441,41 +666,89 @@
   <div class="mission-meta"><span id="progressText">今日の進捗 0%</span><span id="comboText">Combo ×0</span></div>
   <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 
-  <!-- 1. ホームビュー (一括/個別生成ハブ) -->
+  <!-- 1. ホームビュー (トピック選択＆レッスン＋実践ハブ) -->
   <div id="viewHome">
     <div class="home-card">
-      <div class="home-title">出勤前の15分セッション</div>
-      <div class="home-sub">ボタンを押して本日のAIコースを生成し、すぐにトレーニングを開始できます。</div>
+      <div class="home-title">実践Plain English トレーニング</div>
+      <div class="home-sub">トピックを絞って生成することで精度が向上。万能な「型」をインプットしてから、中学単語を組み合わせたアウトプットに挑戦します。</div>
     </div>
 
-    <div style="font-size:13px; font-weight:bold; color:#334155; margin-bottom:8px;">コース生成センター</div>
-    <div class="gen-section">
-      <div class="gen-card">
-        <div class="gen-info">
-          <div class="gen-title">🎯 口頭クイズ (5問)</div>
-          <div class="gen-desc">汎用ビジネス会話の基本動詞と配慮フレーズ</div>
+    <div class="topic-selector-title">
+      <span>🎯 集中トレーニングするトピックを選択</span>
+    </div>
+    <div class="topic-chip-grid" id="topicChipGrid">
+      <div class="topic-chip active" id="chip_pushback" onclick="selectTopic('pushback')">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">🚀</span>
+          <span class="topic-chip-title">納期・スコープ交渉</span>
         </div>
-        <button class="btn-gen" onclick="generateAndStart('quiz')">生成して開始</button>
+        <div class="topic-chip-desc">理不尽な短納期や追加業務へ角を立てずに切り返す</div>
       </div>
 
-      <div class="gen-card">
-        <div class="gen-info">
-          <div class="gen-title">🧑‍💼 CTM Simulator (5問)</div>
-          <div class="gen-desc">Sponsor / Site / CRA特化の10分タイマー交渉</div>
+      <div class="topic-chip" id="chip_clarify" onclick="selectTopic('clarify')">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">🔍</span>
+          <span class="topic-chip-title">曖昧な指示の確認</span>
         </div>
-        <button class="btn-gen" style="background:#2563eb;" onclick="generateAndStart('sim')">生成して開始</button>
+        <div class="topic-chip-desc">手戻りを防ぐための明確化・リフレーズ・期日のすり合わせ</div>
       </div>
 
-      <div class="gen-card">
-        <div class="gen-info">
-          <div class="gen-title">✉️ Email / Teams (5問)</div>
-          <div class="gen-desc">迅速でプロフェッショナルな英文メール・チャット</div>
+      <div class="topic-chip" id="chip_issue" onclick="selectTopic('issue')">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">🛡️</span>
+          <span class="topic-chip-title">トラブル対応・持ち帰り</span>
         </div>
-        <button class="btn-gen" style="background:#0284c7;" onclick="generateAndStart('email')">生成して開始</button>
+        <div class="topic-chip-desc">予期せぬトラブル時に即答せず、信頼を保ち期日を約束</div>
+      </div>
+
+      <div class="topic-chip" id="chip_meeting" onclick="selectTopic('meeting')">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">🤝</span>
+          <span class="topic-chip-title">会議進行・議論整理</span>
+        </div>
+        <div class="topic-chip-desc">脱線の軌道修正、発言の要約、決定事項の取り付け</div>
+      </div>
+
+      <div class="topic-chip" id="chip_clinical" onclick="selectTopic('clinical')">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">💊</span>
+          <span class="topic-chip-title">臨床開発・製薬実務</span>
+        </div>
+        <div class="topic-chip-desc">プロトコル改訂、症例登録、SAE報告、監査CAPA対応</div>
+      </div>
+
+      <div class="topic-chip" id="chip_negotiation" onclick="selectTopic('negotiation')">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">⚖️</span>
+          <span class="topic-chip-title">タフな交渉・利害調整</span>
+        </div>
+        <div class="topic-chip-desc">妥協案（Give & Take）、決断を先延ばしする上長へのプッシュ</div>
+      </div>
+
+      <div class="topic-chip" id="chip_all" onclick="selectTopic('all')" style="grid-column: span 2;">
+        <div class="topic-chip-head">
+          <span class="topic-chip-icon">🎲</span>
+          <span class="topic-chip-title">おまかせ選定（全トピックからランダム出題）</span>
+        </div>
+        <div class="topic-chip-desc">日々の総合力トレーニング。全カテゴリからAIがバランスよく出題</div>
       </div>
     </div>
 
-    <button class="btn-next" style="background:#059669; padding:14px; font-size:14px;" onclick="switchTab('play')">
+    <div class="topic-selector-title">
+      <span>⚙️ トレーニング形式</span>
+    </div>
+    <div class="mode-pill-group">
+      <div class="mode-pill active" id="pill_quiz" onclick="selectMode('quiz')">🎯 口頭即答クイズ</div>
+      <div class="mode-pill" id="pill_sim" onclick="selectMode('sim')">🧑‍💼 交渉・会議Sim</div>
+      <div class="mode-pill" id="pill_email" onclick="selectMode('email')">✉️ Email / Teams</div>
+    </div>
+
+    <button class="btn-targeted-start" id="btnStartTargeted" onclick="startTargetedSession()">
+      <span id="btnStartTargetedText">🚀 「納期・スコープ交渉」でレッスン＆アウトプットを開始</span>
+      <span class="btn-targeted-start-sub">型インプット ➔ 中学単語の組み合わせで実践 (全5問)</span>
+    </button>
+
+    <button class="btn-next" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:12px; font-size:13px;" onclick="switchTab('play')">
       ▶️ 読み込み済みのクイズを再開する
     </button>
   </div>
@@ -496,8 +769,8 @@
     <!-- AI問題生成中ローディングインジケーター -->
     <div id="playLoadingArea" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 32px 20px; text-align: center; margin-bottom: 16px;">
       <div style="font-size: 34px; animation: genPulse 1.4s infinite ease-in-out;">🤖</div>
-      <div style="font-size: 15px; font-weight: 800; color: #1e40af; margin-top: 10px;" id="genLoadingTitle">AIが臨床試験シナリオを生成中...</div>
-      <div style="font-size: 12px; color: #3b82f6; margin-top: 4px;" id="genLoadingSub">全5ステージの会話・実践的Plain English選択肢・解説を作成しています</div>
+      <div style="font-size: 15px; font-weight: 800; color: #1e40af; margin-top: 10px;" id="genLoadingTitle">AIがビジネスシナリオを生成中...</div>
+      <div style="font-size: 12px; color: #3b82f6; margin-top: 4px;" id="genLoadingSub">全5ステージの会話・非ネイティブ向けPlain English選択肢・解説を作成しています</div>
       <div style="margin: 16px auto 0 auto; max-width: 220px; background: #dbeafe; height: 6px; border-radius: 9999px; overflow: hidden; position: relative;">
         <div style="width: 50%; height: 100%; background: #2563eb; border-radius: 9999px; animation: genShimmer 1.5s infinite ease-in-out;"></div>
       </div>
@@ -506,13 +779,13 @@
     <div id="playStageArea">
     <div id="simHeader" style="display:none;">
       <div class="role-card">
-        <div class="role-head"><span>YOUR ROLE: CLINICAL TRIAL MANAGER</span><span id="simTimer">10:00</span></div>
+        <div class="role-head"><span>YOUR ROLE: GLOBAL PROJECT LEAD</span><span id="simTimer">10:00</span></div>
         <div class="role-title" id="simMission">Today's Mission</div>
-        <div class="deadline" id="simDeadline">Sponsor meetingまでに対応してください</div>
+        <div class="deadline" id="simDeadline">Global Stakeholder Meetingまでに合意を取り付けてください</div>
         <div class="scenario-tags">
-          <span class="scenario-tag">Sponsor</span>
-          <span class="scenario-tag">CRA</span>
-          <span class="scenario-tag">Site</span>
+          <span class="scenario-tag">Global HQ</span>
+          <span class="scenario-tag">Stakeholder</span>
+          <span class="scenario-tag">Cross-Team</span>
         </div>
       </div>
     </div>
@@ -531,34 +804,62 @@
     </div>
 
     <div class="ai-card">
-      <div class="ai-name" id="aiName">...</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="ai-name" id="aiName">...</div>
+        <button class="micro-btn" style="padding:2px 8px; font-size:11px; background:#fff;" onclick="speakAiSpeech()">🔊 音声を聴く</button>
+      </div>
       <div class="ai-text" id="aiResponseEn">...</div>
       <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">...</div>
     </div>
 
+    <!-- 【レッスン / インプット】本日の重要フレーズ（型 ＋ 中学単語の組み合わせ） -->
+    <div class="lesson-pattern-card" id="lessonCard">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="lesson-badge">💡 本日の型 (Key Pattern)</span>
+        <button class="micro-btn" style="padding:3px 8px; font-size:11px; background:#fff; border-color:#86efac; color:#166534;" onclick="speakPattern()">🔊 型を聴く</button>
+      </div>
+      <div class="pattern-formula" id="lessonPatternFormula">I understand the urgency, but we need to [verb]...</div>
+      <div class="pattern-jp" id="lessonPatternJp">緊急性は理解していますが、〜する必要があります…</div>
+      
+      <div class="pattern-parts-box">
+        <span style="font-size:14px;">🧩</span>
+        <div>
+          <span style="font-weight:bold; color:#047857;">組み合わせる中学単語パーツ:</span><br>
+          <span id="lessonPartsHint">"review our current workload" (現在の業務量を見直す) を組み合わせるだけ！</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【アウトプット / チャレンジ】声に出してみよう -->
     <div class="guide-card">
-      <div style="font-size: 11px; color: #64748b; font-weight: bold;">あなたのミッション</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size: 11px; color: #64748b; font-weight: bold;">🎯 あなたのミッション</span>
+        <span style="font-size: 10px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:bold;">型＋パーツで即答</span>
+      </div>
       <div style="font-size: 14px; font-weight: bold; margin: 6px 0;" id="japaneseGuide">...</div>
       
-      <button class="hint-btn" id="hintToggleBtn" onclick="toggleHint()">💡 使いたい表現のヒントを表示</button>
-      <div class="weapon-card" id="targetPhrase">...</div>
-      
-      <button class="save-phrase-btn" onclick="saveCurrentPhrase()">⭐ この重要フレーズをストック</button>
       <div class="voice-row">
-        <button class="micro-btn" onclick="speakTarget()">🔊 Targetを聞く</button>
         <button class="micro-btn record-btn" id="recordBtn" onclick="toggleRecording()">🎙️ 自分で話す</button>
+        <button class="micro-btn" onclick="speakTarget()">🔊 模範解答を聴く</button>
       </div>
 
       <div class="word-feedback-box" id="wordFeedbackBox"></div>
 
-      <div class="confidence" id="confidenceBox">
+      <!-- シンキング＆答え合わせトリガー -->
+      <div id="thinkingBox" class="thinking-box">
+        <div style="font-size:12px; color:#475569; margin-bottom:8px;">💡 上の型とパーツを組み合わせて声に出せましたか？</div>
+        <button class="btn-reveal-choices" onclick="revealChoices()">🗣️ 声に出した！ 3択で答え合わせ ➔</button>
+        <div style="font-size:11px; color:#94a3b8; margin-top:8px; cursor:pointer;" onclick="revealChoices()">（最初から選択肢を見る）</div>
+      </div>
+
+      <div class="confidence" id="confidenceBox" style="display:none;">
         <button onclick="setConfidence(1)">😰 難しい</button>
         <button onclick="setConfidence(2)">😐 普通</button>
         <button onclick="setConfidence(3)">😎 余裕</button>
       </div>
     </div>
 
-    <div id="choiceSection" class="choice-container">
+    <div id="choiceSection" class="choice-container" style="display:none;">
       <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
       <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
       <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
@@ -567,6 +868,7 @@
     <div class="result-card" id="resultCard">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span class="status-tag" id="statusBadge">PERFECT</span>
+        <button class="micro-btn" style="padding:4px 8px; font-size:11px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="saveCurrentPhrase()">⭐ このフレーズを保存</button>
       </div>
       <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
       <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
@@ -583,6 +885,31 @@
       <div class="boss-sub">1問だけ。Sponsorへの報告を、最もプロフェッショナルに返せるか？</div>
       <button class="btn-next" style="margin-top:8px;background:#9a3412" onclick="launchBoss()">⚡ Boss問題に挑戦</button>
     </div>
+    </div>
+  </div>
+
+  <!-- 3. セッション完了サマリーモーダル -->
+  <div class="session-modal-backdrop" id="sessionCompleteModal">
+    <div class="session-modal-content">
+      <div style="text-align:center; margin-bottom:14px;">
+        <div style="font-size:36px;">🎉</div>
+        <div style="font-size:17px; font-weight:800; color:#1e293b; margin-top:6px;">全5ステージ完了！</div>
+        <div style="font-size:12px; color:#64748b; margin-top:2px;" id="modalScoreText">正答率: 100% | 連続学習記録更新！</div>
+      </div>
+
+      <div style="font-size:12px; font-weight:bold; color:#334155; margin-bottom:8px;">💡 本日習得した5つの武器（型）:</div>
+      <div id="modalPatternList" style="margin-bottom:14px;">
+      </div>
+
+      <button class="btn-next" style="background:#f59e0b; margin-bottom:8px;" onclick="saveAllSessionPhrases()">
+        ⭐ 5つの重要フレーズをまとめてストック
+      </button>
+      <button class="btn-next" style="background:#2563eb; margin-bottom:8px;" onclick="restartCurrentSession()">
+        🔁 このコースをもう一度復習する
+      </button>
+      <button class="btn-next" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;" onclick="closeSessionModalAndGoHome()">
+        🏠 ホームに戻って新しいトピックを選ぶ
+      </button>
     </div>
   </div>
 
@@ -673,6 +1000,51 @@
   let handsFreeIndex = 0;
   let speechRate = 1.0;
 
+  // トピック＆レッスン選択ステート
+  let selectedTopic = 'pushback';
+  let selectedMode = 'quiz';
+  let choicesRevealed = false;
+
+  const TOPIC_NAMES = {
+    pushback: '納期・スコープ交渉',
+    clarify: '曖昧な指示の確認',
+    issue: 'トラブル対応・持ち帰り',
+    meeting: '会議進行・議論整理',
+    clinical: '臨床開発・製薬実務',
+    negotiation: 'タフな交渉・利害調整',
+    all: 'おまかせ選定'
+  };
+
+  function selectTopic(topicKey) {
+    selectedTopic = topicKey;
+    document.querySelectorAll('.topic-chip').forEach(el => el.classList.remove('active'));
+    const chip = document.getElementById(`chip_${topicKey}`);
+    if (chip) chip.classList.add('active');
+    updateHomeActionPreview();
+  }
+
+  function selectMode(modeKey) {
+    selectedMode = modeKey;
+    document.querySelectorAll('.mode-pill').forEach(el => el.classList.remove('active'));
+    const pill = document.getElementById(`pill_${modeKey}`);
+    if (pill) pill.classList.add('active');
+    updateHomeActionPreview();
+  }
+
+  function updateHomeActionPreview() {
+    const textEl = document.getElementById('btnStartTargetedText');
+    if (textEl) {
+      const topicTitle = TOPIC_NAMES[selectedTopic] || '選択トピック';
+      textEl.innerText = `🚀 「${topicTitle}」でレッスン＆アウトプットを開始`;
+    }
+  }
+
+  function startTargetedSession() {
+    setTrainingMode(selectedMode);
+    switchTab('play');
+    downloadDailyScenarios(selectedTopic);
+  }
+
   // 耳トレ用ステート
   let isMaskEn = false;
   let isMaskJp = false;
@@ -711,7 +1083,7 @@
   }
 
   function getModeLabel(mode) {
-    const labels = { quiz: '🎯 口頭クイズ', sim: '🧑‍💼 CTM Sim', email: '✉️ Email/Teams' };
+    const labels = { quiz: '🎯 口頭クイズ', sim: '🧑‍💼 交渉Sim', email: '✉️ Email/Teams' };
     return labels[mode] || '🎯 口頭クイズ';
   }
 
@@ -1030,7 +1402,7 @@
   function generateAndStart(selectedMode) {
     setTrainingMode(selectedMode);
     switchTab('play');
-    downloadDailyScenarios();
+    downloadDailyScenarios(selectedTopic);
   }
 
   function getFallbackScenarios(mode) {
@@ -1041,6 +1413,9 @@
           ai_name: "Sponsor (Email)",
           ai_en: "Subject: Urgent: Site 101 Protocol Deviation Inquiry",
           ai_jp: "件名: 緊急: Site 101プロトコル逸脱に関する問い合わせ",
+          key_pattern: "I am looking into [noun] and will [verb] by [time]...",
+          key_pattern_jp: "〜を調査中であり、[時間]までに[対応]いたします…",
+          parts_hint: "\"this matter\" と \"send an update by EOD today\" を組み合わせるだけ！",
           guide: "（Teams/メール返信）受領を確認し、調査のうえ本日中にメールで回答する旨を伝えてください。",
           target: "Thank you. I am looking into this and will send an update by EOD today.",
           choices: [
@@ -1057,6 +1432,9 @@
           ai_name: "Sponsor (Director)",
           ai_en: "We noticed the site initiation for Site 102 is delayed. What is your plan?",
           ai_jp: "Site 102の立ち上げが遅れています。どのような計画ですか？",
+          key_pattern: "I will check [noun] and get back to you by [time]...",
+          key_pattern_jp: "〜を確認し、[時間]までに折り返しご連絡します…",
+          parts_hint: "\"the status\" と \"by Friday\" (金曜までに) を組み合わせるだけ！",
           guide: "（状況確認と期限提示）進捗を確認し、金曜日までに最新の予定をお伝えします。",
           target: "I will check the status and get back to you by Friday.",
           choices: [
@@ -1073,6 +1451,9 @@
           ai_name: "Rajesh (Tech Lead)",
           ai_en: "Tomorrow's deployment is completely impossible. My team is packed.",
           ai_jp: "明日までの対応は完全に不可能です。チームは手一杯です。",
+          key_pattern: "I totally see your point, but [clause]...",
+          key_pattern_jp: "おっしゃることは十分理解できますが、〜です…",
+          parts_hint: "\"the deadline is Friday\" (締切は金曜です) を組み合わせるだけ！",
           guide: "（相手の話を受け止めつつ否定する）おっしゃることは分かりますが、締切は金曜です",
           target: "I totally see your point, but the deadline is Friday.",
           choices: [
@@ -1126,20 +1507,21 @@
     }
   }
 
-  async function downloadDailyScenarios() {
+  async function downloadDailyScenarios(topic = selectedTopic) {
     const loadingArea = document.getElementById('playLoadingArea');
     const stageArea = document.getElementById('playStageArea');
     const genTitle = document.getElementById('genLoadingTitle');
     const genSub = document.getElementById('genLoadingSub');
 
+    const topicLabel = TOPIC_NAMES[topic] || 'ビジネス英会話';
     if (loadingArea) {
       loadingArea.style.display = 'block';
-      if (genTitle) genTitle.innerText = `Gemini AIが[${getModeLabel(trainingMode)}]コースを生成中...`;
-      if (genSub) genSub.innerText = '実務に即した臨床試験シナリオ（全5ステージ）を準備しています';
+      if (genTitle) genTitle.innerText = `Gemini AIが【${topicLabel}】レッスン＆問題を生成中...`;
+      if (genSub) genSub.innerText = '重要フレーズの型・中学パーツ・全5ステージの会話と解説を構成しています';
     }
     if (stageArea) stageArea.style.display = 'none';
 
-    toast(`⏳ AIが本日の[${getModeLabel(trainingMode)}]問題セットを生成中...`);
+    toast(`⏳ AIが【${topicLabel}】コースを生成中...`);
 
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const excludeTopics = history.flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
@@ -1148,7 +1530,7 @@
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: trainingMode, excludeTopics: excludeTopics })
+        body: JSON.stringify({ mode: trainingMode, topic: topic, excludeTopics: excludeTopics })
       });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
@@ -1160,8 +1542,10 @@
       saveScenariosToHistory(data);
       scenarios = data;
       currentStageIndex = 0;
+      sessionCorrect = 0;
+      sessionAnswered = 0;
       
-      toast(`🎯 AIが新しい[${getModeLabel(trainingMode)}]コース(全5ステージ)を生成しました！`);
+      toast(`🎯 AIが「${topicLabel}」(全5ステージ)を生成しました！`);
     } catch (e) {
       console.warn("API取得に失敗したため、バックアップ問題を読み込みます:", e.message);
       
@@ -1170,6 +1554,8 @@
 
       scenarios = fallbackData;
       currentStageIndex = 0;
+      sessionCorrect = 0;
+      sessionAnswered = 0;
 
       toast("💡 バックアップコースを読み込みました！");
     } finally {
@@ -1219,13 +1605,29 @@
     document.getElementById('aiName').innerText = data.ai_name || "Colleague";
     document.getElementById('aiResponseEn').innerText = `"${data.ai_en || ''}"`;
     document.getElementById('aiResponseJp').innerText = `（${data.ai_jp || ''}）`;
+    
+    // レッスン型 & 単語パーツの反映
+    const patternEl = document.getElementById('lessonPatternFormula');
+    const patternJpEl = document.getElementById('lessonPatternJp');
+    const partsHintEl = document.getElementById('lessonPartsHint');
+    if (patternEl) patternEl.innerText = data.key_pattern || "I see your point, but we need to [verb]...";
+    if (patternJpEl) patternJpEl.innerText = data.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります…";
+    if (partsHintEl) partsHintEl.innerText = data.parts_hint || "中学英単語のパーツを組み合わせて声に出してみましょう！";
+
     document.getElementById('japaneseGuide').innerText = data.guide || '';
-    document.getElementById('targetPhrase').innerText = `★ ヒント: ${data.target || ''}`;
 
-    document.getElementById('targetPhrase').style.display = 'none';
-    document.getElementById('hintToggleBtn').innerText = "💡 使いたい表現のヒントを表示";
+    // シンキング＆答え合わせの初期状態リセット
+    choicesRevealed = false;
+    const thinkingBox = document.getElementById('thinkingBox');
+    const choiceSection = document.getElementById('choiceSection');
+    const resultCard = document.getElementById('resultCard');
+    const confidenceBox = document.getElementById('confidenceBox');
 
-    document.getElementById('resultCard').style.display = 'none';
+    if (thinkingBox) thinkingBox.style.display = 'block';
+    if (choiceSection) choiceSection.style.display = 'none';
+    if (resultCard) resultCard.style.display = 'none';
+    if (confidenceBox) confidenceBox.style.display = 'none';
+
     document.getElementById('wordFeedbackBox').style.display = 'none';
     confidenceScore = 0;
     document.querySelectorAll('#confidenceBox button').forEach(b => b.classList.remove('selected'));
@@ -1250,6 +1652,30 @@
 
     updateDashboard();
     speakText(data.ai_en);
+  }
+
+  function revealChoices() {
+    choicesRevealed = true;
+    const thinkingBox = document.getElementById('thinkingBox');
+    const choiceSection = document.getElementById('choiceSection');
+    const confidenceBox = document.getElementById('confidenceBox');
+    if (thinkingBox) thinkingBox.style.display = 'none';
+    if (choiceSection) choiceSection.style.display = 'flex';
+    if (confidenceBox) confidenceBox.style.display = 'flex';
+  }
+
+  function speakPattern() {
+    if (!scenarios || !scenarios[currentStageIndex]) return;
+    const pattern = scenarios[currentStageIndex].key_pattern;
+    if (pattern) {
+      const cleanPattern = pattern.replace(/\[.*?\]/g, 'something');
+      speakText(cleanPattern);
+    }
+  }
+
+  function speakAiSpeech() {
+    if (!scenarios || !scenarios[currentStageIndex]) return;
+    speakText(scenarios[currentStageIndex].ai_en);
   }
 
   function renderScript() {
@@ -1619,17 +2045,72 @@
   function nextStage() {
     if (!scenarios.length) return;
     if (currentStageIndex >= scenarios.length - 1) {
-      const pct = sessionAnswered ? Math.round(sessionCorrect/sessionAnswered*100) : 0;
-      toast(`🎉 本日の15分ミッション完了！ 正答率 ${pct}% (Streak更新)`);
-      currentStageIndex = 0;
-      reviewMode = false;
-      combo = 0;
-      setTimeout(loadStage, 800);
+      showSessionSummary();
       return;
     }
     currentStageIndex++;
     loadStage();
     if (isAutoPlay) playCurrentAudio();
+  }
+
+  function showSessionSummary() {
+    const pct = sessionAnswered ? Math.round(sessionCorrect / sessionAnswered * 100) : 100;
+    const modal = document.getElementById('sessionCompleteModal');
+    const scoreText = document.getElementById('modalScoreText');
+    const list = document.getElementById('modalPatternList');
+
+    if (scoreText) {
+      scoreText.innerText = `正答率: ${pct}% | 正解: ${sessionCorrect}/${sessionAnswered} | 連続学習記録更新！`;
+    }
+
+    if (list) {
+      list.innerHTML = scenarios.map((s, idx) => `
+        <div class="summary-pattern-item">
+          <div style="font-size:10px; color:#2563eb; font-weight:bold;">STAGE ${idx + 1}</div>
+          <div class="summary-pattern-en">${s.key_pattern || s.target}</div>
+          <div class="summary-pattern-jp">${s.key_pattern_jp || s.guide}</div>
+        </div>
+      `).join('');
+    }
+
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function saveAllSessionPhrases() {
+    if (!scenarios || scenarios.length === 0) return;
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    let addedCount = 0;
+
+    scenarios.forEach(s => {
+      if (s.target && !library.some(item => item.target === s.target)) {
+        library.push({
+          id: Date.now() + Math.random(),
+          target: s.target,
+          guide: `${s.key_pattern || ''} (${s.guide || ''})`,
+          ai_en: s.ai_en
+        });
+        addedCount++;
+      }
+    });
+
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    toast(`⭐ ${addedCount}件のフレーズをライブラリに保存しました！`);
+  }
+
+  function restartCurrentSession() {
+    const modal = document.getElementById('sessionCompleteModal');
+    if (modal) modal.style.display = 'none';
+    currentStageIndex = 0;
+    sessionCorrect = 0;
+    sessionAnswered = 0;
+    loadStage();
+    toast('🔁 コースの最初から復習を開始します');
+  }
+
+  function closeSessionModalAndGoHome() {
+    const modal = document.getElementById('sessionCompleteModal');
+    if (modal) modal.style.display = 'none';
+    switchTab('home');
   }
 
   function speakText(text, onEndCallback = null, lang = 'en-US') {
