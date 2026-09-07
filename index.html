@@ -555,7 +555,7 @@
       border-color: #1d4ed8;
     }
 
-    /* Stage Phase Stepper (Step 1: Lecture -> Step 2: Quiz) */
+    /* Stage Phase Stepper (Step 1: Lecture -> Step 2: Slot Drill -> Step 3: Recall Quiz) */
     .stage-step-bar {
       display: flex;
       background: #f1f5f9;
@@ -569,17 +569,18 @@
       flex: 1;
       border: none;
       background: transparent;
-      padding: 6px 10px;
+      padding: 5px 6px;
       border-radius: 7px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
       color: #64748b;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       transition: all 0.15s ease;
+      white-space: nowrap;
     }
     .stage-step-btn.active {
       background: #ffffff;
@@ -587,16 +588,17 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
     .stage-step-btn .step-num {
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: #e2e8f0;
       color: #475569;
-      font-size: 10px;
+      font-size: 9.5px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
+      flex-shrink: 0;
     }
     .stage-step-btn.active .step-num {
       background: #2563eb;
@@ -1117,6 +1119,158 @@
       color: #991b1b;
     }
 
+    /* PHASE 2: Slot-Swap Drill Styles */
+    .drill-card {
+      background: #ffffff;
+      border: 1.5px solid #dbeafe;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.05);
+    }
+    .drill-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      color: #1d4ed8;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.3px;
+    }
+    .drill-pattern-reminder {
+      background: #f8fafc;
+      border-left: 3px solid #3b82f6;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 6px 0 10px 0;
+      font-size: 11px;
+      color: #334155;
+    }
+    .drill-variation-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      padding: 9px 11px;
+      margin-bottom: 8px;
+    }
+    .drill-variation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .drill-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    .drill-prompt-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .drill-parts-hint {
+      font-size: 11px;
+      color: #0284c7;
+      background: #f0f9ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border: 1px dashed #bae6fd;
+    }
+    .drill-feedback-msg {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 9px;
+      border-radius: 6px;
+      margin-top: 6px;
+      display: none;
+    }
+    .drill-feedback-msg.correct {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      display: block;
+    }
+    .drill-feedback-msg.wrong {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      display: block;
+    }
+
+    /* Survival Test Modal & Pressure Timer Styles */
+    .survival-timer-bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0 12px 0;
+    }
+    .survival-timer-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+      width: 100%;
+      transition: width 1s linear;
+    }
+    .survival-mission-card {
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .survival-mission-jp {
+      font-size: 13.5px;
+      font-weight: 800;
+      line-height: 1.4;
+      color: #f8fafc;
+    }
+    .survival-counterpart-quote {
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin-top: 5px;
+      font-style: italic;
+    }
+    .survival-choice-btn {
+      width: 100%;
+      text-align: left;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 7px;
+      cursor: pointer;
+      transition: all .15s ease;
+      line-height: 1.4;
+    }
+    .survival-choice-btn:hover:not(:disabled) {
+      border-color: #3b82f6;
+      background: #f8fafc;
+    }
+    .survival-choice-btn.correct {
+      background: #f0fdf4 !important;
+      border-color: #22c55e !important;
+      color: #15803d !important;
+      font-weight: 700;
+    }
+    .survival-choice-btn.wrong {
+      background: #fef2f2 !important;
+      border-color: #ef4444 !important;
+      color: #991b1b !important;
+      font-weight: 700;
+    }
+
     @keyframes genPulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.12); opacity: 0.85; }
@@ -1279,15 +1433,19 @@
       </div>
     </div>
 
-    <!-- 2ステップ学習切替ステッパー -->
+    <!-- 3ステップ学習切替ステッパー -->
     <div class="stage-step-bar" id="stageStepBar">
       <button class="stage-step-btn active" id="stepBtnLecture" onclick="switchStagePhase('lecture')">
         <span class="step-num">1</span>
-        <span>💡 レクチャー＆型習得</span>
+        <span>💡 型習得</span>
+      </button>
+      <button class="stage-step-btn" id="stepBtnDrill" onclick="switchStagePhase('drill')">
+        <span class="step-num">2</span>
+        <span>🔄 スロット変形ドリル</span>
       </button>
       <button class="stage-step-btn" id="stepBtnQuiz" onclick="switchStagePhase('quiz')">
-        <span class="step-num">2</span>
-        <span>🎯 実践テスト (想起)</span>
+        <span class="step-num">3</span>
+        <span>🎯 実戦テスト (想起)</span>
       </button>
     </div>
 
@@ -1366,12 +1524,32 @@
         <div class="word-feedback-box" id="wordFeedbackBox" style="display:none; margin-top:4px;"></div>
       </div>
 
-      <button class="btn-proceed-challenge" onclick="switchStagePhase('quiz')">
-        🧠 型をインプットした！ 実戦テストに挑む (型を隠して作成) ➔
+      <button class="btn-proceed-challenge" onclick="switchStagePhase('drill')">
+        🔄 型を応用！スロット変形ドリルに進む ➔
       </button>
     </div>
 
-    <!-- PHASE 2: 実践テスト (型を隠してアクティブリコール / 並び替え & 3択) -->
+    <!-- PHASE 2: スロット変形ドリル (同じ型に別パーツを当てはめる応用反復練習) -->
+    <div id="drillPhaseSection" class="drill-card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span class="drill-badge">🔄 スロット変形ドリル (定着特化)</span>
+        <span style="font-size:11px; color:#64748b; font-weight:700;">パーツを入れ替えて使い倒す</span>
+      </div>
+
+      <div class="drill-pattern-reminder">
+        <b>固定する型:</b> <span id="drillFixedPattern" style="font-weight:800; color:#1d4ed8;">I see your point, but...</span>
+      </div>
+
+      <div id="drillVariationsContainer">
+        <!-- JSで動的にドリル問題を注入 -->
+      </div>
+
+      <button class="btn-proceed-challenge" style="margin-top:10px;" onclick="switchStagePhase('quiz')">
+        🧠 ドリル完了！ 実戦テストに挑む (ヒントなし想起) ➔
+      </button>
+    </div>
+
+    <!-- PHASE 3: 実践テスト (型を隠してアクティブリコール / 並び替え & 3択) -->
     <div id="quizPhaseSection" style="display:none;">
       
       <!-- あなたのミッション -->
@@ -1478,6 +1656,42 @@
       <div class="boss-sub">1問だけ。Sponsorへの報告を、最もプロフェッショナルに返せるか？</div>
       <button class="btn-next" style="margin-top:8px;background:#9a3412" onclick="launchBoss()">⚡ Boss問題に挑戦</button>
     </div>
+    </div>
+  </div>
+
+  <!-- 2.5 最終サバイバルテストモーダル (5フレーズ一気通貫タイムアタック・記憶定着判定) -->
+  <div class="session-modal-backdrop" id="survivalTestModal" style="display:none;">
+    <div class="session-modal-content" style="max-width:540px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div style="font-size:11px; font-weight:800; color:#dc2626; background:#fef2f2; padding:2px 8px; border-radius:5px; border:1px solid #fecaca;">
+          ⚡ 最終関門: サバイバルテスト (ヒントなし)
+        </div>
+        <div style="font-size:12px; font-weight:800; color:#475569;" id="survivalProgressText">1 / 5 問</div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px;">
+        <div style="font-size:15px; font-weight:800; color:#0f172a;">瞬発アウトプット判定</div>
+        <div style="font-size:11.5px; font-weight:700; color:#ef4444;" id="survivalTimerLabel">⏱️ 残り 15秒</div>
+      </div>
+
+      <div class="survival-timer-bar">
+        <div class="survival-timer-fill" id="survivalTimerFill"></div>
+      </div>
+
+      <div class="survival-mission-card">
+        <div class="survival-mission-jp" id="survivalQuestionPrompt">日本語状況ミッション...</div>
+        <div class="survival-counterpart-quote" id="survivalCounterpartQuote">"相手の英語発言..."</div>
+      </div>
+
+      <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">
+        最も適切な Plain English を即座に選択してください：
+      </div>
+
+      <div id="survivalChoicesList">
+        <!-- 3択ボタンが動的に生成されます -->
+      </div>
+
+      <div id="survivalFeedbackBox" style="display:none; padding:8px 10px; border-radius:8px; font-size:12px; font-weight:700; margin-top:8px;"></div>
     </div>
   </div>
 
@@ -2473,27 +2687,215 @@
   let originalChunks = [];
   let chunkPoolItems = [];
   let assembledChunks = [];
-  let stagePhase = 'lecture'; // 'lecture' | 'quiz'
+  let stagePhase = 'lecture'; // 'lecture' | 'drill' | 'quiz'
   let isHintDrawerOpen = false;
+
+  // ドリル状態管理 (各バリエーションの回答プールと組立状態)
+  let drillState = [];
 
   function switchStagePhase(phase) {
     stagePhase = phase;
     const lectureSection = document.getElementById('lecturePhaseSection');
+    const drillSection = document.getElementById('drillPhaseSection');
     const quizSection = document.getElementById('quizPhaseSection');
     const btnLecture = document.getElementById('stepBtnLecture');
+    const btnDrill = document.getElementById('stepBtnDrill');
     const btnQuiz = document.getElementById('stepBtnQuiz');
+
+    if (btnLecture) btnLecture.classList.remove('active');
+    if (btnDrill) btnDrill.classList.remove('active');
+    if (btnQuiz) btnQuiz.classList.remove('active');
 
     if (phase === 'lecture') {
       if (lectureSection) lectureSection.style.display = 'block';
+      if (drillSection) drillSection.style.display = 'none';
       if (quizSection) quizSection.style.display = 'none';
       if (btnLecture) btnLecture.classList.add('active');
-      if (btnQuiz) btnQuiz.classList.remove('active');
+    } else if (phase === 'drill') {
+      if (lectureSection) lectureSection.style.display = 'none';
+      if (drillSection) drillSection.style.display = 'block';
+      if (quizSection) quizSection.style.display = 'none';
+      if (btnDrill) btnDrill.classList.add('active');
+      renderDrillPhaseUI();
     } else {
       if (lectureSection) lectureSection.style.display = 'none';
+      if (drillSection) drillSection.style.display = 'none';
       if (quizSection) quizSection.style.display = 'block';
-      if (btnLecture) btnLecture.classList.remove('active');
       if (btnQuiz) btnQuiz.classList.add('active');
     }
+  }
+
+  function initDrillForCurrentStage(stageData) {
+    const fixedPatternEl = document.getElementById('drillFixedPattern');
+    if (fixedPatternEl) {
+      fixedPatternEl.innerText = stageData?.key_pattern || "I see your point, but...";
+    }
+
+    let variations = stageData?.variations || [];
+    if (!variations || variations.length === 0) {
+      // フォールバック用の即興バリエーション生成
+      const pattern = stageData?.key_pattern || "I see your point, but...";
+      variations = [
+        {
+          variation_prompt_jp: "「おっしゃることは分かりますが、まずチームに確認する必要があります」と言いたい時は？",
+          variation_target: "I see your point, but we need to check with the team first.",
+          variation_hint_parts: '"check with the team" (チームに確認する) を組み合わせる！',
+          variation_chunks: ["I see your point,", "but we need to", "check with the team", "first."]
+        },
+        {
+          variation_prompt_jp: "「おっしゃることは分かりますが、金曜日まで待っていただけますか？」と言いたい時は？",
+          variation_target: "I see your point, but could you wait until Friday?",
+          variation_hint_parts: '"could you wait until Friday" を組み合わせる！',
+          variation_chunks: ["I see your point,", "but could you", "wait until Friday?"]
+        }
+      ];
+    }
+
+    drillState = variations.map((v, vIdx) => {
+      let rawChunks = (v.variation_chunks && v.variation_chunks.length >= 2) 
+        ? [...v.variation_chunks] 
+        : createClientSentenceChunks(v.variation_target || '');
+      if (!rawChunks || rawChunks.length < 2) rawChunks = [v.variation_target || 'Target phrase'];
+      
+      const sanitized = rawChunks.map(c => sanitizeChunkText(c)).filter(Boolean);
+      const chunks = sanitized.length >= 2 ? sanitized : rawChunks;
+
+      const pool = chunks.map((cText, cIdx) => ({ id: cIdx, text: cText, used: false }));
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+
+      return {
+        prompt_jp: v.variation_prompt_jp || "同じ型を別シチュエーションに応用してみましょう：",
+        target: v.variation_target || "",
+        hint_parts: v.variation_hint_parts || "中学パーツを入れ替えるだけ！",
+        originalChunks: chunks,
+        pool: pool,
+        assembled: [],
+        completed: false
+      };
+    });
+  }
+
+  function renderDrillPhaseUI() {
+    const container = document.getElementById('drillVariationsContainer');
+    if (!container) return;
+
+    if (!drillState || drillState.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:#64748b; padding:10px;">ドリル問題の準備中です...</div>';
+      return;
+    }
+
+    container.innerHTML = drillState.map((d, vIdx) => {
+      const isAssembledEmpty = d.assembled.length === 0;
+      const allUsed = d.pool.length > 0 && d.pool.every(i => i.used);
+
+      return `
+        <div class="drill-variation-box" id="drillBox_${vIdx}">
+          <div class="drill-variation-header">
+            <span class="drill-tag">応用ドリル ${vIdx + 1} / ${drillState.length}</span>
+            <button class="micro-btn" style="padding:2px 7px; font-size:10px; background:#f8fafc;" onclick="speakText('${d.target.replace(/'/g, "\\'")}')">🔊 正解を聴く</button>
+          </div>
+          <div class="drill-prompt-text">${escapeHtml(d.prompt_jp)}</div>
+          <div class="drill-parts-hint">🧩 <b>パーツ術ヒント:</b> ${escapeHtml(d.hint_parts)}</div>
+
+          <!-- 組立枠 -->
+          <div class="chunk-assembly-box ${isAssembledEmpty ? '' : 'active'}" style="min-height:44px; margin-bottom:6px;">
+            ${isAssembledEmpty 
+              ? '<span class="assembly-placeholder">（パーツをタップして同じ型で組み立ててください）</span>' 
+              : d.assembled.map((item, aIdx) => `
+                <button class="chunk-chip" onclick="unselectDrillChunk(${vIdx}, ${aIdx})">${escapeHtml(item.text)}</button>
+              `).join('')
+            }
+          </div>
+
+          <!-- 選択肢プール -->
+          <div class="chunk-pool" style="margin-bottom:8px;">
+            ${d.pool.map(item => `
+              <button class="chunk-chip ${item.used ? 'used' : ''}" 
+                onclick="selectDrillChunk(${vIdx}, ${item.id})" 
+                ${item.used || d.completed ? 'disabled' : ''}>
+                ${escapeHtml(item.text)}
+              </button>
+            `).join('')}
+          </div>
+
+          <div style="display:flex; gap:6px;">
+            <button class="btn-check-builder" style="padding:8px; font-size:12.5px;" 
+              id="drillCheckBtn_${vIdx}" 
+              onclick="checkDrillAnswer(${vIdx})" 
+              ${!allUsed || d.completed ? 'disabled' : ''}>
+              ${d.completed ? '✅ 正解クリア！' : 'チェック ➔'}
+            </button>
+            <button class="ctrl-btn" onclick="resetDrillChunks(${vIdx})" ${d.completed ? 'disabled' : ''}>リセット</button>
+          </div>
+
+          <div class="drill-feedback-msg" id="drillFeedback_${vIdx}"></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectDrillChunk(vIdx, chunkId) {
+    const drill = drillState[vIdx];
+    if (!drill || drill.completed) return;
+    const item = drill.pool.find(i => i.id === chunkId);
+    if (!item || item.used) return;
+
+    item.used = true;
+    drill.assembled.push(item);
+    renderDrillPhaseUI();
+  }
+
+  function unselectDrillChunk(vIdx, aIdx) {
+    const drill = drillState[vIdx];
+    if (!drill || drill.completed) return;
+    if (aIdx < 0 || aIdx >= drill.assembled.length) return;
+
+    const item = drill.assembled.splice(aIdx, 1)[0];
+    if (item) item.used = false;
+    renderDrillPhaseUI();
+  }
+
+  function resetDrillChunks(vIdx) {
+    const drill = drillState[vIdx];
+    if (!drill || drill.completed) return;
+    drill.assembled = [];
+    drill.pool.forEach(i => i.used = false);
+    renderDrillPhaseUI();
+  }
+
+  function checkDrillAnswer(vIdx) {
+    const drill = drillState[vIdx];
+    if (!drill) return;
+
+    const userSentence = drill.assembled.map(c => c.text).join(' ').trim();
+    const isOrderCorrect = drill.assembled.every((item, idx) => item.id === idx);
+    const normUser = userSentence.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normTarget = (drill.target || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const correct = isOrderCorrect || (normUser.length > 0 && normUser === normTarget);
+
+    const feedbackEl = document.getElementById(`drillFeedback_${vIdx}`);
+
+    if (correct) {
+      drill.completed = true;
+      awardXP(15, true);
+      toast("🎯 スロット変形クリア！ 型の応用力が身につきました");
+      speakText(drill.target);
+      if (feedbackEl) {
+        feedbackEl.className = 'drill-feedback-msg correct';
+        feedbackEl.innerHTML = `🎉 <b>PERFECT!</b> "${escapeHtml(drill.target)}"`;
+      }
+    } else {
+      awardXP(2, false);
+      toast("💡 語順を再確認してみましょう");
+      if (feedbackEl) {
+        feedbackEl.className = 'drill-feedback-msg wrong';
+        feedbackEl.innerHTML = `❌ 惜しい！ 正解は: "${escapeHtml(drill.target)}"`;
+      }
+    }
+    renderDrillPhaseUI();
   }
 
   function togglePatternHintDrawer() {
@@ -2870,6 +3272,9 @@
 
     // ステップ1（レクチャー＆型習得）から開始
     switchStagePhase('lecture');
+
+    // スロット変形ドリル初期化
+    initDrillForCurrentStage(data);
 
     // チャンクビルダー初期化
     initChunkBuilder(data);
@@ -3377,10 +3782,168 @@
     toast('🔥 Boss Challenge開始！');
   }
 
+  // ----------------------------------------------------
+  // 最終関門: サバイバルテスト (5フレーズ一気通貫・想起タイムアタック)
+  // ----------------------------------------------------
+  let survivalQuestions = [];
+  let currentSurvivalIndex = 0;
+  let survivalCorrectCount = 0;
+  let survivalTimerInterval = null;
+  let survivalTimeLeft = 15;
+  const SURVIVAL_TIME_LIMIT = 15;
+
+  function startSurvivalTest() {
+    if (!scenarios || scenarios.length === 0) {
+      showSessionSummary();
+      return;
+    }
+
+    // 5問をシャッフルして準備
+    survivalQuestions = [...scenarios].sort(() => Math.random() - 0.5);
+    currentSurvivalIndex = 0;
+    survivalCorrectCount = 0;
+
+    const modal = document.getElementById('survivalTestModal');
+    if (modal) modal.style.display = 'flex';
+
+    toast("⚡ 最終関門【サバイバルテスト】開始！ ヒントなしで即座にアウトプットしてください");
+    loadSurvivalQuestion();
+  }
+
+  function loadSurvivalQuestion() {
+    if (currentSurvivalIndex >= survivalQuestions.length) {
+      endSurvivalTest();
+      return;
+    }
+
+    clearInterval(survivalTimerInterval);
+    survivalTimeLeft = SURVIVAL_TIME_LIMIT;
+
+    const q = survivalQuestions[currentSurvivalIndex];
+    const progressEl = document.getElementById('survivalProgressText');
+    const promptEl = document.getElementById('survivalQuestionPrompt');
+    const quoteEl = document.getElementById('survivalCounterpartQuote');
+    const choicesEl = document.getElementById('survivalChoicesList');
+    const feedbackEl = document.getElementById('survivalFeedbackBox');
+    const timerLabel = document.getElementById('survivalTimerLabel');
+    const timerFill = document.getElementById('survivalTimerFill');
+
+    if (progressEl) progressEl.innerText = `${currentSurvivalIndex + 1} / ${survivalQuestions.length} 問`;
+    if (promptEl) promptEl.innerText = `ミッション: ${q.guide || '状況に応じた最適なPlain Englishで即答してください'}`;
+    if (quoteEl) quoteEl.innerText = `相手の発言: "${q.ai_en || '...'}"`;
+    if (feedbackEl) {
+      feedbackEl.style.display = 'none';
+      feedbackEl.innerText = '';
+    }
+
+    if (timerFill) timerFill.style.width = '100%';
+    if (timerLabel) {
+      timerLabel.innerText = `⏱️ 残り ${survivalTimeLeft}秒`;
+      timerLabel.style.color = '#ef4444';
+    }
+
+    // 3択をシャッフル
+    const choices = [...(q.choices || [
+      { text: q.target, type: 'PERFECT', advice: '完璧です' }
+    ])].sort(() => Math.random() - 0.5);
+
+    if (choicesEl) {
+      choicesEl.innerHTML = choices.map((c, idx) => `
+        <button class="survival-choice-btn" id="survivalChoiceBtn_${idx}" onclick="submitSurvivalChoice(${idx})">
+          ${escapeHtml(c.text)}
+        </button>
+      `).join('');
+    }
+
+    // タイムアタックカウントダウン
+    survivalTimerInterval = setInterval(() => {
+      survivalTimeLeft -= 0.1;
+      const pct = Math.max(0, (survivalTimeLeft / SURVIVAL_TIME_LIMIT) * 100);
+      if (timerFill) timerFill.style.width = `${pct}%`;
+      if (timerLabel) timerLabel.innerText = `⏱️ 残り ${Math.ceil(Math.max(0, survivalTimeLeft))}秒`;
+
+      if (survivalTimeLeft <= 0) {
+        clearInterval(survivalTimerInterval);
+        handleSurvivalTimeout();
+      }
+    }, 100);
+  }
+
+  function handleSurvivalTimeout() {
+    const feedbackEl = document.getElementById('survivalFeedbackBox');
+    const q = survivalQuestions[currentSurvivalIndex];
+    if (feedbackEl) {
+      feedbackEl.style.display = 'block';
+      feedbackEl.className = 'drill-feedback-msg wrong';
+      feedbackEl.innerHTML = `⏰ <b>時間切れ！</b> 正解: "${escapeHtml(q.target)}"`;
+    }
+
+    disableSurvivalButtons();
+    setTimeout(() => {
+      currentSurvivalIndex++;
+      loadSurvivalQuestion();
+    }, 1800);
+  }
+
+  function disableSurvivalButtons() {
+    const btns = document.querySelectorAll('.survival-choice-btn');
+    btns.forEach(b => b.disabled = true);
+  }
+
+  function submitSurvivalChoice(choiceIndex) {
+    clearInterval(survivalTimerInterval);
+    const q = survivalQuestions[currentSurvivalIndex];
+    const choices = [...(q.choices || [])];
+    const btn = document.getElementById(`survivalChoiceBtn_${choiceIndex}`);
+    const selectedText = btn ? btn.innerText.trim() : '';
+
+    const isPerfect = selectedText === (q.target || '').trim() || 
+      choices.some(c => c.type === 'PERFECT' && c.text.trim() === selectedText);
+
+    const feedbackEl = document.getElementById('survivalFeedbackBox');
+    disableSurvivalButtons();
+
+    if (isPerfect) {
+      survivalCorrectCount++;
+      awardXP(20, true);
+      if (btn) btn.classList.add('correct');
+      if (feedbackEl) {
+        feedbackEl.style.display = 'block';
+        feedbackEl.className = 'drill-feedback-msg correct';
+        feedbackEl.innerHTML = `🎉 <b>即答クリア！</b> 記憶に定着しています！`;
+      }
+      toast("🎯 サバイバル正解！");
+    } else {
+      awardXP(2, false);
+      if (btn) btn.classList.add('wrong');
+      if (feedbackEl) {
+        feedbackEl.style.display = 'block';
+        feedbackEl.className = 'drill-feedback-msg wrong';
+        feedbackEl.innerHTML = `❌ 惜しい！ 模範: "${escapeHtml(q.target)}"`;
+      }
+      toast("💡 模範表現を確認しましょう");
+    }
+
+    setTimeout(() => {
+      currentSurvivalIndex++;
+      loadSurvivalQuestion();
+    }, 1600);
+  }
+
+  function endSurvivalTest() {
+    clearInterval(survivalTimerInterval);
+    const modal = document.getElementById('survivalTestModal');
+    if (modal) modal.style.display = 'none';
+
+    toast(`🏆 サバイバルテスト完了！ (スコア: ${survivalCorrectCount} / ${survivalQuestions.length})`);
+    showSessionSummary();
+  }
+
   function nextStage() {
     if (!scenarios.length) return;
     if (currentStageIndex >= scenarios.length - 1) {
-      showSessionSummary();
+      // 5問終了時は、即サマリーではなくサバイバルテストへ突入
+      startSurvivalTest();
       return;
     }
     currentStageIndex++;
@@ -3389,21 +3952,29 @@
   }
 
   function showSessionSummary() {
-    const pct = sessionAnswered ? Math.round(sessionCorrect / sessionAnswered * 100) : 100;
+    const totalSurvival = survivalQuestions.length || scenarios.length || 5;
+    const survivalPct = Math.round((survivalCorrectCount / totalSurvival) * 100);
     const modal = document.getElementById('sessionCompleteModal');
     const scoreText = document.getElementById('modalScoreText');
     const list = document.getElementById('modalPatternList');
 
     if (scoreText) {
-      scoreText.innerText = `正答率: ${pct}% | 正解: ${sessionCorrect}/${sessionAnswered} | 連続学習記録更新！`;
+      scoreText.innerHTML = `
+        <div style="font-size:14px; font-weight:800; color:#059669; margin-bottom:2px;">
+          ⚡ サバイバルテスト即答率: ${survivalPct}% (${survivalCorrectCount}/${totalSurvival} 問)
+        </div>
+        <div style="font-size:11.5px; color:#64748b;">
+          型習得 ➔ スロット変形ドリル ➔ 実戦テスト ➔ サバイバル完走！
+        </div>
+      `;
     }
 
     if (list) {
       list.innerHTML = scenarios.map((s, idx) => `
         <div class="summary-pattern-item">
-          <div style="font-size:10px; color:#2563eb; font-weight:bold;">STAGE ${idx + 1}</div>
-          <div class="summary-pattern-en">${s.key_pattern || s.target}</div>
-          <div class="summary-pattern-jp">${s.key_pattern_jp || s.guide}</div>
+          <div style="font-size:10px; color:#2563eb; font-weight:bold;">STAGE ${idx + 1} - 武器（型）</div>
+          <div class="summary-pattern-en">${escapeHtml(s.key_pattern || s.target)}</div>
+          <div class="summary-pattern-jp">${escapeHtml(s.key_pattern_jp || s.guide)}</div>
         </div>
       `).join('');
     }

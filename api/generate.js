@@ -382,7 +382,12 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 11. "counterpart_reaction_en": Realistic brief follow-up response (1-2 sentences) from the counterpart acknowledging, agreeing, or aligning next steps when the user replies with the ideal Plain English response.
 12. "counterpart_reaction_jp": Natural Japanese translation of the counterpart's follow-up reaction.
 13. "email_subject": Realistic corporate subject line (e.g., "Re: Urgent protocol deviation review", "Timeline adjustment request for Site 102").
-14. "choices": Exactly 3 distinct choices:
+14. "variations": Exactly 2 fast slot-swap drill variations for this SAME key pattern so the user immediately learns how to adapt the pattern to other practical situations.
+    - variation_prompt_jp: Japanese situation (e.g. "「チームと相談して明日までに折り返します」と言いたい時は？")
+    - variation_target: Target English using the SAME pattern with simple junior-high parts (e.g. "I will check with my team and get back to you by tomorrow.")
+    - variation_hint_parts: Junior-high English parts hint (e.g. '"my team" と "by tomorrow"')
+    - variation_chunks: 3-4 word/phrase chunks for sentence assembly.
+15. "choices": Exactly 3 distinct choices:
    **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
    - type: "PERFECT"
      text: Natural, concise Plain English using the key pattern and simple junior-high level core vocabulary (e.g. "keep the original deadline first.").
@@ -397,7 +402,7 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 
   const responseSchema = {
     type: Type.ARRAY,
-    description: "Exactly 5 stages of sequential interactive dialogue with key patterns, scrambled chunks, and challenging 3-choice questions",
+    description: "Exactly 5 stages of sequential interactive dialogue with key patterns, slot-swap drill variations, scrambled chunks, and challenging 3-choice questions",
     items: {
       type: Type.OBJECT,
       properties: {
@@ -418,6 +423,24 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
           type: Type.ARRAY,
           items: { type: Type.STRING },
           description: "Target sentence split into 3-5 natural phrase chunks in correct order for sentence scrambling practice"
+        },
+        variations: {
+          type: Type.ARRAY,
+          description: "2 slot-swap practice variations for this key pattern",
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              variation_prompt_jp: { type: Type.STRING, description: "Japanese variation situation mission" },
+              variation_target: { type: Type.STRING, description: "English target sentence applying the same pattern with different parts" },
+              variation_hint_parts: { type: Type.STRING, description: "Junior-high parts hint for variation" },
+              variation_chunks: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "3-4 phrase chunks for variation sentence assembly"
+              }
+            },
+            required: ["variation_prompt_jp", "variation_target", "variation_hint_parts", "variation_chunks"]
+          }
         },
         choices: {
           type: Type.ARRAY,
@@ -478,13 +501,28 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
           throw new Error("Model returned invalid or empty scenario array.");
         }
 
-        // Validate and ensure 5 stages are numbered 1 to 5 with patterns and hints
+        // Validate and ensure 5 stages are numbered 1 to 5 with patterns, variations, and hints
         const formattedScenarios = scenarios.map((sc, idx) => {
           const target = sc.target || (sc.choices && sc.choices.find(c => c.type === 'PERFECT')?.text) || "";
           let chunks = Array.isArray(sc.chunks) && sc.chunks.length >= 2 ? sc.chunks.map(c => c.trim()).filter(Boolean) : [];
           if (chunks.length < 2) {
             chunks = createSentenceChunks(target);
           }
+
+          // Process variations for slot-swap drilling
+          let variations = Array.isArray(sc.variations) && sc.variations.length > 0 ? sc.variations : [];
+          variations = variations.map(v => {
+            let vChunks = Array.isArray(v.variation_chunks) && v.variation_chunks.length >= 2 
+              ? v.variation_chunks.map(c => c.trim()).filter(Boolean) 
+              : createSentenceChunks(v.variation_target || "");
+            return {
+              variation_prompt_jp: v.variation_prompt_jp || "同じ型を使って表現してみましょう：",
+              variation_target: v.variation_target || "",
+              variation_hint_parts: v.variation_hint_parts || "中学英語パーツを入れ替えるだけ！",
+              variation_chunks: vChunks
+            };
+          }).filter(v => v.variation_target);
+
           return {
             stage: idx + 1,
             ai_name: sc.ai_name || "Stakeholder",
@@ -497,6 +535,7 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
             guide: sc.guide || "状況に応じて的確なPlain Englishで返答してください。",
             target: target,
             chunks: chunks,
+            variations: variations,
             counterpart_reaction_en: sc.counterpart_reaction_en || "Understood. That sounds like a reasonable next step. Let's keep each other posted.",
             counterpart_reaction_jp: sc.counterpart_reaction_jp || "承知しました。妥当な進め方ですね。引き続き進捗を共有し合いましょう。",
             email_subject: sc.email_subject || (sc.ai_en?.startsWith("Subject:") ? sc.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update and next steps"),
