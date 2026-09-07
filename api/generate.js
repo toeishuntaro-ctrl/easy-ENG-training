@@ -1,5 +1,41 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
+function createSentenceChunks(sentence) {
+  if (!sentence) return [];
+  const trimmed = sentence.trim();
+  const words = trimmed.split(/\s+/);
+  if (words.length <= 4) return words;
+
+  // If comma exists, try splitting around commas or conjunctions
+  if (trimmed.includes(',')) {
+    const parts = trimmed.split(/(?<=,)\s+/);
+    if (parts.length >= 3 && parts.length <= 5) return parts;
+    if (parts.length === 2) {
+      const res = [];
+      parts.forEach(part => {
+        const subWords = part.split(/\s+/);
+        if (subWords.length > 3) {
+          const mid = Math.ceil(subWords.length / 2);
+          res.push(subWords.slice(0, mid).join(' '));
+          res.push(subWords.slice(mid).join(' '));
+        } else {
+          res.push(part);
+        }
+      });
+      return res;
+    }
+  }
+
+  // Split into 3 to 4 natural rhythm chunks
+  const chunkCount = words.length > 9 ? 4 : 3;
+  const chunkSize = Math.ceil(words.length / chunkCount);
+  const chunks = [];
+  for (let i = 0; i < words.length; i += chunkSize) {
+    chunks.push(words.slice(i, i + chunkSize).join(' '));
+  }
+  return chunks;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -231,21 +267,23 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
 6. "parts_hint": Clear Japanese hint showing the simple junior-high level English parts to insert into the pattern (e.g., '"keep the deadline" (納期を守る) を組み合わせるだけ！', '"my team" と "tomorrow" を組み合わせるだけ！').
 7. "guide": Clear Japanese mission telling the user what message to convey.
 8. "target": The ideal, polished Plain English response formed by the pattern + parts. This MUST match the PERFECT choice.
-9. "choices": Exactly 3 distinct choices:
+9. "chunks": Array of 3 to 5 natural chunks (phrases/meaning blocks) that comprise the "target" sentence in correct order, e.g. ["I understand the urgency,", "but we need to", "review our workload", "first."]. This will be scrambled for sentence-building output practice.
+10. "choices": Exactly 3 distinct choices:
+   **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
    - type: "PERFECT"
-     text: Natural, concise Plain English using the key pattern and simple core vocabulary.
-     advice: Japanese commentary explaining why this pattern is polite, clear, and trusted across global non-native teams.
+     text: Natural, concise Plain English using the key pattern and simple junior-high level core vocabulary (e.g. "keep the original deadline first.").
+     advice: Japanese commentary explaining why this pattern + simple junior-high parts is polite, clear, and trusted across global non-native teams.
    - type: "TOO_COMPLEX"
-     text: Overly verbose, stiff, academic, or unnecessarily complicated English (using stiff vocabulary like "subsequently", "heretofore", "endeavor" instead of clear plain verbs).
-     advice: Japanese commentary pointing out that the language is too stiff/wordy and explaining how to simplify it.
+     text: Uses the SAME pattern, but finished with overly verbose, stiff, academic, or unnecessarily complicated words (e.g. "prioritize the predetermined chronological milestone per our charter.").
+     advice: Japanese commentary pointing out that while the opening is good, the vocabulary is too stiff/wordy for clear multinational communication.
    - type: "TOO_DIRECT"
-     text: Blunt, aggressive, or careless phrasing that lacks diplomatic cushion or courtesy (e.g., "You must do this", "No, wait until Friday", "That is your problem").
-     advice: Japanese commentary explaining why this sounds rude or confrontational and damages trust with international colleagues.
+     text: Uses the SAME pattern, but finished with blunt, aggressive, or careless phrasing that lacks diplomatic partnership (e.g. "reject your impossible request immediately.").
+     advice: Japanese commentary explaining why this phrasing sounds confrontational and damages trust with international colleagues.
 `;
 
   const responseSchema = {
     type: Type.ARRAY,
-    description: "Exactly 5 stages of sequential interactive dialogue with key patterns and simple parts hints",
+    description: "Exactly 5 stages of sequential interactive dialogue with key patterns, scrambled chunks, and challenging 3-choice questions",
     items: {
       type: Type.OBJECT,
       properties: {
@@ -258,9 +296,14 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
         parts_hint: { type: Type.STRING, description: "Junior-high English parts hint to plug into the pattern" },
         guide: { type: Type.STRING, description: "Japanese mission instructions for the user" },
         target: { type: Type.STRING, description: "Target Plain English phrase (ideal response)" },
+        chunks: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+          description: "Target sentence split into 3-5 natural phrase chunks in correct order for sentence scrambling practice"
+        },
         choices: {
           type: Type.ARRAY,
-          description: "3 choices: one PERFECT, one TOO_COMPLEX, one TOO_DIRECT",
+          description: "3 choices: one PERFECT, one TOO_COMPLEX, one TOO_DIRECT. All 3 must use the same key pattern.",
           items: {
             type: Type.OBJECT,
             properties: {
@@ -318,18 +361,26 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
         }
 
         // Validate and ensure 5 stages are numbered 1 to 5 with patterns and hints
-        const formattedScenarios = scenarios.map((sc, idx) => ({
-          stage: idx + 1,
-          ai_name: sc.ai_name || "Stakeholder",
-          ai_en: sc.ai_en || "",
-          ai_jp: sc.ai_jp || "",
-          key_pattern: sc.key_pattern || "I see your point, but we need to...",
-          key_pattern_jp: sc.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります",
-          parts_hint: sc.parts_hint || "中学単語を当てはめて声に出してみましょう！",
-          guide: sc.guide || "状況に応じて的確なPlain Englishで返答してください。",
-          target: sc.target || (sc.choices && sc.choices.find(c => c.type === 'PERFECT')?.text) || "",
-          choices: Array.isArray(sc.choices) ? sc.choices : []
-        }));
+        const formattedScenarios = scenarios.map((sc, idx) => {
+          const target = sc.target || (sc.choices && sc.choices.find(c => c.type === 'PERFECT')?.text) || "";
+          let chunks = Array.isArray(sc.chunks) && sc.chunks.length >= 2 ? sc.chunks.map(c => c.trim()).filter(Boolean) : [];
+          if (chunks.length < 2) {
+            chunks = createSentenceChunks(target);
+          }
+          return {
+            stage: idx + 1,
+            ai_name: sc.ai_name || "Stakeholder",
+            ai_en: sc.ai_en || "",
+            ai_jp: sc.ai_jp || "",
+            key_pattern: sc.key_pattern || "I see your point, but we need to...",
+            key_pattern_jp: sc.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります",
+            parts_hint: sc.parts_hint || "中学単語を当てはめて声に出してみましょう！",
+            guide: sc.guide || "状況に応じて的確なPlain Englishで返答してください。",
+            target: target,
+            chunks: chunks,
+            choices: Array.isArray(sc.choices) ? sc.choices : []
+          };
+        });
 
         console.log(`[AI Generate] Successfully generated ${formattedScenarios.length} stages using ${modelName}`);
         return res.status(200).json(formattedScenarios);

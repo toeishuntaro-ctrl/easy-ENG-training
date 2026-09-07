@@ -644,6 +644,157 @@
       margin-top: 2px;
     }
 
+    /* Sentence Builder / Chunk Scramble Styles */
+    .builder-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+    .assembly-box {
+      min-height: 64px;
+      background: #f8fafc;
+      border: 2px dashed #94a3b8;
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+      transition: all .15s ease;
+    }
+    .assembly-box.active {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+    .assembly-placeholder {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      width: 100%;
+      user-select: none;
+    }
+    .chunk-chip {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: all .12s ease;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .chunk-chip:active {
+      transform: scale(0.96);
+    }
+    .assembly-box .chunk-chip {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1d4ed8;
+      box-shadow: 0 1px 2px rgba(37,99,235,0.15);
+    }
+    .assembly-box .chunk-chip::after {
+      content: " ✕";
+      font-size: 10px;
+      margin-left: 5px;
+      opacity: 0.6;
+    }
+    .chunk-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      justify-content: center;
+    }
+    .chunk-pool .chunk-chip.used {
+      opacity: 0.22;
+      pointer-events: none;
+      border-style: dashed;
+      transform: scale(0.94);
+    }
+    .assembly-ctrl-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .ctrl-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+    }
+    .ctrl-btn:hover {
+      background: #e2e8f0;
+    }
+    .btn-check-builder {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(16,185,129,0.25);
+      transition: all .15s ease;
+    }
+    .btn-check-builder:disabled {
+      background: #cbd5e1;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-check-builder:not(:disabled):active {
+      transform: scale(0.98);
+    }
+
+    /* Nuance Comparison Box in Result Card */
+    .comparison-box {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .comparison-item {
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .comparison-item.perfect {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .comparison-item.complex {
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      color: #854d0e;
+    }
+    .comparison-item.direct {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
     @keyframes genPulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.12); opacity: 0.85; }
@@ -845,32 +996,61 @@
 
       <div class="word-feedback-box" id="wordFeedbackBox"></div>
 
-      <!-- シンキング＆答え合わせトリガー -->
-      <div id="thinkingBox" class="thinking-box">
-        <div style="font-size:12px; color:#475569; margin-bottom:8px;">💡 上の型とパーツを組み合わせて声に出せましたか？</div>
-        <button class="btn-reveal-choices" onclick="revealChoices()">🗣️ 声に出した！ 3択で答え合わせ ➔</button>
-        <div style="font-size:11px; color:#94a3b8; margin-top:8px; cursor:pointer;" onclick="revealChoices()">（最初から選択肢を見る）</div>
-      </div>
-
-      <div class="confidence" id="confidenceBox" style="display:none;">
+      <div class="confidence" id="confidenceBox" style="display:none; margin-top:8px;">
         <button onclick="setConfidence(1)">😰 難しい</button>
         <button onclick="setConfidence(2)">😐 普通</button>
         <button onclick="setConfidence(3)">😎 余裕</button>
       </div>
     </div>
 
-    <div id="choiceSection" class="choice-container" style="display:none;">
-      <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
-      <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
-      <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
+    <!-- アウトプット回答エリア (並び替え / 3択 切替可能) -->
+    <div id="outputArea" style="margin-top: 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12px; font-weight:800; color:#1e293b;" id="outputSectionTitle">🧩 並び替えて文章を作成</span>
+        <button class="ctrl-btn" id="btnToggleOutputMode" onclick="toggleAnswerMode()">📝 3択モードで解く</button>
+      </div>
+
+      <!-- A. チャンク並び替えビルダー -->
+      <div id="chunkBuilderSection" class="builder-card">
+        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">タップして順番にパーツを並べてください：</div>
+        
+        <div class="assembly-box" id="assemblyBox">
+          <span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成させましょう</span>
+        </div>
+
+        <div class="assembly-ctrl-row">
+          <button class="ctrl-btn" onclick="undoLastChunk()">⌫ 1つ戻す</button>
+          <button class="ctrl-btn" onclick="resetChunks()">↺ リセット</button>
+        </div>
+
+        <div class="chunk-pool" id="chunkPool"></div>
+
+        <button class="btn-check-builder" id="btnCheckBuilder" onclick="submitBuilderAnswer()" disabled>
+          🚀 英文を確定して判定する
+        </button>
+      </div>
+
+      <!-- B. 3択モード (すべて同じ型を使用し、中学英語パーツの違いを吟味) -->
+      <div id="choiceSection" class="choice-container" style="display:none;">
+        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">すべて同じ「型」から始まります。非ネイティブ相手に最も明快で信頼される組み合わせを選んでください：</div>
+        <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
+        <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
+        <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
+      </div>
     </div>
 
-    <div class="result-card" id="resultCard">
+    <div class="result-card" id="resultCard" style="display:none;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span class="status-tag" id="statusBadge">PERFECT</span>
         <button class="micro-btn" style="padding:4px 8px; font-size:11px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="saveCurrentPhrase()">⭐ このフレーズを保存</button>
       </div>
-      <p style="font-size: 13px; margin: 10px 0 0 0;" id="adviceText"></p>
+      
+      <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-top: 8px; padding: 6px 8px; background:#fff; border-radius:6px; border:1px solid #cbd5e1;" id="resultFullSentence"></div>
+      <p style="font-size: 13px; margin: 8px 0; color: #334155; line-height: 1.45;" id="adviceText"></p>
+
+      <!-- 表現のニュアンス比較コーナー -->
+      <div class="comparison-box" id="comparisonBox"></div>
+
       <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
     </div>
 
@@ -1418,10 +1598,11 @@
           parts_hint: "\"this matter\" と \"send an update by EOD today\" を組み合わせるだけ！",
           guide: "（Teams/メール返信）受領を確認し、調査のうえ本日中にメールで回答する旨を伝えてください。",
           target: "Thank you. I am looking into this and will send an update by EOD today.",
+          chunks: ["Thank you.", "I am looking into this", "and will send an update", "by EOD today."],
           choices: [
-            { type: "PERFECT", text: "Thank you. I am looking into this and will send an update by EOD today.", advice: "完璧です！受領・調査中・本日中（EOD）の期限が明確に書かれています。" },
-            { type: "TOO_COMPLEX", text: "We acknowledge receipt of your correspondence and shall endeavor to execute a thorough inquiry.", advice: "メールの文面として硬すぎます。" },
-            { type: "TOO_DIRECT", text: "Got it. I will answer later when I am free.", advice: "ビジネスメールとして無骨で不適切です。" }
+            { type: "PERFECT", text: "Thank you. I am looking into this and will send an update by EOD today.", advice: "完璧です！受領・調査中・本日中（EOD）の期限が中学生単語で明確に書かれています。" },
+            { type: "TOO_COMPLEX", text: "Thank you. I am looking into this matter comprehensively and shall endeavor to dispatch correspondence by the predetermined close of business.", advice: "同じ型から始まっていますが、comprehensively, endeavor, dispatch correspondence など単語が過剰に硬すぎます。" },
+            { type: "TOO_DIRECT", text: "Thank you. I am looking into this, but stop sending urgent emails and wait until tomorrow.", advice: "同じ型から始まっていますが、後半が攻撃的で突き放すような表現になっています。" }
           ]
         }
       ];
@@ -1437,10 +1618,11 @@
           parts_hint: "\"the status\" と \"by Friday\" (金曜までに) を組み合わせるだけ！",
           guide: "（状況確認と期限提示）進捗を確認し、金曜日までに最新の予定をお伝えします。",
           target: "I will check the status and get back to you by Friday.",
+          chunks: ["I will check the status", "and get back to you", "by Friday."],
           choices: [
             { type: "PERFECT", text: "I will check the status and get back to you by Friday.", advice: "完璧です！『check』と『get』を用いて簡潔かつ具体的に返答できています。" },
-            { type: "TOO_COMPLEX", text: "We shall conduct a comprehensive investigation regarding the current delay and furnish a timeline.", advice: "文言が硬すぎます。Plain Englishを心がけましょう。" },
-            { type: "TOO_DIRECT", text: "Please wait until Friday, because we are busy.", advice: "一方的で不躾な印象を与えてしまいます。" }
+            { type: "TOO_COMPLEX", text: "I will check the intricate underlying causes and get back to you subsequent to our interdepartmental review.", advice: "同じ型から始まっていますが、intricate, subsequent to, interdepartmental review など文言が硬すぎます。" },
+            { type: "TOO_DIRECT", text: "I will check the status, but you already know we have no time to fix this by Friday.", advice: "同じ型から始まっていますが、相手を責めるような言い回しになっています。" }
           ]
         }
       ];
@@ -1456,10 +1638,11 @@
           parts_hint: "\"the deadline is Friday\" (締切は金曜です) を組み合わせるだけ！",
           guide: "（相手の話を受け止めつつ否定する）おっしゃることは分かりますが、締切は金曜です",
           target: "I totally see your point, but the deadline is Friday.",
+          chunks: ["I totally see your point,", "but the deadline", "is Friday."],
           choices: [
-            { type: "PERFECT", text: "I totally see your point, but the deadline is Friday.", advice: "完璧です！相手の立場を尊重しつつ要件を伝えられました。" },
-            { type: "TOO_COMPLEX", text: "We ought to renegotiate the scheduling architecture.", advice: "単語が硬すぎます。簡単な言葉で話しましょう。" },
-            { type: "TOO_DIRECT", text: "No, you must finish this tomorrow without excuse.", advice: "攻撃的な印象を与えてしまいます。" }
+            { type: "PERFECT", text: "I totally see your point, but the deadline is Friday.", advice: "完璧です！相手の立場を尊重しつつ要件をシンプルに伝えられました。" },
+            { type: "TOO_COMPLEX", text: "I totally see your point, but we ought to adhere to the predetermined chronological milestones.", advice: "同じ型から始まっていますが、adhere to the predetermined chronological milestones は硬すぎて伝わりません。" },
+            { type: "TOO_DIRECT", text: "I totally see your point, but that is your team's failure, not my problem.", advice: "同じ型から始まっていますが、後半が極めて攻撃的で信頼関係を破壊します。" }
           ]
         }
       ];
@@ -1590,6 +1773,196 @@
     }
   }
 
+  // 回答モード & チャンク並び替えステート
+  let currentAnswerMode = 'builder';
+  let originalChunks = [];
+  let chunkPoolItems = [];
+  let assembledChunks = [];
+
+  function toggleAnswerMode() {
+    currentAnswerMode = (currentAnswerMode === 'builder') ? 'choice' : 'builder';
+    applyAnswerModeUI();
+  }
+
+  function applyAnswerModeUI() {
+    const builderSection = document.getElementById('chunkBuilderSection');
+    const choiceSection = document.getElementById('choiceSection');
+    const toggleBtn = document.getElementById('btnToggleOutputMode');
+    const titleEl = document.getElementById('outputSectionTitle');
+
+    if (currentAnswerMode === 'builder') {
+      if (builderSection) builderSection.style.display = 'block';
+      if (choiceSection) choiceSection.style.display = 'none';
+      if (toggleBtn) toggleBtn.innerText = '📝 3択モードで解く';
+      if (titleEl) titleEl.innerText = '🧩 並び替えて文章を作成';
+    } else {
+      if (builderSection) builderSection.style.display = 'none';
+      if (choiceSection) choiceSection.style.display = 'flex';
+      if (toggleBtn) toggleBtn.innerText = '🧩 並び替えモードで解く';
+      if (titleEl) titleEl.innerText = '📝 3択から選ぶ（すべて同じ型を使用）';
+    }
+  }
+
+  function initChunkBuilder(stageData) {
+    assembledChunks = [];
+    let chunks = Array.isArray(stageData.chunks) && stageData.chunks.length >= 2 
+      ? [...stageData.chunks] 
+      : createClientSentenceChunks(stageData.target);
+
+    originalChunks = [...chunks];
+
+    const pool = chunks.map((text, idx) => ({ id: idx, text: text, used: false }));
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    // 偶然元の順序のままならスワップ
+    if (pool.length > 2 && pool.every((item, idx) => item.id === idx)) {
+      [pool[0], pool[1]] = [pool[1], pool[0]];
+    }
+
+    chunkPoolItems = pool;
+    renderBuilderUI();
+  }
+
+  function createClientSentenceChunks(sentence) {
+    if (!sentence) return [];
+    const trimmed = sentence.trim();
+    const words = trimmed.split(/\s+/);
+    if (words.length <= 4) return words;
+
+    if (trimmed.includes(',')) {
+      const parts = trimmed.split(/(?<=,)\s+/);
+      if (parts.length >= 3 && parts.length <= 5) return parts;
+      if (parts.length === 2) {
+        const res = [];
+        parts.forEach(part => {
+          const subWords = part.split(/\s+/);
+          if (subWords.length > 3) {
+            const mid = Math.ceil(subWords.length / 2);
+            res.push(subWords.slice(0, mid).join(' '));
+            res.push(subWords.slice(mid).join(' '));
+          } else {
+            res.push(part);
+          }
+        });
+        return res;
+      }
+    }
+
+    const chunkCount = words.length > 9 ? 4 : 3;
+    const chunkSize = Math.ceil(words.length / chunkCount);
+    const chunks = [];
+    for (let i = 0; i < words.length; i += chunkSize) {
+      chunks.push(words.slice(i, i + chunkSize).join(' '));
+    }
+    return chunks;
+  }
+
+  function renderBuilderUI() {
+    const assemblyBox = document.getElementById('assemblyBox');
+    const chunkPool = document.getElementById('chunkPool');
+    const checkBtn = document.getElementById('btnCheckBuilder');
+
+    if (!assemblyBox || !chunkPool) return;
+
+    if (assembledChunks.length === 0) {
+      assemblyBox.innerHTML = '<span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成させましょう</span>';
+      assemblyBox.classList.remove('active');
+    } else {
+      assemblyBox.classList.add('active');
+      assemblyBox.innerHTML = assembledChunks.map((item, index) => `
+        <button class="chunk-chip" onclick="unselectChunk(${index})">${escapeHtml(item.text)}</button>
+      `).join('');
+    }
+
+    chunkPool.innerHTML = chunkPoolItems.map(item => `
+      <button class="chunk-chip ${item.used ? 'used' : ''}" 
+        onclick="selectChunk(${item.id})" 
+        ${item.used ? 'disabled' : ''}>
+        ${escapeHtml(item.text)}
+      </button>
+    `).join('');
+
+    const allUsed = chunkPoolItems.length > 0 && chunkPoolItems.every(i => i.used);
+    if (checkBtn) {
+      checkBtn.disabled = !allUsed;
+    }
+  }
+
+  function selectChunk(chunkId) {
+    const item = chunkPoolItems.find(i => i.id === chunkId);
+    if (!item || item.used) return;
+
+    item.used = true;
+    assembledChunks.push(item);
+    renderBuilderUI();
+  }
+
+  function unselectChunk(index) {
+    if (index < 0 || index >= assembledChunks.length) return;
+    const item = assembledChunks.splice(index, 1)[0];
+    if (item) {
+      item.used = false;
+    }
+    renderBuilderUI();
+  }
+
+  function undoLastChunk() {
+    if (assembledChunks.length === 0) return;
+    const item = assembledChunks.pop();
+    if (item) {
+      item.used = false;
+    }
+    renderBuilderUI();
+  }
+
+  function resetChunks() {
+    assembledChunks = [];
+    chunkPoolItems.forEach(i => i.used = false);
+    renderBuilderUI();
+  }
+
+  function submitBuilderAnswer() {
+    const current = scenarios[currentStageIndex];
+    if (!current) return;
+
+    const userSentence = assembledChunks.map(c => c.text).join(' ').trim();
+    const isOrderCorrect = assembledChunks.every((item, idx) => item.id === idx);
+    
+    const normUser = userSentence.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normTarget = (current.target || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const correct = isOrderCorrect || (normUser.length > 0 && normUser === normTarget);
+
+    sessionAnswered++;
+
+    if (correct) {
+      combo++;
+      sessionCorrect++;
+      awardXP(trainingMode === 'sim' ? 30 : 25, true);
+      toast(`🎯 正解！ Combo ×${combo}`);
+      showResultCard(true, current);
+      speakText(current.target);
+    } else {
+      combo = 0;
+      awardXP(3, false);
+      recordMistake(current);
+      toast('💡 順番が惜しい！もう一度見直してみましょう');
+
+      const box = document.getElementById('assemblyBox');
+      if (box) {
+        box.style.borderColor = '#ef4444';
+        box.style.background = '#fef2f2';
+        setTimeout(() => {
+          box.style.borderColor = '';
+          box.style.background = '';
+        }, 1200);
+      }
+    }
+    updateHistoryStatus(correct);
+    updateDashboard();
+  }
+
   function loadStage() {
     if (!scenarios || scenarios.length === 0) return;
 
@@ -1616,15 +1989,9 @@
 
     document.getElementById('japaneseGuide').innerText = data.guide || '';
 
-    // シンキング＆答え合わせの初期状態リセット
-    choicesRevealed = false;
-    const thinkingBox = document.getElementById('thinkingBox');
-    const choiceSection = document.getElementById('choiceSection');
+    // リセット
     const resultCard = document.getElementById('resultCard');
     const confidenceBox = document.getElementById('confidenceBox');
-
-    if (thinkingBox) thinkingBox.style.display = 'block';
-    if (choiceSection) choiceSection.style.display = 'none';
     if (resultCard) resultCard.style.display = 'none';
     if (confidenceBox) confidenceBox.style.display = 'none';
 
@@ -1632,6 +1999,10 @@
     confidenceScore = 0;
     document.querySelectorAll('#confidenceBox button').forEach(b => b.classList.remove('selected'));
 
+    // チャンクビルダー初期化
+    initChunkBuilder(data);
+
+    // 3択の準備
     currentChoices = [...(data.choices || [])];
     for (let i = currentChoices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1650,18 +2021,9 @@
       }
     }
 
+    applyAnswerModeUI();
     updateDashboard();
     speakText(data.ai_en);
-  }
-
-  function revealChoices() {
-    choicesRevealed = true;
-    const thinkingBox = document.getElementById('thinkingBox');
-    const choiceSection = document.getElementById('choiceSection');
-    const confidenceBox = document.getElementById('confidenceBox');
-    if (thinkingBox) thinkingBox.style.display = 'none';
-    if (choiceSection) choiceSection.style.display = 'flex';
-    if (confidenceBox) confidenceBox.style.display = 'flex';
   }
 
   function speakPattern() {
@@ -1975,6 +2337,70 @@
     }
   }
 
+  function showResultCard(correct, scenario, selectedChoice = null) {
+    const resultCard = document.getElementById('resultCard');
+    const statusBadge = document.getElementById('statusBadge');
+    const resultFullSentence = document.getElementById('resultFullSentence');
+    const adviceText = document.getElementById('adviceText');
+    const comparisonBox = document.getElementById('comparisonBox');
+
+    if (!resultCard) return;
+    resultCard.style.display = 'block';
+
+    if (correct) {
+      statusBadge.innerText = 'PERFECT';
+      statusBadge.className = 'status-tag PERFECT';
+    } else {
+      const type = selectedChoice ? selectedChoice.type : 'NOT_PERFECT';
+      statusBadge.innerText = type.replace('_', ' ');
+      statusBadge.className = `status-tag ${selectedChoice?.type || 'TOO_DIRECT'}`;
+    }
+
+    if (resultFullSentence) {
+      resultFullSentence.innerText = `💡 模範解答: "${scenario.target}"`;
+    }
+
+    const perfectChoice = (scenario.choices || []).find(c => c.type === 'PERFECT');
+    const chosenAdvice = selectedChoice ? selectedChoice.advice : (perfectChoice ? perfectChoice.advice : '基本動詞と型を組み合わせた、最も信頼されるPlain Englishです。');
+    if (adviceText) {
+      adviceText.innerText = chosenAdvice;
+    }
+
+    // ニュアンス比較コーナー
+    if (comparisonBox && scenario.choices && scenario.choices.length > 0) {
+      const complexChoice = scenario.choices.find(c => c.type === 'TOO_COMPLEX');
+      const directChoice = scenario.choices.find(c => c.type === 'TOO_DIRECT');
+
+      let compHtml = '<div style="font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px;">📊 表現のニュアンス比較（なぜこれが正解？）:</div>';
+      
+      if (perfectChoice) {
+        compHtml += `
+          <div class="comparison-item perfect">
+            <b>✅ 推奨 (Plain English):</b> "${escapeHtml(perfectChoice.text)}"<br>
+            <span style="opacity:0.9;">${escapeHtml(perfectChoice.advice)}</span>
+          </div>`;
+      }
+      if (complexChoice) {
+        compHtml += `
+          <div class="comparison-item complex">
+            <b>🐢 硬すぎる例 (Too Stiff):</b> "${escapeHtml(complexChoice.text)}"<br>
+            <span style="opacity:0.9;">${escapeHtml(complexChoice.advice)}</span>
+          </div>`;
+      }
+      if (directChoice) {
+        compHtml += `
+          <div class="comparison-item direct">
+            <b>💥 角が立つ例 (Too Direct):</b> "${escapeHtml(directChoice.text)}"<br>
+            <span style="opacity:0.9;">${escapeHtml(directChoice.advice)}</span>
+          </div>`;
+      }
+      comparisonBox.innerHTML = compHtml;
+    }
+
+    const checkBtn = document.getElementById('btnCheckBuilder');
+    if (checkBtn) checkBtn.disabled = true;
+  }
+
   function checkChoice(index) {
     const selected = currentChoices[index];
     const current = scenarios[currentStageIndex];
@@ -1993,8 +2419,14 @@
         saveSkills(sk);
       }
       toast(`+XP 🎯 Combo ×${combo}`);
+      speakText(current.target);
     }
-    else { combo = 0; awardXP(2, false); recordMistake(current); toast('💡 苦手リストに追加しました'); }
+    else {
+      combo = 0;
+      awardXP(2, false);
+      recordMistake(current);
+      toast('💡 表現の違いを確認してみましょう');
+    }
 
     updateHistoryStatus(correct);
 
@@ -2006,21 +2438,7 @@
       else if (i === index) btn.classList.add(currentChoices[i].type);
     }
 
-    const resultCard = document.getElementById('resultCard');
-    const statusBadge = document.getElementById('statusBadge');
-    resultCard.style.display = 'block';
-    statusBadge.innerText = selected.type.replace('_', ' ');
-    statusBadge.className = `status-tag ${selected.type}`;
-    document.getElementById('adviceText').innerText = selected.advice;
-
-    let exp = document.getElementById('explainBox');
-    if (!exp) {
-      exp = document.createElement('div');
-      exp.id = 'explainBox';
-      exp.className = 'explain-box';
-      resultCard.insertBefore(exp, document.querySelector('#resultCard .btn-next'));
-    }
-    exp.innerHTML = `<b>🎓 1ポイント解説</b><br>${correct ? 'Good choice! 実務でそのまま使える自然な表現です。' : '選択した回答の理由を確認し、正解の表現を声に出してみましょう。'}<br><span style="color:#475569">Target: ${current.target}</span>`;
+    showResultCard(correct, current, selected);
     updateDashboard();
   }
 
