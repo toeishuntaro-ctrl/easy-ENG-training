@@ -533,76 +533,129 @@
       opacity: 0.9;
     }
 
-    /* Lesson Pattern Card Styles */
-    .lesson-pattern-card {
-      background: #f0fdf4;
-      border: 1.5px solid #bbf7d0;
+    /* Stage Top Control Bar (Compact Single-Line) */
+    .stage-control-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+    .audio-listen-btn {
+      padding: 4px 9px;
+      font-size: 11px;
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1e40af;
+      font-weight: 700;
+    }
+    .audio-listen-btn.playing {
+      background: #2563eb;
+      color: #fff;
+      border-color: #1d4ed8;
+    }
+
+    /* Unified Dialog & Lesson Card (All-in-one Compact Card) */
+    .dialog-lesson-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
       border-radius: 12px;
-      padding: 13px;
-      margin-bottom: 12px;
+      padding: 11px 13px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .partner-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .partner-info {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .partner-avatar {
+      font-size: 14px;
+    }
+    .partner-name {
+      font-weight: 800;
+      color: #334155;
+      font-size: 12px;
+    }
+    .ai-speech-en {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.35;
+    }
+    .ai-speech-jp {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .lesson-mission-divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 6px 0;
+    }
+    .lesson-mission-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 8px 10px;
     }
     .lesson-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 10px;
+      gap: 3px;
+      font-size: 9px;
       font-weight: 800;
       color: #166534;
       background: #dcfce7;
-      padding: 3px 8px;
+      padding: 2px 6px;
       border-radius: 99px;
     }
-    .pattern-formula {
-      font-size: 14px;
+    .pattern-formula-compact {
+      font-size: 13px;
       font-weight: 800;
       color: #14532d;
-      line-height: 1.35;
-      margin-top: 6px;
-      margin-bottom: 3px;
+      line-height: 1.25;
     }
-    .pattern-jp {
-      font-size: 11px;
+    .pattern-jp-compact {
+      font-size: 10.5px;
       color: #166534;
-      margin-bottom: 8px;
+      margin-top: 2px;
+      margin-bottom: 4px;
     }
-    .pattern-parts-box {
+    .parts-mission-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .parts-pill {
       background: #ffffff;
       border: 1px solid #86efac;
-      border-radius: 8px;
-      padding: 7px 10px;
+      border-radius: 6px;
+      padding: 3px 8px;
       font-size: 11px;
       color: #065f46;
-      line-height: 1.4;
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
-    /* Thinking & Output Trigger Box */
-    .thinking-box {
-      background: #ffffff;
-      border: 1.5px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    .btn-reveal-choices {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       width: 100%;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(37,99,235,0.25);
-      transition: all .15s;
     }
-    .btn-reveal-choices:active {
-      transform: scale(0.98);
+    .mission-target-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      padding-top: 4px;
+      border-top: 1px dashed #bbf7d0;
     }
 
     /* Session Complete Modal / Card */
@@ -644,26 +697,26 @@
       margin-top: 2px;
     }
 
-    /* Sentence Builder / Chunk Scramble Styles */
+    /* Sentence Builder / Chunk Scramble Styles (Compact) */
     .builder-card {
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
       border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
     .assembly-box {
-      min-height: 64px;
+      min-height: 48px;
       background: #f8fafc;
       border: 2px dashed #94a3b8;
-      border-radius: 10px;
-      padding: 8px;
+      border-radius: 8px;
+      padding: 6px;
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       transition: all .15s ease;
     }
     .assembly-box.active {
@@ -672,7 +725,7 @@
     }
     .assembly-placeholder {
       color: #94a3b8;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 500;
       text-align: center;
       width: 100%;
@@ -682,12 +735,12 @@
       background: #ffffff;
       border: 1.5px solid #cbd5e1;
       border-radius: 8px;
-      padding: 7px 12px;
-      font-size: 13px;
+      padding: 6px 11px;
+      font-size: 12.5px;
       font-weight: 700;
       color: #1e293b;
       cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       transition: all .12s ease;
       user-select: none;
       display: inline-flex;
@@ -704,16 +757,16 @@
     }
     .assembly-box .chunk-chip::after {
       content: " ✕";
-      font-size: 10px;
-      margin-left: 5px;
+      font-size: 9px;
+      margin-left: 4px;
       opacity: 0.6;
     }
     .chunk-pool {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-      margin-bottom: 12px;
+      gap: 6px;
+      margin-top: 6px;
+      margin-bottom: 8px;
       justify-content: center;
     }
     .chunk-pool .chunk-chip.used {
@@ -725,15 +778,15 @@
     .assembly-ctrl-row {
       display: flex;
       justify-content: flex-end;
-      gap: 6px;
-      margin-bottom: 6px;
+      gap: 5px;
+      margin-bottom: 4px;
     }
     .ctrl-btn {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
       border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 11px;
+      padding: 2px 7px;
+      font-size: 10.5px;
       font-weight: 600;
       color: #475569;
       cursor: pointer;
@@ -941,86 +994,95 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:8px; margin-bottom:16px;">
-      <button class="btn-audio-player" id="autoPlayBtn" onclick="toggleAutoPlay()" style="flex:2; margin-bottom:0;">
-        🎧 ストーリー聞き流し
-      </button>
-      <button class="micro-btn" id="speedRateBtn" onclick="cycleSpeechRate()" style="flex:1; border-radius:10px; font-size:12px;">
-        ⚡ 1.0x
-      </button>
-    </div>
-
-    <div class="header-bar">
-      <span class="badge" id="turnBadge">STAGE 1 / 5</span>
-    </div>
-
-    <div class="ai-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="ai-name" id="aiName">...</div>
-        <button class="micro-btn" style="padding:2px 8px; font-size:11px; background:#fff;" onclick="speakAiSpeech()">🔊 音声を聴く</button>
+    <!-- トップコントロール行 (STAGEバッジ ＋ 聞き流し ＋ 速度) -->
+    <div class="stage-control-bar">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span class="badge" id="turnBadge">STAGE 1 / 5</span>
+        <span id="playModeSubText" style="font-size:11px; font-weight:700; color:#475569;"></span>
       </div>
-      <div class="ai-text" id="aiResponseEn">...</div>
-      <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="aiResponseJp">...</div>
+      <div style="display:flex; align-items:center; gap:5px;">
+        <button class="micro-btn audio-listen-btn" id="autoPlayBtn" onclick="toggleAutoPlay()">
+          🎧 聞き流し
+        </button>
+        <button class="micro-btn" id="speedRateBtn" onclick="cycleSpeechRate()" style="font-size:11px; padding:3px 7px;">
+          ⚡ 1.0x
+        </button>
+      </div>
     </div>
 
-    <!-- 【レッスン / インプット】本日の重要フレーズ（型 ＋ 中学単語の組み合わせ） -->
-    <div class="lesson-pattern-card" id="lessonCard">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="lesson-badge">💡 本日の型 (Key Pattern)</span>
-        <button class="micro-btn" style="padding:3px 8px; font-size:11px; background:#fff; border-color:#86efac; color:#166534;" onclick="speakPattern()">🔊 型を聴く</button>
+    <!-- 相手の発言 ＆ 本日の型・ミッション統合カード -->
+    <div class="dialog-lesson-card" id="lessonCard">
+      <!-- 相手の発言エリア -->
+      <div class="partner-row">
+        <div class="partner-info">
+          <span class="partner-avatar">👤</span>
+          <span class="partner-name" id="aiName">Colleague</span>
+        </div>
+        <button class="micro-btn" style="padding:2px 7px; font-size:10px; background:#fff;" onclick="speakAiSpeech()">🔊 発言を聴く</button>
       </div>
-      <div class="pattern-formula" id="lessonPatternFormula">I understand the urgency, but we need to [verb]...</div>
-      <div class="pattern-jp" id="lessonPatternJp">緊急性は理解していますが、〜する必要があります…</div>
-      
-      <div class="pattern-parts-box">
-        <span style="font-size:14px;">🧩</span>
-        <div>
-          <span style="font-weight:bold; color:#047857;">組み合わせる中学単語パーツ:</span><br>
-          <span id="lessonPartsHint">"review our current workload" (現在の業務量を見直す) を組み合わせるだけ！</span>
+      <div class="ai-speech-en" id="aiResponseEn">"..."</div>
+      <div class="ai-speech-jp" id="aiResponseJp">（...）</div>
+
+      <!-- 仕切り ＆ 型＋パーツ＋ミッション -->
+      <div class="lesson-mission-divider"></div>
+
+      <div class="lesson-mission-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+          <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+            <span class="lesson-badge">💡 本日の型</span>
+            <span class="pattern-formula-compact" id="lessonPatternFormula">I see your point, but...</span>
+          </div>
+          <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#fff; color:#166534; border-color:#86efac;" onclick="speakPattern()">🔊 型</button>
+        </div>
+        
+        <div class="pattern-jp-compact" id="lessonPatternJp">おっしゃることは分かりますが、〜</div>
+
+        <div class="parts-mission-row">
+          <div class="parts-pill">
+            <span style="font-weight:bold; color:#047857;">🧩 パーツ:</span>
+            <span id="lessonPartsHint">"the deadline is Friday" を組み合わせるだけ！</span>
+          </div>
+        </div>
+
+        <div class="mission-target-row">
+          <div style="font-size:12px; font-weight:700; color:#1e293b; flex:1; line-height:1.35;">
+            🎯 <span id="japaneseGuide">...</span>
+          </div>
+          <div style="display:flex; gap:4px; flex-shrink:0;">
+            <button class="micro-btn record-btn" id="recordBtn" onclick="toggleRecording()" style="padding:3px 7px; font-size:10px;">🎙️ 話す</button>
+            <button class="micro-btn" onclick="speakTarget()" style="padding:3px 7px; font-size:10px;">🔊 模範</button>
+          </div>
+        </div>
+
+        <div class="word-feedback-box" id="wordFeedbackBox" style="display:none; margin-top:6px;"></div>
+
+        <div class="confidence" id="confidenceBox" style="display:none; margin-top:6px;">
+          <button onclick="setConfidence(1)">😰 難しい</button>
+          <button onclick="setConfidence(2)">😐 普通</button>
+          <button onclick="setConfidence(3)">😎 余裕</button>
         </div>
       </div>
     </div>
 
-    <!-- 【アウトプット / チャレンジ】声に出してみよう -->
-    <div class="guide-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size: 11px; color: #64748b; font-weight: bold;">🎯 あなたのミッション</span>
-        <span style="font-size: 10px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:bold;">型＋パーツで即答</span>
-      </div>
-      <div style="font-size: 14px; font-weight: bold; margin: 6px 0;" id="japaneseGuide">...</div>
-      
-      <div class="voice-row">
-        <button class="micro-btn record-btn" id="recordBtn" onclick="toggleRecording()">🎙️ 自分で話す</button>
-        <button class="micro-btn" onclick="speakTarget()">🔊 模範解答を聴く</button>
-      </div>
-
-      <div class="word-feedback-box" id="wordFeedbackBox"></div>
-
-      <div class="confidence" id="confidenceBox" style="display:none; margin-top:8px;">
-        <button onclick="setConfidence(1)">😰 難しい</button>
-        <button onclick="setConfidence(2)">😐 普通</button>
-        <button onclick="setConfidence(3)">😎 余裕</button>
-      </div>
-    </div>
-
     <!-- アウトプット回答エリア (並び替え / 3択 切替可能) -->
-    <div id="outputArea" style="margin-top: 12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <div id="outputArea" style="margin-top: 6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <span style="font-size:12px; font-weight:800; color:#1e293b;" id="outputSectionTitle">🧩 並び替えて文章を作成</span>
         <button class="ctrl-btn" id="btnToggleOutputMode" onclick="toggleAnswerMode()">📝 3択モードで解く</button>
       </div>
 
       <!-- A. チャンク並び替えビルダー -->
       <div id="chunkBuilderSection" class="builder-card">
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">タップして順番にパーツを並べてください：</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <span style="font-size:11px; color:#64748b;">タップして順番に並べてください：</span>
+          <div class="assembly-ctrl-row" style="margin-bottom:0;">
+            <button class="ctrl-btn" onclick="undoLastChunk()">⌫ 戻す</button>
+            <button class="ctrl-btn" onclick="resetChunks()">↺ リセット</button>
+          </div>
+        </div>
         
         <div class="assembly-box" id="assemblyBox">
-          <span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成させましょう</span>
-        </div>
-
-        <div class="assembly-ctrl-row">
-          <button class="ctrl-btn" onclick="undoLastChunk()">⌫ 1つ戻す</button>
-          <button class="ctrl-btn" onclick="resetChunks()">↺ リセット</button>
+          <span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成</span>
         </div>
 
         <div class="chunk-pool" id="chunkPool"></div>
@@ -1773,6 +1835,17 @@
     }
   }
 
+  // HTMLエスケープ関数（安全なチップレンダリング用）
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // 回答モード & チャンク並び替えステート
   let currentAnswerMode = 'builder';
   let originalChunks = [];
@@ -1805,19 +1878,32 @@
 
   function initChunkBuilder(stageData) {
     assembledChunks = [];
-    let chunks = Array.isArray(stageData.chunks) && stageData.chunks.length >= 2 
-      ? [...stageData.chunks] 
-      : createClientSentenceChunks(stageData.target);
+    let chunks = [];
+
+    if (stageData && Array.isArray(stageData.chunks) && stageData.chunks.length >= 2) {
+      chunks = [...stageData.chunks];
+    } else {
+      const targetText = stageData?.target || 
+        (stageData?.choices && stageData.choices.find(c => c.type === 'PERFECT')?.text) ||
+        stageData?.key_pattern ||
+        '';
+      chunks = createClientSentenceChunks(targetText);
+    }
+
+    if (!chunks || chunks.length === 0) {
+      chunks = ["Thank you,", "I am checking this", "and will update you."];
+    }
 
     originalChunks = [...chunks];
 
     const pool = chunks.map((text, idx) => ({ id: idx, text: text, used: false }));
+    // ランダムシャッフル
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
     // 偶然元の順序のままならスワップ
-    if (pool.length > 2 && pool.every((item, idx) => item.id === idx)) {
+    if (pool.length > 1 && pool.every((item, idx) => item.id === idx)) {
       [pool[0], pool[1]] = [pool[1], pool[0]];
     }
 
@@ -1826,67 +1912,85 @@
   }
 
   function createClientSentenceChunks(sentence) {
-    if (!sentence) return [];
+    if (!sentence || typeof sentence !== 'string') {
+      return ["Thank you,", "I will check this", "by Friday."];
+    }
     const trimmed = sentence.trim();
-    const words = trimmed.split(/\s+/);
-    if (words.length <= 4) return words;
+    if (!trimmed) {
+      return ["Thank you,", "I will check this", "by Friday."];
+    }
 
+    // 1. カンマで自然な句に分割
     if (trimmed.includes(',')) {
-      const parts = trimmed.split(/(?<=,)\s+/);
-      if (parts.length >= 3 && parts.length <= 5) return parts;
-      if (parts.length === 2) {
-        const res = [];
-        parts.forEach(part => {
-          const subWords = part.split(/\s+/);
-          if (subWords.length > 3) {
-            const mid = Math.ceil(subWords.length / 2);
-            res.push(subWords.slice(0, mid).join(' '));
-            res.push(subWords.slice(mid).join(' '));
+      const parts = trimmed.split(',').map((p, idx, arr) => {
+        const item = p.trim();
+        return idx < arr.length - 1 ? item + ',' : item;
+      }).filter(p => p.length > 0);
+
+      if (parts.length >= 2 && parts.length <= 4) {
+        const subParts = [];
+        parts.forEach(p => {
+          const words = p.split(/\s+/);
+          if (words.length >= 6) {
+            const mid = Math.ceil(words.length / 2);
+            subParts.push(words.slice(0, mid).join(' '));
+            subParts.push(words.slice(mid).join(' '));
           } else {
-            res.push(part);
+            subParts.push(p);
           }
         });
-        return res;
+        if (subParts.length >= 2) return subParts;
       }
     }
 
-    const chunkCount = words.length > 9 ? 4 : 3;
+    // 2. 単語数による安全な分割 (3〜4個のチャンク)
+    const words = trimmed.split(/\s+/);
+    if (words.length <= 4) {
+      return words;
+    }
+
+    const chunkCount = words.length >= 9 ? 4 : 3;
     const chunkSize = Math.ceil(words.length / chunkCount);
     const chunks = [];
     for (let i = 0; i < words.length; i += chunkSize) {
-      chunks.push(words.slice(i, i + chunkSize).join(' '));
+      const piece = words.slice(i, i + chunkSize).join(' ');
+      if (piece) chunks.push(piece);
     }
-    return chunks;
+    return chunks.length >= 2 ? chunks : [trimmed];
   }
 
   function renderBuilderUI() {
-    const assemblyBox = document.getElementById('assemblyBox');
-    const chunkPool = document.getElementById('chunkPool');
-    const checkBtn = document.getElementById('btnCheckBuilder');
+    try {
+      const assemblyBox = document.getElementById('assemblyBox');
+      const chunkPool = document.getElementById('chunkPool');
+      const checkBtn = document.getElementById('btnCheckBuilder');
 
-    if (!assemblyBox || !chunkPool) return;
+      if (!assemblyBox || !chunkPool) return;
 
-    if (assembledChunks.length === 0) {
-      assemblyBox.innerHTML = '<span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成させましょう</span>';
-      assemblyBox.classList.remove('active');
-    } else {
-      assemblyBox.classList.add('active');
-      assemblyBox.innerHTML = assembledChunks.map((item, index) => `
-        <button class="chunk-chip" onclick="unselectChunk(${index})">${escapeHtml(item.text)}</button>
+      if (assembledChunks.length === 0) {
+        assemblyBox.innerHTML = '<span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成</span>';
+        assemblyBox.classList.remove('active');
+      } else {
+        assemblyBox.classList.add('active');
+        assemblyBox.innerHTML = assembledChunks.map((item, index) => `
+          <button class="chunk-chip" onclick="unselectChunk(${index})">${escapeHtml(item.text)}</button>
+        `).join('');
+      }
+
+      chunkPool.innerHTML = chunkPoolItems.map(item => `
+        <button class="chunk-chip ${item.used ? 'used' : ''}" 
+          onclick="selectChunk(${item.id})" 
+          ${item.used ? 'disabled' : ''}>
+          ${escapeHtml(item.text)}
+        </button>
       `).join('');
-    }
 
-    chunkPool.innerHTML = chunkPoolItems.map(item => `
-      <button class="chunk-chip ${item.used ? 'used' : ''}" 
-        onclick="selectChunk(${item.id})" 
-        ${item.used ? 'disabled' : ''}>
-        ${escapeHtml(item.text)}
-      </button>
-    `).join('');
-
-    const allUsed = chunkPoolItems.length > 0 && chunkPoolItems.every(i => i.used);
-    if (checkBtn) {
-      checkBtn.disabled = !allUsed;
+      const allUsed = chunkPoolItems.length > 0 && chunkPoolItems.every(i => i.used);
+      if (checkBtn) {
+        checkBtn.disabled = !allUsed;
+      }
+    } catch (err) {
+      console.error("renderBuilderUI error:", err);
     }
   }
 
@@ -1975,6 +2079,12 @@
       document.getElementById('simDeadline').innerText = `Scenario ${currentStageIndex + 1}: sponsor / site / CRA communication`;
     }
     document.getElementById('turnBadge').innerText = `${reviewMode ? '🔁 REVIEW' : 'STAGE'} ${currentStageIndex + 1} / ${scenarios.length}`;
+    const modeSub = document.getElementById('playModeSubText');
+    if (modeSub) {
+      if (trainingMode === 'sim') modeSub.innerText = '🧑‍💼 現場シミュレーション';
+      else if (trainingMode === 'bizmail') modeSub.innerText = '✉️ メール返信';
+      else modeSub.innerText = '🎯 即答トレーニング';
+    }
     document.getElementById('aiName').innerText = data.ai_name || "Colleague";
     document.getElementById('aiResponseEn').innerText = `"${data.ai_en || ''}"`;
     document.getElementById('aiResponseJp').innerText = `（${data.ai_jp || ''}）`;
