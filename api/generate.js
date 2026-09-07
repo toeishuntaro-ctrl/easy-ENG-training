@@ -41,7 +41,95 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { mode, topic, excludeTopics } = req.body || {};
+  // 8 Categories of Practical Global Business Plain English Key Patterns (型)
+  const patternLibrary = {
+    acknowledge_boundary: {
+      category: "受け止め・クッション＋制約提示 (Acknowledge & Set Boundaries)",
+      patterns: [
+        "I see your point, but we need to [verb] first.",
+        "I understand the urgency, but our main priority is to [verb].",
+        "That makes sense, but we are currently looking into [noun].",
+        "I hear you, but let's make sure we [verb] before taking action.",
+        "I appreciate the heads-up, but we cannot commit until we [verb].",
+        "Fair point, but let's stick to [noun] for now."
+      ]
+    },
+    takeaway_deadline: {
+      category: "確認・持ち帰り・期限設定 (Takeaway & Set Deadlines)",
+      patterns: [
+        "Let me check with [person/team] and get back to you by [time].",
+        "I am looking into this and will send an update by [time].",
+        "I will double-check [noun] and confirm with you later today.",
+        "Give me until [time] to verify this with [team].",
+        "I will follow up on this with [person] by [time].",
+        "Let's hold off on this until we hear back from [person]."
+      ]
+    },
+    clarify_paraphrase: {
+      category: "認識合わせ・明確化 (Clarify & Paraphrase)",
+      patterns: [
+        "Just to make sure, are you saying that [statement]?",
+        "To be clear, do you mean we should [verb]?",
+        "Could you clarify what you mean by [noun/phrase]?",
+        "Let me make sure I understand: our next step is to [verb], right?",
+        "Before we move forward, can we confirm who is leading [task]?",
+        "Are we aligned that [statement]?"
+      ]
+    },
+    alternative_tradeoff: {
+      category: "代替案・条件付き合意・トレードオフ (Alternative & Give-and-Take)",
+      patterns: [
+        "We cannot [verb A], but we can [verb B] instead.",
+        "If we prioritize [task A], we will need to push back [task B].",
+        "What if we focus on [noun] first and handle the rest next week?",
+        "To meet the deadline, our best option is to [verb].",
+        "We are happy to help with this, provided that we get [noun] by [time].",
+        "How about we do [option A] instead of [option B]?"
+      ]
+    },
+    action_request: {
+      category: "依頼・プッシュ・行動喚起 (Action Request & Gentle Push)",
+      patterns: [
+        "Could you please send over [noun] by [time] so we can proceed?",
+        "To keep things on track, we need your input on [topic].",
+        "Please let us know your decision by [time] so we don't lose time.",
+        "Would you be able to review [document] before our next sync?",
+        "Can you help us connect with [person] regarding this matter?",
+        "Let's make sure everyone reviews [noun] by EOD."
+      ]
+    },
+    flag_risk: {
+      category: "懸念・リスクの事前共有 (Flagging Concerns & Risks)",
+      patterns: [
+        "My main concern is that [clause], so let's be careful.",
+        "We might run into an issue if we don't [verb] early.",
+        "To avoid any delays, it would be safer to [verb].",
+        "There is a risk of [noun/gerund], so let's keep an eye on it.",
+        "Let's make sure we have a backup plan in case [clause]."
+      ]
+    },
+    lock_next_step: {
+      category: "合意形成・Next Step固定 (Wrap-up & Action Lock)",
+      patterns: [
+        "Let's lock in [plan/date] as our target.",
+        "I will summarize the action items and share the notes by [time].",
+        "Thanks for the alignment; I will take ownership of [task].",
+        "Let's touch base again on [day] to review the progress.",
+        "We are all on the same page. Let's proceed with [plan]."
+      ]
+    },
+    appreciation_partnership: {
+      category: "感謝・パートナーシップ関係維持 (Appreciation & Partnership)",
+      patterns: [
+        "Thank you for your flexibility on this tight schedule.",
+        "Thanks for understanding our team's capacity.",
+        "I appreciate your quick turnaround on this issue.",
+        "Thanks for working with us to find a practical solution."
+      ]
+    }
+  };
+
+  const { mode, topic, excludeTopics, excludePatterns } = req.body || {};
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -218,6 +306,24 @@ export default async function handler(req, res) {
   const selectedItem = selectedCategoryPool[Math.floor(Math.random() * selectedCategoryPool.length)];
   const randomSeed = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
+  // Dynamically select 5 distinct pattern categories for Stages 1 to 5 to guarantee high diversity
+  const allCategoryKeys = Object.keys(patternLibrary);
+  // Shuffle categories
+  const shuffledKeys = [...allCategoryKeys].sort(() => 0.5 - Math.random());
+  const selected5Categories = shuffledKeys.slice(0, 5);
+
+  const excludedPatternList = Array.isArray(excludePatterns) ? excludePatterns : [];
+  const excludedTopicList = Array.isArray(excludeTopics) ? excludeTopics : [];
+
+  const stagePatternSuggestions = selected5Categories.map((catKey, idx) => {
+    const cat = patternLibrary[catKey];
+    // Filter out previously used patterns if possible
+    const availablePatterns = cat.patterns.filter(p => !excludedPatternList.some(ex => ex && ex.toLowerCase().includes(p.substring(0, 15).toLowerCase())));
+    const poolToUse = availablePatterns.length > 0 ? availablePatterns : cat.patterns;
+    const pickedPattern = poolToUse[Math.floor(Math.random() * poolToUse.length)];
+    return `Stage ${idx + 1} (${cat.category}): Suggested pattern idea -> "${pickedPattern}"`;
+  });
+
   // Tailor instructions by training mode
   let modeDescription = "";
   if (mode === 'email') {
@@ -233,13 +339,19 @@ Generate a high-yield, structured 5-stage sequential business dialogue for Japan
 
 [Pedagogical Framework: Lesson + Pattern Practice (型 ＋ 中学単語の応用)]
 - Do NOT expect the user to invent complex sentences from thin air.
-- For each stage, teach ONE clear, versatile, reusable PLAIN ENGLISH KEY PATTERN (型), such as:
-  * "I see your point, but we need to [verb]..."
-  * "Let me check with [person] and get back to you by [time]."
-  * "Just to make sure, are you saying that [statement]?"
-  * "To keep things on track, could you please [verb]?"
+- For each stage, teach ONE clear, versatile, reusable PLAIN ENGLISH KEY PATTERN (型).
 - Provide a simple "parts_hint" showing how common junior-high level English words (e.g. "keep the deadline", "talk to my team", "tomorrow afternoon") combine with the pattern to complete the target sentence.
 - This empowers users to immediately output the response without anxiety.
+
+[CRITICAL MANDATE: MAXIMUM PATTERN DIVERSITY (キーフレーズ・型の完全重複禁止)]
+- You MUST ensure all 5 stages in this session teach **COMPLETELY DIFFERENT KEY PATTERNS (型)** with different functional purposes.
+- NEVER repeat or reuse the same opening/formula (e.g. do NOT use "I see your point..." or "Let me check..." more than once in the 5 stages).
+- Here are 5 distinct suggested pattern categories assigned specifically for this session's 5 stages (you can use these or creative equivalents):
+${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
+
+[Strictly Excluded Recent Patterns & Topics (DO NOT REUSE ANY OF THESE)]:
+- Excluded Patterns: ${JSON.stringify(excludedPatternList.slice(-20))}
+- Excluded Target Phrases: ${JSON.stringify(excludedTopicList.slice(-20))}
 
 [Scenario Specifications]
 - Focus Category: "${topicDisplayTitle}"
@@ -248,8 +360,6 @@ Generate a high-yield, structured 5-stage sequential business dialogue for Japan
 - Scenario Theme: "${selectedItem.theme}"
 - Typical Counterparts: ${selectedItem.roles.join(', ')}
 - Uniqueness Seed: ${randomSeed}
-- Strictly Excluded Topics/Phrases (Do NOT repeat or reuse these):
-${JSON.stringify((excludeTopics || []).slice(-15))}
 
 [5-Stage Story Arc Progression]
 - Stage 1: Initial situation / urgent inquiry, tough demand, or unexpected problem raised by the counterpart.
@@ -262,14 +372,14 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
 1. "ai_name": Counterpart role name (e.g., "Elena (Sponsor Director)", "Rajesh (Regional Lead)", "Marcus (Global VP)", "Dr. Williams (PI)").
 2. "ai_en": Natural, realistic English statement from the counterpart (1-3 sentences).
 3. "ai_jp": Natural, context-rich Japanese translation of the counterpart's statement.
-4. "key_pattern": The reusable English pattern/formula (e.g., "I see your point, but we need to [verb]...", "Let me check with [person] and get back to you by [time]").
-5. "key_pattern_jp": Meaning of the pattern in Japanese (e.g., "おっしゃることは分かりますが、〜する必要があります", "〜に確認して…までに折り返します").
-6. "pattern_rationale": Clear 1-2 sentence Japanese explanation of WHY this pattern works diplomatically in global business (e.g. "相手の懸念を肯定して心理的抵抗を解消し、but以降に中学レベルの基本動詞で具体的な制約を提示するため、非ネイティブ相手でも誤解が生じません。").
+4. "key_pattern": The reusable English pattern/formula (e.g., "I see your point, but we need to [verb]...", "We cannot [verb A], but we can [verb B] instead", "Could you clarify what you mean by [noun]?"). MUST BE DISTINCT for each stage!
+5. "key_pattern_jp": Meaning of the pattern in Japanese (e.g., "おっしゃることは分かりますが、〜する必要があります", "〜はできませんが、代わりに…なら可能です").
+6. "pattern_rationale": Clear 1-2 sentence Japanese explanation of WHY this pattern works diplomatically in global business.
 7. "parts_hint": Clear Japanese hint showing the simple junior-high level English parts to insert into the pattern (e.g., '"keep the deadline" (納期を守る) を組み合わせるだけ！', '"my team" と "tomorrow" を組み合わせるだけ！').
 8. "guide": Clear Japanese mission telling the user what message to convey.
 9. "target": The ideal, polished Plain English response formed by the pattern + parts. This MUST match the PERFECT choice.
-10. "chunks": Array of 3 to 5 natural chunks (phrases/meaning blocks) that comprise the "target" sentence in correct order, e.g. ["I understand the urgency,", "but we need to", "review our workload", "first."]. This will be scrambled for sentence-building output practice.
-11. "counterpart_reaction_en": Realistic brief follow-up response (1-2 sentences) from the counterpart acknowledging, agreeing, or aligning next steps when the user replies with the ideal Plain English response (e.g., "Understood. That sounds reasonable, so let's touch base on Friday.", "Got it. Thanks for looking into this, please keep me posted.").
+10. "chunks": Array of 3 to 5 natural chunks (phrases/meaning blocks) that comprise the "target" sentence in correct order.
+11. "counterpart_reaction_en": Realistic brief follow-up response (1-2 sentences) from the counterpart acknowledging, agreeing, or aligning next steps when the user replies with the ideal Plain English response.
 12. "counterpart_reaction_jp": Natural Japanese translation of the counterpart's follow-up reaction.
 13. "email_subject": Realistic corporate subject line (e.g., "Re: Urgent protocol deviation review", "Timeline adjustment request for Site 102").
 14. "choices": Exactly 3 distinct choices:

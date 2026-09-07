@@ -2004,19 +2004,106 @@
         {
           stage: 1,
           ai_name: "Sponsor (Email)",
-          ai_en: "Subject: Urgent: Site 101 Protocol Deviation Inquiry",
-          ai_jp: "件名: 緊急: Site 101プロトコル逸脱に関する問い合わせ",
+          email_subject: "Re: Urgent: Site 101 Protocol Deviation Inquiry",
+          ai_en: "Subject: Urgent: Site 101 Protocol Deviation Inquiry\n\nCould you please clarify the corrective action plan regarding the recent deviation at Site 101?",
+          ai_jp: "件名: 緊急: Site 101プロトコル逸脱に関する問い合わせ\n\nSite 101で発生した直近の逸脱についての是正措置計画を明確にしていただけますか？",
           key_pattern: "I am looking into [noun] and will [verb] by [time]...",
           key_pattern_jp: "〜を調査中であり、[時間]までに[対応]いたします…",
           pattern_rationale: "まず受領したこと（Thank you）と調査中であること（looking into this）を即座に伝え、具体的な期限（by EOD today）を中学単語で区切ることで、相手の不安をゼロにします。",
           parts_hint: "\"this matter\" と \"send an update by EOD today\" を組み合わせるだけ！",
           guide: "（Teams/メール返信）受領を確認し、調査のうえ本日中にメールで回答する旨を伝えてください。",
           target: "Thank you. I am looking into this and will send an update by EOD today.",
+          counterpart_reaction_en: "Thank you for the quick confirmation. I will look out for your email by EOD today.",
+          counterpart_reaction_jp: "迅速なご確認ありがとうございます。本日中のご連絡をお待ちしております。",
           chunks: ["Thank you.", "I am looking into this", "and will send an update", "by EOD today."],
           choices: [
             { type: "PERFECT", text: "Thank you. I am looking into this and will send an update by EOD today.", advice: "完璧です！受領・調査中・本日中（EOD）の期限が中学生単語で明確に書かれています。" },
             { type: "TOO_COMPLEX", text: "Thank you. I am looking into this matter comprehensively and shall endeavor to dispatch correspondence by the predetermined close of business.", advice: "同じ型から始まっていますが、comprehensively, endeavor, dispatch correspondence など単語が過剰に硬すぎます。" },
             { type: "TOO_DIRECT", text: "Thank you. I am looking into this, but stop sending urgent emails and wait until tomorrow.", advice: "同じ型から始まっていますが、後半が攻撃的で突き放すような表現になっています。" }
+          ]
+        },
+        {
+          stage: 2,
+          ai_name: "Sponsor (Email)",
+          email_subject: "Re: Site 101 CAPA Documentation",
+          ai_en: "Thanks for the update. Could you also confirm who will sign off on the investigation report?",
+          ai_jp: "進捗ありがとうございます。調査報告書の最終承認者が誰になるかも確認いただけますか？",
+          key_pattern: "Let me check with [person] and confirm [noun] by [time]...",
+          key_pattern_jp: "〜に確認し、[時間]までに[事項]を確定させます…",
+          pattern_rationale: "曖昧に答えず、社内の責任者・確認先を明示した上で折り返し時間を約束することで、高い信頼性を保ちます。",
+          parts_hint: "\"our QA manager\" と \"by tomorrow morning\" を組み合わせるだけ！",
+          guide: "QAマネージャーに確認し、明朝までに確定してお知らせします。",
+          target: "Let me check with our QA manager and confirm the signer by tomorrow morning.",
+          counterpart_reaction_en: "Sounds good. Please keep me posted once QA signs off.",
+          counterpart_reaction_jp: "了解しました。QAの承認が取れ次第お知らせください。",
+          chunks: ["Let me check with", "our QA manager", "and confirm the signer", "by tomorrow morning."],
+          choices: [
+            { type: "PERFECT", text: "Let me check with our QA manager and confirm the signer by tomorrow morning.", advice: "完璧です！中学基本単語でスムーズに責任の所在と期限を伝えられています。" },
+            { type: "TOO_COMPLEX", text: "Let me check with our QA manager to ascertain the signatory authority prior to tomorrow morning.", advice: "同じ型ですが、ascertain the signatory authority など格式張りすぎて読みにくくなっています。" },
+            { type: "TOO_DIRECT", text: "Let me check with our QA manager, but you should already know who signs these documents.", advice: "同じ型ですが、相手の知識不足を咎めるような不快なトーンになっています。" }
+          ]
+        },
+        {
+          stage: 3,
+          ai_name: "Sponsor (Email)",
+          email_subject: "Re: CAPA Submission Timeline",
+          ai_en: "Can we have the completed report submitted to the IRB by this Wednesday?",
+          ai_jp: "完成した報告書を今週水曜までにIRBへ提出することは可能ですか？",
+          key_pattern: "We cannot [verb A], but we can [verb B] instead...",
+          key_pattern_jp: "〜は難しいですが、代わりに…なら可能です…",
+          pattern_rationale: "ただ断るのではなく、即座に実行可能な代替案（水曜にドラフト共有→金曜提出）を提示して合意を形成します。",
+          parts_hint: "\"submit by Wednesday\" と \"share a draft on Wednesday and submit on Friday\" を組み合わせるだけ！",
+          guide: "水曜提出は難しいですが、代わりに水曜にドラフトを共有し金曜に提出できます。",
+          target: "We cannot submit by Wednesday, but we can share a draft on Wednesday and submit on Friday.",
+          counterpart_reaction_en: "That is a workable compromise. Sharing the draft on Wednesday will help us review early.",
+          counterpart_reaction_jp: "妥当な代替案ですね。水曜にドラフトをいただければ事前レビューが進められます。",
+          chunks: ["We cannot submit", "by Wednesday,", "but we can share a draft", "on Wednesday", "and submit on Friday."],
+          choices: [
+            { type: "PERFECT", text: "We cannot submit by Wednesday, but we can share a draft on Wednesday and submit on Friday.", advice: "完璧です！相手の要求に対して角を立てずに代替案を建設的に提示できています。" },
+            { type: "TOO_COMPLEX", text: "We cannot submit by Wednesday, but we can disseminate a preliminary draft concurrently and finalize subsequently on Friday.", advice: "同じ型ですが、disseminate, concurrently, subsequently など無駄に難しい表現が混ざっています。" },
+            { type: "TOO_DIRECT", text: "We cannot submit by Wednesday, because that is a totally unreasonable deadline.", advice: "同じ型ですが、相手の要望を unreasonable と一蹴しており、関係悪化の原因になります。" }
+          ]
+        },
+        {
+          stage: 4,
+          ai_name: "Sponsor (Email)",
+          email_subject: "Re: Interim Review Request",
+          ai_en: "Great. Please make sure your team prioritizes this CAPA over routine monitoring reports.",
+          ai_jp: "承知しました。通常モニタリング報告書よりもこのCAPAを優先して進めてください。",
+          key_pattern: "To keep things on track, could you please [verb] by [time]?",
+          key_pattern_jp: "予定通りに進めるため、[時間]までに[ご対応]いただけますか？",
+          pattern_rationale: "相手の要望を受け入れる代わりに、相手側のアクション（レビューフィードバック）の期限を優しくプッシュします。",
+          parts_hint: "\"send your feedback\" と \"by Thursday noon\" を組み合わせるだけ！",
+          guide: "進捗を維持するため、木曜正午までにフィードバックをいただけますか？",
+          target: "To keep things on track, could you please send your feedback by Thursday noon?",
+          counterpart_reaction_en: "Certainly. I will block time on Thursday morning to review your draft.",
+          counterpart_reaction_jp: "承知しました。木曜午前に時間を確保してドラフトを確認します。",
+          chunks: ["To keep things on track,", "could you please", "send your feedback", "by Thursday noon?"],
+          choices: [
+            { type: "PERFECT", text: "To keep things on track, could you please send your feedback by Thursday noon?", advice: "完璧です！大義名分（To keep things on track）を掲げて相手のアクションを促せています。" },
+            { type: "TOO_COMPLEX", text: "To keep things on track, could you please furnish your comprehensive appraisal prior to Thursday midday?", advice: "同じ型ですが、furnish your comprehensive appraisal など難解でスムーズではありません。" },
+            { type: "TOO_DIRECT", text: "To keep things on track, could you please do your job and send feedback before Thursday?", advice: "同じ型ですが、do your job と相手を侮辱しており重大なマナー違反です。" }
+          ]
+        },
+        {
+          stage: 5,
+          ai_name: "Sponsor (Email)",
+          email_subject: "Re: Final Alignment on Deviation CAPA",
+          ai_en: "Agreed. Let's touch base once the final report is ready for sign-off.",
+          ai_jp: "合意しました。最終報告書の承認準備が整い次第、連絡を取り合いましょう。",
+          key_pattern: "Thanks for the alignment; I will [verb] and [verb]...",
+          key_pattern_jp: "ご合意ありがとうございます。〜して…いたします…",
+          pattern_rationale: "合意への感謝を端的に述べた上で、自分の次の担当アクション（金曜午前送付・連絡）を固定してやり取りを締めくくります。",
+          parts_hint: "\"finalize the report\" と \"share the clean copy on Friday\" を組み合わせるだけ！",
+          guide: "ご合意ありがとうございます。報告書を完成させ、金曜にクリーン版を共有します。",
+          target: "Thanks for the alignment; I will finalize the report and share the clean copy on Friday.",
+          counterpart_reaction_en: "Perfect. Thanks for your proactive cooperation on this matter.",
+          counterpart_reaction_jp: "素晴らしいです。迅速かつ前向きなご対応ありがとうございました。",
+          chunks: ["Thanks for the alignment;", "I will finalize the report", "and share the clean copy", "on Friday."],
+          choices: [
+            { type: "PERFECT", text: "Thanks for the alignment; I will finalize the report and share the clean copy on Friday.", advice: "完璧です！信頼関係を深めつつ、次のマイルストーンを明確に固定できています。" },
+            { type: "TOO_COMPLEX", text: "Thanks for the alignment; I will consummate the documentation and transmit the finalized transcript on Friday.", advice: "同じ型ですが、consummate, transmit the finalized transcript など言葉が不自然に重すぎます。" },
+            { type: "TOO_DIRECT", text: "Thanks for the alignment; I will do it Friday so do not email me again until then.", advice: "同じ型ですが、今後の連絡を遮断するような冷淡な文脈になっています。" }
           ]
         }
       ];
@@ -2025,6 +2112,7 @@
         {
           stage: 1,
           ai_name: "Sponsor (Director)",
+          email_subject: "Site 102 Initiation Timeline Adjustment",
           ai_en: "We noticed the site initiation for Site 102 is delayed. What is your plan?",
           ai_jp: "Site 102の立ち上げが遅れています。どのような計画ですか？",
           key_pattern: "I will check [noun] and get back to you by [time]...",
@@ -2033,11 +2121,97 @@
           parts_hint: "\"the status\" と \"by Friday\" (金曜までに) を組み合わせるだけ！",
           guide: "（状況確認と期限提示）進捗を確認し、金曜日までに最新の予定をお伝えします。",
           target: "I will check the status and get back to you by Friday.",
+          counterpart_reaction_en: "Understood. That sounds like a solid plan, so let's align on Friday.",
+          counterpart_reaction_jp: "了解しました。確実な進め方ですね。では金曜日にすり合わせましょう。",
           chunks: ["I will check the status", "and get back to you", "by Friday."],
           choices: [
             { type: "PERFECT", text: "I will check the status and get back to you by Friday.", advice: "完璧です！『check』と『get』を用いて簡潔かつ具体的に返答できています。" },
             { type: "TOO_COMPLEX", text: "I will check the intricate underlying causes and get back to you subsequent to our interdepartmental review.", advice: "同じ型から始まっていますが、intricate, subsequent to, interdepartmental review など文言が硬すぎます。" },
             { type: "TOO_DIRECT", text: "I will check the status, but you already know we have no time to fix this by Friday.", advice: "同じ型から始まっていますが、相手を責めるような言い回しになっています。" }
+          ]
+        },
+        {
+          stage: 2,
+          ai_name: "Sponsor (Director)",
+          email_subject: "Site 102 IRB Constraints",
+          ai_en: "Friday might be too late. Can you at least tell me what is causing the bottleneck right now?",
+          ai_jp: "金曜では遅すぎるかもしれません。現時点で何がボトルネックになっているか教えてもらえますか？",
+          key_pattern: "The main issue is that [clause], so we are [gerund/verb]...",
+          key_pattern_jp: "主な課題は〜ということであり、現在…しております…",
+          pattern_rationale: "核心のボトルネックを単刀直入に共有し、すでに手を打っているアクションを現在進行形で伝えることで安心感を与えます。",
+          parts_hint: "\"the IRB requested extra documents\" と \"working with the site to fix it\" を組み合わせるだけ！",
+          guide: "主な課題はIRBが追加資料を求めたことであり、施設と連携して対応中です。",
+          target: "The main issue is that the IRB requested extra documents, so we are working with the site to fix it.",
+          counterpart_reaction_en: "Thanks for clarifying. That makes complete sense. Keep pushing the site.",
+          counterpart_reaction_jp: "理由がよく分かりました。納得です。引き続き施設側へプッシュをお願いします。",
+          chunks: ["The main issue is that", "the IRB requested extra documents,", "so we are working with the site", "to fix it."],
+          choices: [
+            { type: "PERFECT", text: "The main issue is that the IRB requested extra documents, so we are working with the site to fix it.", advice: "完璧です！中学単語で原因と現在のアクションを明快に説明できています。" },
+            { type: "TOO_COMPLEX", text: "The main issue is that the ethics committee mandated supplemental documentation, so we are collaborating with the institution.", advice: "同じ型ですが、mandated supplemental documentation など過剰に難解です。" },
+            { type: "TOO_DIRECT", text: "The main issue is that the IRB is incompetent, so we are stuck waiting for them.", advice: "同じ型ですが、外部機関を侮辱しておりビジネスに相応しくありません。" }
+          ]
+        },
+        {
+          stage: 3,
+          ai_name: "Sponsor (Director)",
+          email_subject: "Acceleration Proposal",
+          ai_en: "If the site is slow, can you send two CRAs to help them on-site tomorrow?",
+          ai_jp: "施設側の対応が遅いなら、明日CRAを2名現地へ派遣してサポートしてもらえませんか？",
+          key_pattern: "I hear you, but our team is [adjective/constraint], so how about [proposal]?",
+          key_pattern_jp: "お気持ちは分かりますが、チームが〜な状況ですので、代わりに…はいかがでしょうか？",
+          pattern_rationale: "相手の焦りを受け止めつつ、無理なリソース要求には冷静に境界線を引き、代替案（オンライン緊急セッション）を提案します。",
+          parts_hint: "\"fully booked tomorrow\" と \"we host a remote working session in the morning\" を組み合わせるだけ！",
+          guide: "おっしゃることは分かりますが、明日は全員予定が埋まっています。代わりに午前中にオンラインセッションを行うのはいかがでしょうか？",
+          target: "I hear you, but our team is fully booked tomorrow, so how about we host a remote working session in the morning?",
+          counterpart_reaction_en: "Fair point. A remote session tomorrow morning works for me.",
+          counterpart_reaction_jp: "確かにそうですね。明朝のオンラインセッションで進めましょう。",
+          chunks: ["I hear you,", "but our team is fully booked tomorrow,", "so how about we host", "a remote working session", "in the morning?"],
+          choices: [
+            { type: "PERFECT", text: "I hear you, but our team is fully booked tomorrow, so how about we host a remote working session in the morning?", advice: "完璧です！相手の立場を尊重しつつ、実現可能な次善策を爽やかに提案できています。" },
+            { type: "TOO_COMPLEX", text: "I hear you, but our personnel bandwidth is currently exhausted, so how about we facilitate a virtual synchronization forum?", advice: "同じ型ですが、personnel bandwidth is exhausted, virtual synchronization forum など硬すぎて浮いています。" },
+            { type: "TOO_DIRECT", text: "I hear you, but we are not your personal assistants, so do not ask for on-site visits.", advice: "同じ型ですが、感情的に反発しておりプロフェッショナルな態度ではありません。" }
+          ]
+        },
+        {
+          stage: 4,
+          ai_name: "Sponsor (Director)",
+          email_subject: "Target Confirmation",
+          ai_en: "Okay. If the remote session goes well, will we definitely meet next month's first patient enrollment target?",
+          ai_jp: "分かりました。もしオンラインセッションがうまくいけば、来月の第1例目被験者登録ターゲットは確実に達成できますか？",
+          key_pattern: "If we [verb condition], we are confident that we can [verb outcome]...",
+          key_pattern_jp: "もし〜できれば、…を達成できると確信しております…",
+          pattern_rationale: "無責任な100%保証を避け、前提条件（今週中にIRB承認資料を揃える）をセットにして成果へのコミットメントを示します。",
+          parts_hint: "\"complete the documents this week\" と \"start on schedule next month\" を組み合わせるだけ！",
+          guide: "今週中に書類を完了できれば、来月予定通り開始できると確信しています。",
+          target: "If we complete the documents this week, we are confident that we can start on schedule next month.",
+          counterpart_reaction_en: "Good. That gives me the confidence I need to report to executive leadership.",
+          counterpart_reaction_jp: "良かったです。これなら経営陣にも自信を持って報告できます。",
+          chunks: ["If we complete the documents this week,", "we are confident that", "we can start on schedule", "next month."],
+          choices: [
+            { type: "PERFECT", text: "If we complete the documents this week, we are confident that we can start on schedule next month.", advice: "完璧です！条件を明示しつつポジティブなコミットメントを中学英語で伝えられています。" },
+            { type: "TOO_COMPLEX", text: "If we finalize the documentation this week, we are confident that we can inaugurate patient recruitment as slated.", advice: "同じ型ですが、inaugurate patient recruitment as slated など過剰に気取った言い方です。" },
+            { type: "TOO_DIRECT", text: "If we do our part, we will succeed, unless the site messes up again.", advice: "同じ型ですが、施設のせいにするようなネガティブな一言が入っており不適切です。" }
+          ]
+        },
+        {
+          stage: 5,
+          ai_name: "Sponsor (Director)",
+          email_subject: "Action Items Wrap-up",
+          ai_en: "Great discussion. Let's make sure everyone stays focused on this timeline.",
+          ai_jp: "良い議論ができました。全員がこのタイムラインに集中できるようにしましょう。",
+          key_pattern: "Let's lock in [plan/date] and I will [verb]...",
+          key_pattern_jp: "[計画/日付]を確定目標とし、私が〜を担当いたします…",
+          pattern_rationale: "決定事項（目標期日）を固定し、自発的に次のアクション（議事メモ送付）を担うことで強いパートナーシップを確立します。",
+          parts_hint: "\"next month's target\" と \"send a summary of today's call by EOD\" を組み合わせるだけ！",
+          guide: "来月の目標を確定とし、本日の通話内容のまとめを本日中に送付します。",
+          target: "Let's lock in next month's target, and I will send a summary of today's call by EOD.",
+          counterpart_reaction_en: "Excellent. Thanks for leading this so effectively.",
+          counterpart_reaction_jp: "素晴らしいです。効率的にリードしていただきありがとうございました。",
+          chunks: ["Let's lock in", "next month's target,", "and I will send a summary", "of today's call by EOD."],
+          choices: [
+            { type: "PERFECT", text: "Let's lock in next month's target, and I will send a summary of today's call by EOD.", advice: "完璧です！『lock in』『send』など力強く明快な基本動詞でミーティングを締めくくれています。" },
+            { type: "TOO_COMPLEX", text: "Let's lock in the milestone, and I shall disseminate the minutes of this teleconference prior to close of business.", advice: "同じ型ですが、disseminate the minutes of this teleconference など文章が硬直しています。" },
+            { type: "TOO_DIRECT", text: "Let's lock in the date, and make sure nobody changes their mind again.", advice: "同じ型ですが、相手を疑うような言葉づかいになっており信頼を損ねます。" }
           ]
         }
       ];
@@ -2046,6 +2220,7 @@
         {
           stage: 1,
           ai_name: "Rajesh (Tech Lead)",
+          email_subject: "Timeline Discussion for Tomorrow's Release",
           ai_en: "Tomorrow's deployment is completely impossible. My team is packed.",
           ai_jp: "明日までの対応は完全に不可能です。チームは手一杯です。",
           key_pattern: "I totally see your point, but [clause]...",
@@ -2054,11 +2229,97 @@
           parts_hint: "\"the deadline is Friday\" (締切は金曜です) を組み合わせるだけ！",
           guide: "（相手の話を受け止めつつ否定する）おっしゃることは分かりますが、締切は金曜です",
           target: "I totally see your point, but the deadline is Friday.",
+          counterpart_reaction_en: "Fair enough. Thanks for understanding our workload. We will prioritize the core tasks for Friday.",
+          counterpart_reaction_jp: "わかりました。こちらの状況を汲んでくれて助かります。金曜に向けてコアタスクを最優先します。",
           chunks: ["I totally see your point,", "but the deadline", "is Friday."],
           choices: [
             { type: "PERFECT", text: "I totally see your point, but the deadline is Friday.", advice: "完璧です！相手の立場を尊重しつつ要件をシンプルに伝えられました。" },
             { type: "TOO_COMPLEX", text: "I totally see your point, but we ought to adhere to the predetermined chronological milestones.", advice: "同じ型から始まっていますが、adhere to the predetermined chronological milestones は硬すぎて伝わりません。" },
             { type: "TOO_DIRECT", text: "I totally see your point, but that is your team's failure, not my problem.", advice: "同じ型から始まっていますが、後半が極めて攻撃的で信頼関係を破壊します。" }
+          ]
+        },
+        {
+          stage: 2,
+          ai_name: "Rajesh (Tech Lead)",
+          email_subject: "Scope Negotiation",
+          ai_en: "If we have to deploy by Friday, we cannot include the analytics module.",
+          ai_jp: "金曜までにデプロイしなければならないなら、分析モジュールを含めることはできません。",
+          key_pattern: "Just to make sure, are you saying that [statement]?",
+          key_pattern_jp: "念のため確認ですが、〜ということでしょうか？",
+          pattern_rationale: "反論する前に、相手の前提条件（コア機能だけなら金曜に間に合うのか）をオウム返しでクリアにします。",
+          parts_hint: "\"the core features will be ready on Friday\" を組み合わせるだけ！",
+          guide: "念のための確認ですが、コア機能は金曜日に準備できるということでしょうか？",
+          target: "Just to make sure, are you saying that the core features will be ready on Friday?",
+          counterpart_reaction_en: "Yes, exactly. The core features will be tested and ready by Thursday evening.",
+          counterpart_reaction_jp: "その通りです。コア機能については木曜夕方までにテスト完了できます。",
+          chunks: ["Just to make sure,", "are you saying that", "the core features", "will be ready on Friday?"],
+          choices: [
+            { type: "PERFECT", text: "Just to make sure, are you saying that the core features will be ready on Friday?", advice: "完璧です！『Just to make sure』で相手の意図を穏やかに再確認できています。" },
+            { type: "TOO_COMPLEX", text: "Just to make sure, are you insinuating that the fundamental functionalities will materialize by Friday?", advice: "同じ型ですが、insinuating, fundamental functionalities materialize など過剰に気取っています。" },
+            { type: "TOO_DIRECT", text: "Just to make sure, are you saying you cannot do the work you promised?", advice: "同じ型ですが、相手の能力を疑うような失礼な表現です。" }
+          ]
+        },
+        {
+          stage: 3,
+          ai_name: "Rajesh (Tech Lead)",
+          email_subject: "Alternative Compromise",
+          ai_en: "Yes. Can the client accept getting the analytics module next week instead?",
+          ai_jp: "はい。クライアント側は分析モジュールを翌週に回すことを受け入れてもらえますか？",
+          key_pattern: "What if we [verb A] first and [verb B] next week?",
+          key_pattern_jp: "まず〜を完了させ、来週…する形にするのはいかがでしょうか？",
+          pattern_rationale: "トレードオフ（段階的リリース）をシンプルな中学生レベルの提案構文でスムーズに提示します。",
+          parts_hint: "\"release the core app\" と \"add the analytics module\" を組み合わせるだけ！",
+          guide: "まずコアアプリをリリースし、来週分析モジュールを追加するのはいかがでしょうか？",
+          target: "What if we release the core app first and add the analytics module next week?",
+          counterpart_reaction_en: "That sounds like a great compromise. That reduces our risk significantly.",
+          counterpart_reaction_jp: "素晴らしい妥協案ですね。これならリスクを大幅に軽減できます。",
+          chunks: ["What if we", "release the core app first", "and add the analytics module", "next week?"],
+          choices: [
+            { type: "PERFECT", text: "What if we release the core app first and add the analytics module next week?", advice: "完璧です！『What if we... first and... next week?』で明快に段階リリースを提案できています。" },
+            { type: "TOO_COMPLEX", text: "What if we deploy the baseline framework initially and integrate the analytical component subsequently?", advice: "同じ型ですが、baseline framework initially, integrate subsequent など不必要に難解です。" },
+            { type: "TOO_DIRECT", text: "What if we just give them half the product and hope they do not complain?", advice: "同じ型ですが、無責任で投げやりなトーンになっています。" }
+          ]
+        },
+        {
+          stage: 4,
+          ai_name: "Rajesh (Tech Lead)",
+          email_subject: "Resource Assurance",
+          ai_en: "I like that idea. But please make sure no new change requests come in this week.",
+          ai_jp: "その案はいいですね。ただし今週は新たな変更要望が入らないようにしてください。",
+          key_pattern: "I will make sure [clause], and please [verb]...",
+          key_pattern_jp: "私が確実に〜いたしますので、そちらは…をお願いできますか？",
+          pattern_rationale: "自分の防波堤としての役割（変更のブロック）を約束しつつ、相手側にも全力投球をお願いするGive-and-Takeを表現します。",
+          parts_hint: "\"we freeze all changes\" と \"focus on testing the core build\" を組み合わせるだけ！",
+          guide: "すべての変更を凍結させますので、コア版のテストに集中していただけますか？",
+          target: "I will make sure we freeze all changes, and please focus on testing the core build.",
+          counterpart_reaction_en: "Deal. We will freeze scope and run tests full speed.",
+          counterpart_reaction_jp: "合意です。スコープを凍結し、全速力でテストを進めます。",
+          chunks: ["I will make sure", "we freeze all changes,", "and please focus on", "testing the core build."],
+          choices: [
+            { type: "PERFECT", text: "I will make sure we freeze all changes, and please focus on testing the core build.", advice: "完璧です！信頼できるパートナーとして境界線を引きつつ協力を引き出せています。" },
+            { type: "TOO_COMPLEX", text: "I will make sure we enforce a moratorium on modifications, and please concentrate on verifying the primary release.", advice: "同じ型ですが、enforce a moratorium on modifications など過剰に難解です。" },
+            { type: "TOO_DIRECT", text: "I will make sure people shut up, so do not mess up the release on Friday.", advice: "同じ型ですが、下品かつ攻撃的でチームワークを破壊します。" }
+          ]
+        },
+        {
+          stage: 5,
+          ai_name: "Rajesh (Tech Lead)",
+          email_subject: "Final Alignment",
+          ai_en: "Awesome. I feel much better about this plan. Let's sync up on Thursday before release.",
+          ai_jp: "素晴らしい。この計画なら安心です。リリース前の木曜日にすり合わせましょう。",
+          key_pattern: "Thanks for working together on this; let's [verb] on [day]...",
+          key_pattern_jp: "一緒に調整していただき感謝します。〜曜日に…しましょう…",
+          pattern_rationale: "協力してくれた仲間への感謝を伝え、次回のアクション（木曜午後の同期）を確定させて円満に終話します。",
+          parts_hint: "\"connect for a quick 15-minute sync\" と \"on Thursday afternoon\" を組み合わせるだけ！",
+          guide: "調整にご協力いただきありがとうございます。木曜午後に15分の簡単なすり合わせを行いましょう。",
+          target: "Thanks for working together on this; let's connect for a quick 15-minute sync on Thursday afternoon.",
+          counterpart_reaction_en: "Sounds like a plan. See you Thursday afternoon!",
+          counterpart_reaction_jp: "了解です。では木曜午後によろしくお願いします！",
+          chunks: ["Thanks for working together on this;", "let's connect for a quick", "15-minute sync", "on Thursday afternoon."],
+          choices: [
+            { type: "PERFECT", text: "Thanks for working together on this; let's connect for a quick 15-minute sync on Thursday afternoon.", advice: "完璧です！仲間との絆を強めつつ、軽やかで確実な次のステップを提示できています。" },
+            { type: "TOO_COMPLEX", text: "Thanks for working together on this; let us convene an interim synchronization session on Thursday afternoon.", advice: "同じ型ですが、convene an interim synchronization session など硬すぎます。" },
+            { type: "TOO_DIRECT", text: "Thanks for working together on this; let's meet Thursday so you don't forget.", advice: "同じ型ですが、相手を小馬鹿にしたような言い回しになっています。" }
           ]
         }
       ];
@@ -2116,20 +2377,27 @@
     if (loadingArea) {
       loadingArea.style.display = 'block';
       if (genTitle) genTitle.innerText = `Gemini AIが【${topicLabel}】レッスン＆問題を生成中...`;
-      if (genSub) genSub.innerText = '重要フレーズの型・中学パーツ・全5ステージの会話と解説を構成しています';
+      if (genSub) genSub.innerText = '毎回異なる5つの重要構文（型）・中学パーツ・会話ラリーを構成しています';
     }
     if (stageArea) stageArea.style.display = 'none';
 
     toast(`⏳ AIが【${topicLabel}】コースを生成中...`);
 
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    // 直近の過去履歴からターゲット英文とキーパターンを抽出し、重複生成を防止
     const excludeTopics = history.flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
+    const excludePatterns = history.flatMap(h => (h.data || []).map(s => s.key_pattern)).filter(Boolean);
 
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: trainingMode, topic: topic, excludeTopics: excludeTopics })
+        body: JSON.stringify({ 
+          mode: trainingMode, 
+          topic: topic, 
+          excludeTopics: excludeTopics,
+          excludePatterns: excludePatterns 
+        })
       });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
