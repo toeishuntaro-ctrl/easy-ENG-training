@@ -264,11 +264,15 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
 3. "ai_jp": Natural, context-rich Japanese translation of the counterpart's statement.
 4. "key_pattern": The reusable English pattern/formula (e.g., "I see your point, but we need to [verb]...", "Let me check with [person] and get back to you by [time]").
 5. "key_pattern_jp": Meaning of the pattern in Japanese (e.g., "おっしゃることは分かりますが、〜する必要があります", "〜に確認して…までに折り返します").
-6. "parts_hint": Clear Japanese hint showing the simple junior-high level English parts to insert into the pattern (e.g., '"keep the deadline" (納期を守る) を組み合わせるだけ！', '"my team" と "tomorrow" を組み合わせるだけ！').
-7. "guide": Clear Japanese mission telling the user what message to convey.
-8. "target": The ideal, polished Plain English response formed by the pattern + parts. This MUST match the PERFECT choice.
-9. "chunks": Array of 3 to 5 natural chunks (phrases/meaning blocks) that comprise the "target" sentence in correct order, e.g. ["I understand the urgency,", "but we need to", "review our workload", "first."]. This will be scrambled for sentence-building output practice.
-10. "choices": Exactly 3 distinct choices:
+6. "pattern_rationale": Clear 1-2 sentence Japanese explanation of WHY this pattern works diplomatically in global business (e.g. "相手の懸念を肯定して心理的抵抗を解消し、but以降に中学レベルの基本動詞で具体的な制約を提示するため、非ネイティブ相手でも誤解が生じません。").
+7. "parts_hint": Clear Japanese hint showing the simple junior-high level English parts to insert into the pattern (e.g., '"keep the deadline" (納期を守る) を組み合わせるだけ！', '"my team" と "tomorrow" を組み合わせるだけ！').
+8. "guide": Clear Japanese mission telling the user what message to convey.
+9. "target": The ideal, polished Plain English response formed by the pattern + parts. This MUST match the PERFECT choice.
+10. "chunks": Array of 3 to 5 natural chunks (phrases/meaning blocks) that comprise the "target" sentence in correct order, e.g. ["I understand the urgency,", "but we need to", "review our workload", "first."]. This will be scrambled for sentence-building output practice.
+11. "counterpart_reaction_en": Realistic brief follow-up response (1-2 sentences) from the counterpart acknowledging, agreeing, or aligning next steps when the user replies with the ideal Plain English response (e.g., "Understood. That sounds reasonable, so let's touch base on Friday.", "Got it. Thanks for looking into this, please keep me posted.").
+12. "counterpart_reaction_jp": Natural Japanese translation of the counterpart's follow-up reaction.
+13. "email_subject": Realistic corporate subject line (e.g., "Re: Urgent protocol deviation review", "Timeline adjustment request for Site 102").
+14. "choices": Exactly 3 distinct choices:
    **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
    - type: "PERFECT"
      text: Natural, concise Plain English using the key pattern and simple junior-high level core vocabulary (e.g. "keep the original deadline first.").
@@ -293,9 +297,13 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
         ai_jp: { type: Type.STRING, description: "Japanese translation of counterpart speech" },
         key_pattern: { type: Type.STRING, description: "Reusable English pattern or formula" },
         key_pattern_jp: { type: Type.STRING, description: "Japanese translation/meaning of the pattern" },
+        pattern_rationale: { type: Type.STRING, description: "Clear explanation of why this pattern works diplomatically with non-native global teams" },
         parts_hint: { type: Type.STRING, description: "Junior-high English parts hint to plug into the pattern" },
         guide: { type: Type.STRING, description: "Japanese mission instructions for the user" },
         target: { type: Type.STRING, description: "Target Plain English phrase (ideal response)" },
+        counterpart_reaction_en: { type: Type.STRING, description: "Realistic follow-up reaction from counterpart when user responds with Plain English" },
+        counterpart_reaction_jp: { type: Type.STRING, description: "Japanese translation of counterpart follow-up reaction" },
+        email_subject: { type: Type.STRING, description: "Realistic subject line for email/Teams communications" },
         chunks: {
           type: Type.ARRAY,
           items: { type: Type.STRING },
@@ -374,10 +382,14 @@ ${JSON.stringify((excludeTopics || []).slice(-15))}
             ai_jp: sc.ai_jp || "",
             key_pattern: sc.key_pattern || "I see your point, but we need to...",
             key_pattern_jp: sc.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります",
+            pattern_rationale: sc.pattern_rationale || "相手の立場を尊重しつつ、中学レベルの平易な動詞で制約や次のアクションを明快に伝えることで、非ネイティブ同士でも誤解なく合意形成できます。",
             parts_hint: sc.parts_hint || "中学単語を当てはめて声に出してみましょう！",
             guide: sc.guide || "状況に応じて的確なPlain Englishで返答してください。",
             target: target,
             chunks: chunks,
+            counterpart_reaction_en: sc.counterpart_reaction_en || "Understood. That sounds like a reasonable next step. Let's keep each other posted.",
+            counterpart_reaction_jp: sc.counterpart_reaction_jp || "承知しました。妥当な進め方ですね。引き続き進捗を共有し合いましょう。",
+            email_subject: sc.email_subject || (sc.ai_en?.startsWith("Subject:") ? sc.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update and next steps"),
             choices: Array.isArray(sc.choices) ? sc.choices : []
           };
         });

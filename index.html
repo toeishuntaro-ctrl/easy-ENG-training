@@ -555,7 +555,55 @@
       border-color: #1d4ed8;
     }
 
-    /* Unified Dialog & Lesson Card (All-in-one Compact Card) */
+    /* Stage Phase Stepper (Step 1: Lecture -> Step 2: Quiz) */
+    .stage-step-bar {
+      display: flex;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      padding: 3px;
+      margin-bottom: 8px;
+      gap: 3px;
+    }
+    .stage-step-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .stage-step-btn.active {
+      background: #ffffff;
+      color: #1e293b;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .stage-step-btn .step-num {
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+    .stage-step-btn.active .step-num {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    /* Unified Dialog & Context Card */
     .dialog-lesson-card {
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
@@ -593,69 +641,290 @@
       font-size: 11px;
       color: #64748b;
       margin-top: 2px;
-      margin-bottom: 8px;
       line-height: 1.3;
     }
-    .lesson-mission-divider {
-      height: 1px;
-      background: #f1f5f9;
-      margin: 6px 0;
+
+    /* Email Mode: Corporate Email Client Frame */
+    .email-client-container {
+      display: none;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
     }
-    .lesson-mission-box {
+    .email-client-header-bar {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .email-window-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .email-window-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+    .email-client-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .email-meta-box {
+      padding: 8px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 11px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .email-subject-line {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 3px;
+    }
+    .email-sender-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .email-body-text {
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.45;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .email-body-jp {
+      padding: 0 12px 8px 12px;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.35;
+    }
+    .email-quick-actions {
+      padding: 6px 12px 8px;
+      border-top: 1px dashed #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      background: #f8fafc;
+    }
+
+    /* 2nd Turn Rally / Counterpart Reaction Bubble */
+    .counterpart-reaction-card {
       background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      padding: 8px 10px;
+      border: 1.5px solid #86efac;
+      border-left: 4px solid #10b981;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 10px;
+      animation: fadeIn .25s ease;
+    }
+    .reaction-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .reaction-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #15803d;
+      background: #dcfce7;
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+    .reaction-speech-en {
+      font-size: 13px;
+      font-weight: 700;
+      color: #14532d;
+      line-height: 1.35;
+    }
+    .reaction-speech-jp {
+      font-size: 11px;
+      color: #166534;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    /* Enhanced Step 1: Lecture Card */
+    .lecture-card {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .lecture-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
     }
     .lesson-badge {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 800;
       color: #166534;
       background: #dcfce7;
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 99px;
     }
     .pattern-formula-compact {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 800;
       color: #14532d;
-      line-height: 1.25;
+      line-height: 1.3;
     }
     .pattern-jp-compact {
-      font-size: 10.5px;
+      font-size: 11px;
       color: #166534;
       margin-top: 2px;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
-    .parts-mission-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 6px;
-    }
-    .parts-pill {
+    .lecture-rationale-box {
       background: #ffffff;
-      border: 1px solid #86efac;
+      border-left: 3px solid #10b981;
       border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 11px;
-      color: #065f46;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      width: 100%;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      color: #334155;
+      line-height: 1.45;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
-    .mission-target-row {
+    .lecture-parts-box {
+      background: #ecfdf5;
+      border: 1px dashed #6ee7b7;
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 11.5px;
+      color: #065f46;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .lecture-oral-box {
+      background: #ffffff;
+      border: 1px solid #dcfce7;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+    }
+    .lecture-oral-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 6px;
+    }
+    .btn-proceed-challenge {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 6px;
-      padding-top: 4px;
-      border-top: 1px dashed #bbf7d0;
+      transition: all .15s ease;
+    }
+    .btn-proceed-challenge:active {
+      transform: scale(0.98);
+    }
+
+    /* Step 2: Quiz & Active Recall Components */
+    .quiz-mission-card {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      margin-bottom: 8px;
+    }
+    .hint-toggle-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 8px;
+      padding: 5px 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .12s;
+    }
+    .hint-toggle-bar:hover {
+      background: #fef3c7;
+    }
+    .hint-toggle-text {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .hint-drawer {
+      display: none;
+      background: #fffdf5;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      font-size: 11.5px;
+      color: #78350f;
+      line-height: 1.4;
+      animation: fadeIn .2s ease;
+    }
+    .hint-drawer.open {
+      display: block;
+    }
+
+    /* Live sentence reconstruction preview */
+    .assembly-live-preview {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 9px;
+      margin-bottom: 6px;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      line-height: 1.35;
+    }
+    .assembly-live-preview.empty {
+      color: #94a3b8;
+      font-weight: 500;
+      font-size: 11.5px;
     }
 
     /* Session Complete Modal / Card */
@@ -1010,105 +1279,187 @@
       </div>
     </div>
 
-    <!-- 相手の発言 ＆ 本日の型・ミッション統合カード -->
-    <div class="dialog-lesson-card" id="lessonCard">
-      <!-- 相手の発言エリア -->
+    <!-- 2ステップ学習切替ステッパー -->
+    <div class="stage-step-bar" id="stageStepBar">
+      <button class="stage-step-btn active" id="stepBtnLecture" onclick="switchStagePhase('lecture')">
+        <span class="step-num">1</span>
+        <span>💡 レクチャー＆型習得</span>
+      </button>
+      <button class="stage-step-btn" id="stepBtnQuiz" onclick="switchStagePhase('quiz')">
+        <span class="step-num">2</span>
+        <span>🎯 実践テスト (想起)</span>
+      </button>
+    </div>
+
+    <!-- 相手の発言カード (チャット形式：即答・シミュレーション用) -->
+    <div class="dialog-lesson-card" id="partnerCard">
       <div class="partner-row">
         <div class="partner-info">
-          <span class="partner-avatar">👤</span>
+          <span class="partner-avatar" id="partnerAvatar">👤</span>
           <span class="partner-name" id="aiName">Colleague</span>
         </div>
         <button class="micro-btn" style="padding:2px 7px; font-size:10px; background:#fff;" onclick="speakAiSpeech()">🔊 発言を聴く</button>
       </div>
       <div class="ai-speech-en" id="aiResponseEn">"..."</div>
       <div class="ai-speech-jp" id="aiResponseJp">（...）</div>
+    </div>
 
-      <!-- 仕切り ＆ 型＋パーツ＋ミッション -->
-      <div class="lesson-mission-divider"></div>
-
-      <div class="lesson-mission-box">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-          <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-            <span class="lesson-badge">💡 本日の型</span>
-            <span class="pattern-formula-compact" id="lessonPatternFormula">I see your point, but...</span>
-          </div>
-          <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#fff; color:#166534; border-color:#86efac;" onclick="speakPattern()">🔊 型</button>
+    <!-- メール返信モード専用：リアルなOutlook / ビジネスメールクライアント枠 -->
+    <div class="email-client-container" id="emailClientContainer">
+      <div class="email-client-header-bar">
+        <div class="email-window-dots">
+          <div class="email-window-dot" style="background:#f87171;"></div>
+          <div class="email-window-dot" style="background:#fbbf24;"></div>
+          <div class="email-window-dot" style="background:#34d399;"></div>
         </div>
-        
-        <div class="pattern-jp-compact" id="lessonPatternJp">おっしゃることは分かりますが、〜</div>
-
-        <div class="parts-mission-row">
-          <div class="parts-pill">
-            <span style="font-weight:bold; color:#047857;">🧩 パーツ:</span>
-            <span id="lessonPartsHint">"the deadline is Friday" を組み合わせるだけ！</span>
-          </div>
+        <div class="email-client-title">✉️ Outlook Business Mail</div>
+        <button class="micro-btn" style="padding:2px 7px; font-size:10px; background:#fff;" onclick="speakAiSpeech()">🔊 本文を聴く</button>
+      </div>
+      <div class="email-meta-box">
+        <div class="email-subject-line" id="emailSubjectLine">Subject: Project Update</div>
+        <div class="email-sender-line">
+          <span><b>From:</b> <span id="emailSenderName">Sponsor Lead</span> &lt;<span id="emailSenderAddress">sponsor@global-pharma.com</span>&gt;</span>
+          <span style="color:#94a3b8; font-size:10px;" id="emailDateStamp">Today, 09:15 AM</span>
         </div>
-
-        <div class="mission-target-row">
-          <div style="font-size:12px; font-weight:700; color:#1e293b; flex:1; line-height:1.35;">
-            🎯 <span id="japaneseGuide">...</span>
-          </div>
-          <div style="display:flex; gap:4px; flex-shrink:0;">
-            <button class="micro-btn record-btn" id="recordBtn" onclick="toggleRecording()" style="padding:3px 7px; font-size:10px;">🎙️ 話す</button>
-            <button class="micro-btn" onclick="speakTarget()" style="padding:3px 7px; font-size:10px;">🔊 模範</button>
-          </div>
-        </div>
-
-        <div class="word-feedback-box" id="wordFeedbackBox" style="display:none; margin-top:6px;"></div>
-
-        <div class="confidence" id="confidenceBox" style="display:none; margin-top:6px;">
-          <button onclick="setConfidence(1)">😰 難しい</button>
-          <button onclick="setConfidence(2)">😐 普通</button>
-          <button onclick="setConfidence(3)">😎 余裕</button>
-        </div>
+        <div><b>To:</b> You &lt;cra-lead@cro-japan.com&gt;</div>
+      </div>
+      <div class="email-body-text" id="emailBodyEn">...</div>
+      <div class="email-body-jp" id="emailBodyJp">（...）</div>
+      <div class="email-quick-actions">
+        <button class="micro-btn" style="padding:3px 8px; font-size:10.5px; background:#ffffff; color:#2563eb; border-color:#bfdbfe;" onclick="copyEmailDraft()">📋 返信メール文面をコピー</button>
       </div>
     </div>
 
-    <!-- アウトプット回答エリア (並び替え / 3択 切替可能) -->
-    <div id="outputArea" style="margin-top: 6px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span style="font-size:12px; font-weight:800; color:#1e293b;" id="outputSectionTitle">🧩 並び替えて文章を作成</span>
-        <button class="ctrl-btn" id="btnToggleOutputMode" onclick="toggleAnswerMode()">📝 3択モードで解く</button>
+    <!-- PHASE 1: レクチャー＆型インストール (厚い解説・パーツ術・声出し練習) -->
+    <div id="lecturePhaseSection" class="lecture-card">
+      <div class="lecture-header-row">
+        <div>
+          <span class="lesson-badge">💡 本日の型</span>
+          <div class="pattern-formula-compact" id="lessonPatternFormula">I see your point, but...</div>
+        </div>
+        <button class="micro-btn" style="padding:3px 7px; font-size:10.5px; background:#fff; color:#166534; border-color:#86efac; flex-shrink:0;" onclick="speakPattern()">🔊 型を聴く</button>
+      </div>
+      
+      <div class="pattern-jp-compact" id="lessonPatternJp">おっしゃることは分かりますが、〜</div>
+
+      <!-- なぜこの型が効くのか（実務レクチャー解説） -->
+      <div class="lecture-rationale-box">
+        <div style="font-weight:800; color:#065f46; font-size:11px; margin-bottom:2px;">📘 実務レクチャー（なぜこの型が通じるのか）:</div>
+        <span id="lessonPatternRationale">相手の意見を受け止めつつ、中学英語の平易な動詞で制約や期日を伝えることで、非ネイティブ相手でも角を立てずに誤解なく合意できます。</span>
       </div>
 
-      <!-- A. チャンク並び替えビルダー -->
-      <div id="chunkBuilderSection" class="builder-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-          <span style="font-size:11px; color:#64748b;">タップして順番に並べてください：</span>
-          <div class="assembly-ctrl-row" style="margin-bottom:0;">
-            <button class="ctrl-btn" onclick="undoLastChunk()">⌫ 戻す</button>
-            <button class="ctrl-btn" onclick="resetChunks()">↺ リセット</button>
+      <!-- 中学単語パーツの組み合わせ術 -->
+      <div class="lecture-parts-box">
+        <span style="font-weight:bold; color:#047857; flex-shrink:0;">🧩 パーツ術:</span>
+        <span id="lessonPartsHint">"the deadline is Friday" を組み合わせるだけ！</span>
+      </div>
+
+      <!-- 声出し＆発音練習 -->
+      <div class="lecture-oral-box">
+        <div class="lecture-oral-header">
+          <span style="font-size:11.5px; font-weight:700; color:#1e293b;">🗣️ 声に出して口に馴染ませる</span>
+          <div style="display:flex; gap:4px;">
+            <button class="micro-btn" onclick="speakTarget()" style="padding:3px 7px; font-size:10px; background:#f8fafc;">🔊 模範を聴く</button>
+            <button class="micro-btn record-btn" id="recordBtn" onclick="toggleRecording()" style="padding:3px 7px; font-size:10px;">🎙️ 発音練習</button>
           </div>
         </div>
-        
-        <div class="assembly-box" id="assemblyBox">
-          <span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成</span>
-        </div>
-
-        <div class="chunk-pool" id="chunkPool"></div>
-
-        <button class="btn-check-builder" id="btnCheckBuilder" onclick="submitBuilderAnswer()" disabled>
-          🚀 英文を確定して判定する
-        </button>
+        <div class="word-feedback-box" id="wordFeedbackBox" style="display:none; margin-top:4px;"></div>
       </div>
 
-      <!-- B. 3択モード (すべて同じ型を使用し、中学英語パーツの違いを吟味) -->
-      <div id="choiceSection" class="choice-container" style="display:none;">
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px;">すべて同じ「型」から始まります。非ネイティブ相手に最も明快で信頼される組み合わせを選んでください：</div>
-        <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
-        <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
-        <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
+      <button class="btn-proceed-challenge" onclick="switchStagePhase('quiz')">
+        🧠 型をインプットした！ 実戦テストに挑む (型を隠して作成) ➔
+      </button>
+    </div>
+
+    <!-- PHASE 2: 実践テスト (型を隠してアクティブリコール / 並び替え & 3択) -->
+    <div id="quizPhaseSection" style="display:none;">
+      
+      <!-- あなたのミッション -->
+      <div class="quiz-mission-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:12.5px; font-weight:800; color:#1e293b; line-height:1.4;">
+            🎯 <span id="japaneseGuide">...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- お助けヒント（アコーディオン：初期状態は隠す） -->
+      <div class="hint-toggle-bar" onclick="togglePatternHintDrawer()">
+        <span class="hint-toggle-text">💡 型のヒントをチラ見する</span>
+        <span id="hintDrawerArrow" style="font-size:11px; color:#92400e;">▼ 開く</span>
+      </div>
+      <div class="hint-drawer" id="hintDrawer">
+        <div><b>型:</b> <span id="hintPatternText">I see your point, but...</span></div>
+        <div style="margin-top:3px;"><b>パーツ:</b> <span id="hintPartsText">"the deadline is Friday"</span></div>
+      </div>
+
+      <!-- アウトプット回答エリア (並び替え / 3択 切替可能) -->
+      <div id="outputArea">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-size:12px; font-weight:800; color:#1e293b;" id="outputSectionTitle">🧩 並び替えて文章を作成</span>
+          <button class="ctrl-btn" id="btnToggleOutputMode" onclick="toggleAnswerMode()">📝 3択モードで解く</button>
+        </div>
+
+        <!-- A. チャンク並び替えビルダー -->
+        <div id="chunkBuilderSection" class="builder-card">
+          <!-- 組み立て中の英文ライブプレビュー -->
+          <div class="assembly-live-preview empty" id="assemblyLivePreview">
+            👇 下のパーツをタップして英文を完成させてください
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <span style="font-size:11px; color:#64748b;">選択したパーツ：</span>
+            <div class="assembly-ctrl-row" style="margin-bottom:0;">
+              <button class="ctrl-btn" onclick="undoLastChunk()">⌫ 戻す</button>
+              <button class="ctrl-btn" onclick="resetChunks()">↺ リセット</button>
+            </div>
+          </div>
+          
+          <div class="assembly-box" id="assemblyBox">
+            <span class="assembly-placeholder" id="assemblyPlaceholder">（パーツをタップするとここに入ります）</span>
+          </div>
+
+          <div class="chunk-pool" id="chunkPool"></div>
+
+          <button class="btn-check-builder" id="btnCheckBuilder" onclick="submitBuilderAnswer()" disabled>
+            🚀 英文を確定して判定する
+          </button>
+        </div>
+
+        <!-- B. 3択モード (すべて同じ型を使用し、中学英語パーツの違いを吟味) -->
+        <div id="choiceSection" class="choice-container" style="display:none;">
+          <div style="font-size:11px; color:#64748b; margin-bottom:6px;">すべて同じ「型」から始まります。非ネイティブ相手に最も明快で信頼される組み合わせを選んでください：</div>
+          <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
+          <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
+          <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
+        </div>
       </div>
     </div>
 
     <div class="result-card" id="resultCard" style="display:none;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span class="status-tag" id="statusBadge">PERFECT</span>
-        <button class="micro-btn" style="padding:4px 8px; font-size:11px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="saveCurrentPhrase()">⭐ このフレーズを保存</button>
+        <div style="display:flex; gap:4px;">
+          <button class="micro-btn" id="btnCopyEmailResult" style="display:none; padding:4px 8px; font-size:11px; background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;" onclick="copyEmailDraft()">📋 メール文面コピー</button>
+          <button class="micro-btn" style="padding:4px 8px; font-size:11px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="saveCurrentPhrase()">⭐ 保存</button>
+        </div>
       </div>
       
       <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-top: 8px; padding: 6px 8px; background:#fff; border-radius:6px; border:1px solid #cbd5e1;" id="resultFullSentence"></div>
       <p style="font-size: 13px; margin: 8px 0; color: #334155; line-height: 1.45;" id="adviceText"></p>
+
+      <!-- 2往復目：相手のリアクション（合意形成演出） -->
+      <div class="counterpart-reaction-card" id="counterpartReactionCard" style="display:none;">
+        <div class="reaction-header-row">
+          <div style="display:flex; align-items:center; gap:5px;">
+            <span class="reaction-badge">🤝 2往復目: 相手の返答・合意 (Rally 2)</span>
+            <span style="font-size:11px; font-weight:700; color:#166534;" id="reactionSenderName">Sponsor</span>
+          </div>
+          <button class="micro-btn" style="padding:2px 7px; font-size:10px; background:#ffffff; color:#15803d; border-color:#86efac;" onclick="speakReactionSpeech()">🔊 音声を聴く</button>
+        </div>
+        <div class="reaction-speech-en" id="reactionSpeechEn">"Understood. That sounds reasonable."</div>
+        <div class="reaction-speech-jp" id="reactionSpeechJp">（承知しました。妥当な進め方ですね。）</div>
+      </div>
 
       <!-- 表現のニュアンス比較コーナー -->
       <div class="comparison-box" id="comparisonBox"></div>
@@ -1657,6 +2008,7 @@
           ai_jp: "件名: 緊急: Site 101プロトコル逸脱に関する問い合わせ",
           key_pattern: "I am looking into [noun] and will [verb] by [time]...",
           key_pattern_jp: "〜を調査中であり、[時間]までに[対応]いたします…",
+          pattern_rationale: "まず受領したこと（Thank you）と調査中であること（looking into this）を即座に伝え、具体的な期限（by EOD today）を中学単語で区切ることで、相手の不安をゼロにします。",
           parts_hint: "\"this matter\" と \"send an update by EOD today\" を組み合わせるだけ！",
           guide: "（Teams/メール返信）受領を確認し、調査のうえ本日中にメールで回答する旨を伝えてください。",
           target: "Thank you. I am looking into this and will send an update by EOD today.",
@@ -1677,6 +2029,7 @@
           ai_jp: "Site 102の立ち上げが遅れています。どのような計画ですか？",
           key_pattern: "I will check [noun] and get back to you by [time]...",
           key_pattern_jp: "〜を確認し、[時間]までに折り返しご連絡します…",
+          pattern_rationale: "曖昧に答えず、基本動詞の『check』と『get back to』を使って『何を・いつまでに』共有するかをストレートに伝えることで、プロフェッショナルな信頼を獲得できます。",
           parts_hint: "\"the status\" と \"by Friday\" (金曜までに) を組み合わせるだけ！",
           guide: "（状況確認と期限提示）進捗を確認し、金曜日までに最新の予定をお伝えします。",
           target: "I will check the status and get back to you by Friday.",
@@ -1697,6 +2050,7 @@
           ai_jp: "明日までの対応は完全に不可能です。チームは手一杯です。",
           key_pattern: "I totally see your point, but [clause]...",
           key_pattern_jp: "おっしゃることは十分理解できますが、〜です…",
+          pattern_rationale: "『I see your point』でまず相手の立場を受け止めることで心理的抵抗を解除し、後半は中学単語で客観的事実のみを述べることで、角を立てずに境界線を引くことができます。",
           parts_hint: "\"the deadline is Friday\" (締切は金曜です) を組み合わせるだけ！",
           guide: "（相手の話を受け止めつつ否定する）おっしゃることは分かりますが、締切は金曜です",
           target: "I totally see your point, but the deadline is Friday.",
@@ -1851,6 +2205,40 @@
   let originalChunks = [];
   let chunkPoolItems = [];
   let assembledChunks = [];
+  let stagePhase = 'lecture'; // 'lecture' | 'quiz'
+  let isHintDrawerOpen = false;
+
+  function switchStagePhase(phase) {
+    stagePhase = phase;
+    const lectureSection = document.getElementById('lecturePhaseSection');
+    const quizSection = document.getElementById('quizPhaseSection');
+    const btnLecture = document.getElementById('stepBtnLecture');
+    const btnQuiz = document.getElementById('stepBtnQuiz');
+
+    if (phase === 'lecture') {
+      if (lectureSection) lectureSection.style.display = 'block';
+      if (quizSection) quizSection.style.display = 'none';
+      if (btnLecture) btnLecture.classList.add('active');
+      if (btnQuiz) btnQuiz.classList.remove('active');
+    } else {
+      if (lectureSection) lectureSection.style.display = 'none';
+      if (quizSection) quizSection.style.display = 'block';
+      if (btnLecture) btnLecture.classList.remove('active');
+      if (btnQuiz) btnQuiz.classList.add('active');
+    }
+  }
+
+  function togglePatternHintDrawer() {
+    isHintDrawerOpen = !isHintDrawerOpen;
+    const drawer = document.getElementById('hintDrawer');
+    const arrow = document.getElementById('hintDrawerArrow');
+    if (drawer) {
+      drawer.classList.toggle('open', isHintDrawerOpen);
+    }
+    if (arrow) {
+      arrow.innerText = isHintDrawerOpen ? '▲ 閉じる' : '▼ 開く';
+    }
+  }
 
   function toggleAnswerMode() {
     currentAnswerMode = (currentAnswerMode === 'builder') ? 'choice' : 'builder';
@@ -1876,27 +2264,48 @@
     }
   }
 
+  // 選択肢のヒント漏れ（大文字や文末記号）を除去するサニタイズ関数
+  function sanitizeChunkText(text) {
+    if (!text || typeof text !== 'string') return '';
+    // 文頭・文末の句読点・記号・引用符を徹底除去
+    let cleaned = text.trim().replace(/^[\s,.\?!;:"'“”’‘]+|[\s,.\?!;:"'“”’‘]+$/g, '').trim();
+    if (!cleaned) return '';
+
+    const words = cleaned.split(/\s+/);
+    const firstWord = words[0];
+
+    // 大文字を維持すべき語句（I, 曜日, 略語, 固有名詞）以外は先頭を小文字化して先頭漏れを防ぐ
+    const retainCaps = /^(I|I'm|I'll|I've|I'd|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|EOD|COB|ASAP|CEO|CTO|CRA|CTM|Sponsor|Site|Teams|Zoom|Slack|Japan|US|UK|EU)$/i;
+
+    if (!retainCaps.test(firstWord)) {
+      cleaned = cleaned.charAt(0).toLowerCase() + cleaned.slice(1);
+    }
+    return cleaned;
+  }
+
   function initChunkBuilder(stageData) {
     assembledChunks = [];
-    let chunks = [];
+    let rawChunks = [];
 
     if (stageData && Array.isArray(stageData.chunks) && stageData.chunks.length >= 2) {
-      chunks = [...stageData.chunks];
+      rawChunks = [...stageData.chunks];
     } else {
       const targetText = stageData?.target || 
         (stageData?.choices && stageData.choices.find(c => c.type === 'PERFECT')?.text) ||
         stageData?.key_pattern ||
         '';
-      chunks = createClientSentenceChunks(targetText);
+      rawChunks = createClientSentenceChunks(targetText);
     }
 
-    if (!chunks || chunks.length === 0) {
-      chunks = ["Thank you,", "I am checking this", "and will update you."];
+    if (!rawChunks || rawChunks.length === 0) {
+      rawChunks = ["Thank you,", "I am checking this", "and will update you."];
     }
 
-    originalChunks = [...chunks];
+    // 各チャンクのヒント記号・先頭大文字を除去
+    const sanitizedChunks = rawChunks.map(c => sanitizeChunkText(c)).filter(c => c.length > 0);
+    originalChunks = sanitizedChunks.length >= 2 ? sanitizedChunks : rawChunks;
 
-    const pool = chunks.map((text, idx) => ({ id: idx, text: text, used: false }));
+    const pool = originalChunks.map((text, idx) => ({ id: idx, text: text, used: false }));
     // ランダムシャッフル
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1913,19 +2322,16 @@
 
   function createClientSentenceChunks(sentence) {
     if (!sentence || typeof sentence !== 'string') {
-      return ["Thank you,", "I will check this", "by Friday."];
+      return ["thank you", "I will check this", "by Friday"];
     }
     const trimmed = sentence.trim();
     if (!trimmed) {
-      return ["Thank you,", "I will check this", "by Friday."];
+      return ["thank you", "I will check this", "by Friday"];
     }
 
     // 1. カンマで自然な句に分割
     if (trimmed.includes(',')) {
-      const parts = trimmed.split(',').map((p, idx, arr) => {
-        const item = p.trim();
-        return idx < arr.length - 1 ? item + ',' : item;
-      }).filter(p => p.length > 0);
+      const parts = trimmed.split(',').map(p => p.trim()).filter(p => p.length > 0);
 
       if (parts.length >= 2 && parts.length <= 4) {
         const subParts = [];
@@ -1959,6 +2365,45 @@
     return chunks.length >= 2 ? chunks : [trimmed];
   }
 
+  function updateAssemblyLivePreview() {
+    const previewEl = document.getElementById('assemblyLivePreview');
+    if (!previewEl) return;
+
+    const current = (scenarios && scenarios[currentStageIndex]) ? scenarios[currentStageIndex] : null;
+
+    if (assembledChunks.length === 0) {
+      previewEl.className = 'assembly-live-preview empty';
+      previewEl.innerText = '👇 下のパーツをタップして英文を完成させてください';
+      return;
+    }
+
+    const rawSentence = assembledChunks.map(c => c.text).join(' ').trim();
+    if (!rawSentence) {
+      previewEl.className = 'assembly-live-preview empty';
+      previewEl.innerText = '👇 下のパーツをタップして英文を完成させてください';
+      return;
+    }
+
+    // 先頭のみ綺麗に大文字化して文としてプレビュー
+    let formatted = rawSentence.charAt(0).toUpperCase() + rawSentence.slice(1);
+
+    // 全パーツが組み上がったら目標文の終端記号（. や ?）を付与
+    const allUsed = chunkPoolItems.length > 0 && chunkPoolItems.every(i => i.used);
+    if (allUsed && current && current.target) {
+      const endMatch = current.target.trim().match(/([.?!]+)$/);
+      if (endMatch) {
+        if (!formatted.endsWith(endMatch[1])) {
+          formatted += endMatch[1];
+        }
+      } else if (!/[.?!]$/.test(formatted)) {
+        formatted += '.';
+      }
+    }
+
+    previewEl.className = 'assembly-live-preview';
+    previewEl.innerHTML = `✍️ <b>組み立て中の英文:</b> &nbsp;"${escapeHtml(formatted)}"`;
+  }
+
   function renderBuilderUI() {
     try {
       const assemblyBox = document.getElementById('assemblyBox');
@@ -1968,7 +2413,7 @@
       if (!assemblyBox || !chunkPool) return;
 
       if (assembledChunks.length === 0) {
-        assemblyBox.innerHTML = '<span class="assembly-placeholder" id="assemblyPlaceholder">👇 下のパーツをタップして英文を完成</span>';
+        assemblyBox.innerHTML = '<span class="assembly-placeholder" id="assemblyPlaceholder">（パーツをタップするとここに入ります）</span>';
         assemblyBox.classList.remove('active');
       } else {
         assemblyBox.classList.add('active');
@@ -1984,6 +2429,8 @@
           ${escapeHtml(item.text)}
         </button>
       `).join('');
+
+      updateAssemblyLivePreview();
 
       const allUsed = chunkPoolItems.length > 0 && chunkPoolItems.every(i => i.used);
       if (checkBtn) {
@@ -2085,17 +2532,60 @@
       else if (trainingMode === 'bizmail') modeSub.innerText = '✉️ メール返信';
       else modeSub.innerText = '🎯 即答トレーニング';
     }
-    document.getElementById('aiName').innerText = data.ai_name || "Colleague";
-    document.getElementById('aiResponseEn').innerText = `"${data.ai_en || ''}"`;
-    document.getElementById('aiResponseJp').innerText = `（${data.ai_jp || ''}）`;
+
+    // メール返信モードとチャットモードの表示分岐
+    const emailClientContainer = document.getElementById('emailClientContainer');
+    const partnerCard = document.getElementById('partnerCard');
+    const btnCopyEmailResult = document.getElementById('btnCopyEmailResult');
+
+    if (trainingMode === 'bizmail' || trainingMode === 'email') {
+      if (emailClientContainer) emailClientContainer.style.display = 'block';
+      if (partnerCard) partnerCard.style.display = 'none';
+      if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'inline-block';
+
+      const subjectEl = document.getElementById('emailSubjectLine');
+      const senderNameEl = document.getElementById('emailSenderName');
+      const bodyEnEl = document.getElementById('emailBodyEn');
+      const bodyJpEl = document.getElementById('emailBodyJp');
+
+      const subj = data.email_subject || (data.ai_en?.startsWith("Subject:") ? data.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project Update and Next Steps");
+      if (subjectEl) subjectEl.innerText = `Subject: ${subj}`;
+      if (senderNameEl) senderNameEl.innerText = data.ai_name || "Sponsor Study Manager";
+      if (bodyEnEl) bodyEnEl.innerText = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
+      if (bodyJpEl) bodyJpEl.innerText = data.ai_jp ? `（${data.ai_jp.replace(/^件名:.*?\n+/i, '')}）` : '';
+    } else {
+      if (emailClientContainer) emailClientContainer.style.display = 'none';
+      if (partnerCard) partnerCard.style.display = 'block';
+      if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'none';
+
+      document.getElementById('aiName').innerText = data.ai_name || "Colleague";
+      document.getElementById('aiResponseEn').innerText = `"${data.ai_en || ''}"`;
+      document.getElementById('aiResponseJp').innerText = `（${data.ai_jp || ''}）`;
+    }
     
-    // レッスン型 & 単語パーツの反映
+    // レッスン型 & なぜこの型が効くのか（厚いレクチャー解説）の反映
     const patternEl = document.getElementById('lessonPatternFormula');
     const patternJpEl = document.getElementById('lessonPatternJp');
+    const rationaleEl = document.getElementById('lessonPatternRationale');
     const partsHintEl = document.getElementById('lessonPartsHint');
+    
     if (patternEl) patternEl.innerText = data.key_pattern || "I see your point, but we need to [verb]...";
     if (patternJpEl) patternJpEl.innerText = data.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります…";
+    if (rationaleEl) {
+      rationaleEl.innerText = data.pattern_rationale || "相手の立場や要求をまず受け止め、中学英語の平易な基本動詞で期限やアクションを明快に伝えることで、非ネイティブ相手でも角を立てずに誤解なく合意できます。";
+    }
     if (partsHintEl) partsHintEl.innerText = data.parts_hint || "中学英単語のパーツを組み合わせて声に出してみましょう！";
+
+    // クイズ用お助けヒント（アコーディオン）初期化（初期状態は隠す）
+    const hintPatternText = document.getElementById('hintPatternText');
+    const hintPartsText = document.getElementById('hintPartsText');
+    const hintDrawer = document.getElementById('hintDrawer');
+    const hintDrawerArrow = document.getElementById('hintDrawerArrow');
+    if (hintPatternText) hintPatternText.innerText = data.key_pattern || '';
+    if (hintPartsText) hintPartsText.innerText = data.parts_hint || '';
+    isHintDrawerOpen = false;
+    if (hintDrawer) hintDrawer.classList.remove('open');
+    if (hintDrawerArrow) hintDrawerArrow.innerText = '▼ 開く';
 
     document.getElementById('japaneseGuide').innerText = data.guide || '';
 
@@ -2105,9 +2595,13 @@
     if (resultCard) resultCard.style.display = 'none';
     if (confidenceBox) confidenceBox.style.display = 'none';
 
-    document.getElementById('wordFeedbackBox').style.display = 'none';
+    const wordFeedbackBox = document.getElementById('wordFeedbackBox');
+    if (wordFeedbackBox) wordFeedbackBox.style.display = 'none';
     confidenceScore = 0;
     document.querySelectorAll('#confidenceBox button').forEach(b => b.classList.remove('selected'));
+
+    // ステップ1（レクチャー＆型習得）から開始
+    switchStagePhase('lecture');
 
     // チャンクビルダー初期化
     initChunkBuilder(data);
@@ -2453,6 +2947,10 @@
     const resultFullSentence = document.getElementById('resultFullSentence');
     const adviceText = document.getElementById('adviceText');
     const comparisonBox = document.getElementById('comparisonBox');
+    const reactionCard = document.getElementById('counterpartReactionCard');
+    const reactionSenderName = document.getElementById('reactionSenderName');
+    const reactionSpeechEn = document.getElementById('reactionSpeechEn');
+    const reactionSpeechJp = document.getElementById('reactionSpeechJp');
 
     if (!resultCard) return;
     resultCard.style.display = 'block';
@@ -2474,6 +2972,16 @@
     const chosenAdvice = selectedChoice ? selectedChoice.advice : (perfectChoice ? perfectChoice.advice : '基本動詞と型を組み合わせた、最も信頼されるPlain Englishです。');
     if (adviceText) {
       adviceText.innerText = chosenAdvice;
+    }
+
+    // 2往復目：相手の返答・合意リアクションの表示
+    if (reactionCard) {
+      const rxEn = scenario.counterpart_reaction_en || "Understood. That sounds reasonable. Let's keep each other posted.";
+      const rxJp = scenario.counterpart_reaction_jp || "承知しました。妥当な進め方ですね。引き続き進捗を共有し合いましょう。";
+      reactionCard.style.display = 'block';
+      if (reactionSenderName) reactionSenderName.innerText = scenario.ai_name || "Counterpart";
+      if (reactionSpeechEn) reactionSpeechEn.innerText = `"${rxEn}"`;
+      if (reactionSpeechJp) reactionSpeechJp.innerText = `（${rxJp}）`;
     }
 
     // ニュアンス比較コーナー
@@ -2509,6 +3017,37 @@
 
     const checkBtn = document.getElementById('btnCheckBuilder');
     if (checkBtn) checkBtn.disabled = true;
+  }
+
+  function speakReactionSpeech() {
+    if (!scenarios || !scenarios[currentStageIndex]) return;
+    const current = scenarios[currentStageIndex];
+    const rxEn = current.counterpart_reaction_en || "Understood. That sounds reasonable. Let's keep each other posted.";
+    speakText(rxEn);
+  }
+
+  function copyEmailDraft() {
+    if (!scenarios || !scenarios[currentStageIndex]) return;
+    const current = scenarios[currentStageIndex];
+    const rawName = current.ai_name || "Sponsor";
+    const cleanName = rawName.split('(')[0].trim();
+    const replyBody = current.target || "";
+    const subject = current.email_subject || (current.ai_en?.startsWith("Subject:") ? current.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update");
+
+    const emailFullText = `Subject: Re: ${subject}\n\nHi ${cleanName},\n\nThank you for reaching out.\n${replyBody}\n\nPlease let me know if you need anything else.\n\nBest regards,\nClinical Research Associate (CRA)`;
+
+    navigator.clipboard.writeText(emailFullText).then(() => {
+      toast("📋 実務用メール返信文をクリップボードにコピーしました！");
+    }).catch(() => {
+      // フォールバック
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = emailFullText;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+      toast("📋 メール返信文をコピーしました！");
+    });
   }
 
   function checkChoice(index) {
