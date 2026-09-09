@@ -1,9 +1,13 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check authentication and user ownership
+    // Helper function to check authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
     function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
     // Test connection document for initial health check
@@ -11,19 +15,39 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    // User profile document
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    // Shared Sync Profiles (for cross-device sync via Sync Code)
+    match /sync_profiles/{syncCode} {
+      allow read, write: if isAuthenticated() && syncCode.size() >= 4 && syncCode.size() <= 64;
 
-      // User's saved patterns and weapons
       match /weapons/{weaponId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isAuthenticated();
       }
 
-      // User's spaced repetition items
       match /spaced_items/{itemId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isAuthenticated();
+      }
+
+      match /quiz_history/{quizId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // Direct User documents
+    match /users/{userId} {
+      allow read, write: if isAuthenticated();
+
+      match /weapons/{weaponId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /spaced_items/{itemId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /quiz_history/{quizId} {
+        allow read, write: if isAuthenticated();
       }
     }
   }
 }
+

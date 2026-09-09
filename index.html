@@ -1314,16 +1314,126 @@
       background: #ffffff;
       border: 1px solid #cbd5e1;
       border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 11px;
+      padding: 4px 10px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #1e293b;
       cursor: pointer;
       transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
     .btn-cloud-auth:hover {
       background: #f8fafc;
       border-color: #94a3b8;
+    }
+
+    /* 端末同期モーダル */
+    .sync-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .sync-modal-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .sync-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .sync-modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .sync-modal-close-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .sync-modal-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+    .sync-status-box {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .sync-section-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: #ffffff;
+    }
+    .sync-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .sync-section-desc {
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .btn-google-login {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-google-login:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .sync-modal-footer {
+      padding: 10px 18px 14px 18px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
     }
   </style>
 </head>
@@ -1336,9 +1446,91 @@
       <span class="sync-dot" id="cloudSyncDot"></span>
       <span id="cloudSyncText">☁️ クラウド同期準備中</span>
     </div>
-    <button class="btn-cloud-auth" id="btnCloudAuth" onclick="window.fbSync?.handleAuthClick()">
-      👤 端末同期 (Google)
+    <button class="btn-cloud-auth" id="btnCloudAuth" onclick="openSyncModal()">
+      📱 端末同期 (コード/Google)
     </button>
+  </div>
+
+  <!-- 端末同期＆クラウドバックアップ用モーダル -->
+  <div id="syncModal" class="sync-modal-overlay" style="display: none;" onclick="if(event.target===this) closeSyncModal()">
+    <div class="sync-modal-card">
+      <div class="sync-modal-header">
+        <div style="font-weight: 700; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+          <span>📱</span> PC・スマホ端末同期＆クラウド設定
+        </div>
+        <button class="sync-modal-close-btn" onclick="closeSyncModal()">✕</button>
+      </div>
+
+      <div class="sync-modal-body">
+        <!-- 現在のステータスバッジ -->
+        <div class="sync-status-box">
+          <div style="font-size: 11px; color: #64748b; font-weight: 600;">現在のクラウド接続状態</div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <span class="sync-dot" id="modalSyncDot"></span>
+            <span id="modalSyncStatusText" style="font-weight: 600; font-size: 13px; color: #1e293b;">クラウド接続中</span>
+          </div>
+        </div>
+
+        <!-- 1. 端末連携コード (おすすめ・最速・Google不要) -->
+        <div class="sync-section-box">
+          <div class="sync-section-title">
+            <span>🔑</span> 端末連携コード（Google不要・スマホと1秒同期）
+          </div>
+          <p class="sync-section-desc">
+            PCとスマホで同じコードを使うだけで、<strong>過去問履歴・武器ライブラリ・XP・連続記録</strong>のすべてが一致します。
+          </p>
+
+          <div style="margin-top: 10px;">
+            <div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px;">この端末の連携コード:</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="mySyncCodeDisplay" readonly value="PE-...." style="font-family: monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 170px; text-align: center; color: #0f172a;">
+              <button class="btn-action" style="padding: 6px 12px; font-size: 12px;" onclick="copySyncCode()">📋 コピー</button>
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+              ※スマホ側でこのアプリを開き、下の欄にこのコードを入力してください。
+            </div>
+          </div>
+
+          <div style="margin-top: 14px; border-top: 1px dashed #e2e8f0; padding-top: 12px;">
+            <div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px;">別の端末（PCなど）のコードでこの端末を同期:</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="targetSyncCodeInput" placeholder="例: PE-XXXX-XXXX" style="font-family: monospace; text-transform: uppercase; font-size: 13px; padding: 6px 10px; border: 1.5px solid #cbd5e1; border-radius: 6px; flex: 1; color: #0f172a;">
+              <button class="btn-action" style="background: #2563eb; color: #ffffff; border: none; padding: 6px 14px; font-size: 12px; font-weight: 600;" onclick="applySyncCode()">同期を実行</button>
+            </div>
+            <div id="syncCodeMsg" style="font-size: 11.5px; margin-top: 6px; display: none;"></div>
+          </div>
+        </div>
+
+        <!-- 2. Googleアカウント連携 -->
+        <div class="sync-section-box">
+          <div class="sync-section-title">
+            <span>🌐</span> Googleアカウントでログイン
+          </div>
+          <p class="sync-section-desc">
+            Googleアカウントにサインインしてデータを永続バックアップします。
+          </p>
+          <div style="margin-top: 8px;">
+            <button id="btnGoogleLoginAction" class="btn-google-login" onclick="doGoogleSignIn()">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+              <span id="googleLoginBtnText">Googleでサインイン</span>
+            </button>
+            <div id="googleAuthErrorBox" style="font-size: 11.5px; color: #dc2626; margin-top: 6px; display: none; background: #fef2f2; border: 1px solid #fee2e2; padding: 6px 10px; border-radius: 6px; line-height: 1.4;"></div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.4;">
+              ※AI Studioのプレビュー画面(iframe)内ではブラウザの仕様によりポップアップがブロックされることがあります。出ない場合は「別タブで開く」か、上記「端末連携コード」をお使いください。
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 今すぐ全データを再取得 -->
+        <button class="btn-action" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 600;" onclick="forcePullData()">
+          🔄 今すぐクラウドから最新データを手動取得
+        </button>
+      </div>
+
+      <div class="sync-modal-footer">
+        <button class="btn-action" style="width: 100%; font-size: 13px;" onclick="closeSyncModal()">閉じる</button>
+      </div>
+    </div>
   </div>
 
   <!-- トップ進捗ダッシュボード -->
@@ -2625,6 +2817,7 @@
     history.unshift(historyItem);
     localStorage.setItem('english_scenarios_history', JSON.stringify(history));
     currentHistoryId = id;
+    if (window.fbSync) window.fbSync.saveQuizHistory(historyItem);
     return id;
   }
 
@@ -2645,6 +2838,7 @@
       }
       localStorage.setItem('english_scenarios_history', JSON.stringify(history));
       populateQuickModeSelect();
+      if (window.fbSync && history[idx]) window.fbSync.saveQuizHistory(history[idx]);
     }
   }
 
@@ -2726,6 +2920,145 @@
     }
     updateDashboard();
 
+    // Global exposure for Firebase Sync callbacks
+    window.updateDashboard = updateDashboard;
+    window.renderLibrary = renderLibrary;
+    window.renderHistory = renderHistory;
+    window.populateScriptLogSelect = populateScriptLogSelect;
+    window.populateQuickModeSelect = populateQuickModeSelect;
+
+    // --- 端末同期モーダル操作関数 ---
+    window.openSyncModal = function() {
+      const modal = document.getElementById('syncModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      
+      const codeDisplay = document.getElementById('mySyncCodeDisplay');
+      if (codeDisplay && window.fbSync?.syncCode) {
+        codeDisplay.value = window.fbSync.syncCode;
+      }
+      
+      const statusText = document.getElementById('modalSyncStatusText');
+      const dot = document.getElementById('modalSyncDot');
+      const btnText = document.getElementById('googleLoginBtnText');
+      if (statusText && window.fbSync) {
+        const user = window.fbSync.currentUser;
+        if (user && !user.isAnonymous) {
+          statusText.innerText = `Googleログイン連携済 (${user.displayName || user.email || '完了'})`;
+          if (btnText) btnText.innerText = '✅ ログイン中 (クリックで切替)';
+        } else {
+          statusText.innerText = `同期コード運用中 (${window.fbSync.syncCode})`;
+          if (btnText) btnText.innerText = 'Googleでサインイン';
+        }
+      }
+      if (dot) dot.style.background = '#10b981';
+
+      const errorBox = document.getElementById('googleAuthErrorBox');
+      if (errorBox) errorBox.style.display = 'none';
+
+      const codeMsg = document.getElementById('syncCodeMsg');
+      if (codeMsg) codeMsg.style.display = 'none';
+    };
+
+    window.closeSyncModal = function() {
+      const modal = document.getElementById('syncModal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.copySyncCode = function() {
+      const code = window.fbSync?.syncCode || document.getElementById('mySyncCodeDisplay')?.value;
+      if (!code) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+          toast(`📋 連携コード [${code}] をコピーしました！`);
+        }).catch(() => {
+          prompt('以下のコードをコピーしてください:', code);
+        });
+      } else {
+        prompt('以下のコードをコピーしてください:', code);
+      }
+    };
+
+    window.applySyncCode = async function() {
+      const input = document.getElementById('targetSyncCodeInput');
+      const msg = document.getElementById('syncCodeMsg');
+      if (!input || !msg) return;
+      const val = input.value.trim();
+      if (!val) {
+        msg.style.display = 'block';
+        msg.style.color = '#dc2626';
+        msg.innerText = '⚠️ 同期コードを入力してください';
+        return;
+      }
+
+      msg.style.display = 'block';
+      msg.style.color = '#2563eb';
+      msg.innerText = '🔄 クラウドに接続してデータを取得中...';
+
+      if (window.fbSync) {
+        const res = await window.fbSync.connectSyncCode(val);
+        if (res.success) {
+          msg.style.color = '#16a34a';
+          msg.innerText = `✅ ${res.message}`;
+          const codeDisplay = document.getElementById('mySyncCodeDisplay');
+          if (codeDisplay) codeDisplay.value = window.fbSync.syncCode;
+          toast('✅ 端末同期が完了しました！過去問・単語帳・XPが更新されました');
+        } else {
+          msg.style.color = '#dc2626';
+          msg.innerText = `⚠️ ${res.message}`;
+        }
+      }
+    };
+
+    window.doGoogleSignIn = async function() {
+      const errorBox = document.getElementById('googleAuthErrorBox');
+      if (errorBox) errorBox.style.display = 'none';
+
+      if (!window.fbSync) {
+        if (errorBox) {
+          errorBox.style.display = 'block';
+          errorBox.innerText = 'Firebaseが初期化されていません。再読み込みしてください。';
+        }
+        return;
+      }
+
+      const user = window.fbSync.currentUser;
+      if (user && !user.isAnonymous) {
+        const ok = confirm(`現在「${user.displayName || user.email}」でログイン中です。\nログアウトしますか？`);
+        if (ok) {
+          await window.fbSync.handleSignOut();
+          const btnText = document.getElementById('googleLoginBtnText');
+          if (btnText) btnText.innerText = 'Googleでサインイン';
+          const statusText = document.getElementById('modalSyncStatusText');
+          if (statusText) statusText.innerText = `同期コード運用中 (${window.fbSync.syncCode})`;
+          toast('ログアウトしました');
+        }
+        return;
+      }
+
+      const res = await window.fbSync.signInWithGoogle();
+      if (res.success) {
+        const btnText = document.getElementById('googleLoginBtnText');
+        if (btnText) btnText.innerText = '✅ ログイン中 (クリックで切替)';
+        toast(`✅ Google連携が完了しました (${res.user.displayName || res.user.email})`);
+        const statusText = document.getElementById('modalSyncStatusText');
+        if (statusText) statusText.innerText = `Googleログイン連携済 (${res.user.email})`;
+      } else {
+        if (errorBox) {
+          errorBox.style.display = 'block';
+          errorBox.innerText = res.message || 'ログインに失敗しました。';
+        }
+      }
+    };
+
+    window.forcePullData = async function() {
+      if (window.fbSync) {
+        toast('🔄 クラウドから最新データを再同期中...');
+        await window.fbSync.pullAllData();
+        toast('✅ 全データの最新同期が完了しました');
+      }
+    };
+
     // Firebase Cloud Sync 状態リスナーの登録
     const checkFbSync = () => {
       if (window.fbSync) {
@@ -2733,20 +3066,30 @@
           const textEl = document.getElementById('cloudSyncText');
           const dotEl = document.getElementById('cloudSyncDot');
           const authBtn = document.getElementById('btnCloudAuth');
+          const modalDot = document.getElementById('modalSyncDot');
+          const modalText = document.getElementById('modalSyncStatusText');
+
           if (textEl && status.message) textEl.innerText = status.message;
-          if (dotEl) {
-            dotEl.style.background = status.state === 'synced' ? '#10b981' 
-              : status.state === 'syncing' ? '#3b82f6'
-              : status.state === 'offline' ? '#94a3b8' : '#f59e0b';
-          }
+          if (modalText && status.message) modalText.innerText = status.message;
+
+          const color = status.state === 'synced' ? '#10b981' 
+            : status.state === 'syncing' ? '#3b82f6'
+            : status.state === 'offline' ? '#94a3b8' : '#f59e0b';
+
+          if (dotEl) dotEl.style.background = color;
+          if (modalDot) modalDot.style.background = color;
+
           if (authBtn) {
             if (status.isAnonymous === false) {
-              authBtn.innerText = '✅ ログイン中 (切替)';
+              authBtn.innerText = '✅ ログイン中 (同期設定)';
               authBtn.title = status.displayName || '';
             } else {
-              authBtn.innerText = '👤 端末同期 (Google)';
+              authBtn.innerText = '📱 端末同期 (コード/Google)';
             }
           }
+
+          const myCode = document.getElementById('mySyncCodeDisplay');
+          if (myCode && status.syncCode) myCode.value = status.syncCode;
         });
       } else {
         setTimeout(checkFbSync, 300);
@@ -3616,6 +3959,7 @@
     if (currentHistoryId === id) currentHistoryId = null;
     renderHistory();
     populateQuickModeSelect();
+    if (window.fbSync) window.fbSync.deleteQuizHistory(id);
   }
 
   function saveCurrentPhrase() {

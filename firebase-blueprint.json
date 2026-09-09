@@ -6,6 +6,7 @@
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
+        "syncCode": { "type": "string" },
         "xp": { "type": "integer" },
         "streak": { "type": "integer" },
         "totalAnswered": { "type": "integer" },
@@ -44,9 +45,42 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["userId", "target", "dueDate"]
+    },
+    "QuizHistoryItem": {
+      "title": "QuizHistoryItem",
+      "description": "Past quiz scenario logs and completion scores",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "number" },
+        "date": { "type": "string" },
+        "mode": { "type": "string" },
+        "status": { "type": "string" },
+        "answered": { "type": "integer" },
+        "correct": { "type": "integer" },
+        "data": { "type": "array" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "id", "date"]
     }
   },
   "firestore": {
+    "/sync_profiles/{syncCode}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Shared sync profile document mapped by sync code"
+    },
+    "/sync_profiles/{syncCode}/weapons/{weaponId}": {
+      "schema": { "$ref": "#/entities/SavedWeapon" },
+      "description": "Saved Plain English weapons under sync profile"
+    },
+    "/sync_profiles/{syncCode}/spaced_items/{itemId}": {
+      "schema": { "$ref": "#/entities/SpacedItem" },
+      "description": "Spaced repetition review items under sync profile"
+    },
+    "/sync_profiles/{syncCode}/quiz_history/{quizId}": {
+      "schema": { "$ref": "#/entities/QuizHistoryItem" },
+      "description": "Past quiz scenarios and history logs under sync profile"
+    },
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
       "description": "User profile document storing high-level progress"
@@ -58,6 +92,10 @@
     "/users/{userId}/spaced_items/{itemId}": {
       "schema": { "$ref": "#/entities/SpacedItem" },
       "description": "Spaced repetition review queue"
+    },
+    "/users/{userId}/quiz_history/{quizId}": {
+      "schema": { "$ref": "#/entities/QuizHistoryItem" },
+      "description": "User's past generated quiz and scenario history"
     }
   }
 }
