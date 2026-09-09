@@ -2258,19 +2258,26 @@
     </div>
 
     <!-- AI連続ラリー会話 (フリースタイル・ロールプレイ) クイック起動バナー -->
-    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 14px; margin-top: 12px; margin-bottom: 12px; color: #fff; cursor: pointer; box-shadow: 0 3px 8px rgba(30, 27, 75, 0.15); display: flex; justify-content: space-between; align-items: center; gap: 10px;" onclick="switchTab('roleplay')">
-      <div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="background: #4f46e5; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">NEW 機能</span>
-          <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">フリースタイル実践</span>
-        </div>
-        <div style="font-size: 14px; font-weight: 800; margin-top: 3px; color: #ffffff;">💬 AIと連続ラリー対話（ロールプレイ）</div>
-        <div style="font-size: 11.5px; color: #e0e7ff; margin-top: 2px; line-height: 1.4;">
-          AI相手と3〜4往復の会話で合意形成。リアルタイムに中学生英語での洗練アドバイスを提供！
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 14px; margin-top: 12px; margin-bottom: 12px; color: #fff; box-shadow: 0 3px 8px rgba(30, 27, 75, 0.15);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="background: #4f46e5; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">NEW 機能</span>
+            <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">フリースタイル実践</span>
+          </div>
+          <div style="font-size: 14px; font-weight: 800; margin-top: 3px; color: #ffffff;">💬 AIと連続ラリー対話（ロールプレイ）</div>
+          <div style="font-size: 11.5px; color: #e0e7ff; margin-top: 2px; line-height: 1.4;">
+            AI相手と3〜4往復の会話で合意形成。リアルタイムに中学生英語での洗練アドバイスを提供！
+          </div>
         </div>
       </div>
-      <div style="background: #4338ca; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 800; white-space: nowrap; flex-shrink: 0;">
-        対話開始 ➔
+      <div style="display: flex; gap: 8px; margin-top: 10px;">
+        <button onclick="startRandomRoleplay()" style="flex: 1; background: #fbbf24; color: #78350f; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(251,191,36,0.3);">
+          🎲 おまかせランダム開始
+        </button>
+        <button onclick="switchTab('roleplay')" style="flex: 1; background: #4338ca; color: #ffffff; border: 1px solid #6366f1; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          💬 設定を選んで開始 ➔
+        </button>
       </div>
     </div>
 
@@ -2808,17 +2815,18 @@
   <!-- 6. AI連続ラリー対話（フリースタイル・ロールプレイ）ビュー -->
   <div id="viewRoleplay" style="display: none; padding-bottom: 90px;">
     <div class="roleplay-header-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;">
         <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
           <span>💬</span> AI連続ラリー対話
           <span style="font-size: 10px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 1px 6px; border-radius: 4px; border: 1px solid #bbf7d0;">💾 自動保存中</span>
         </div>
-        <div style="display: flex; gap: 4px;">
+        <div style="display: flex; gap: 6px;">
+          <button class="ctrl-btn" onclick="startRandomRoleplay()" title="相手とシチュエーションをランダムに選んで即座にラリー開始" style="font-size: 11px; padding: 4px 9px; font-weight: 800; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">🎲 おまかせランダム</button>
           <button class="ctrl-btn" onclick="resetRoleplaySession()" title="現在のラリーを最初からやり直す" style="font-size: 11px; padding: 4px 8px; font-weight: 700;">↺ 最初から</button>
         </div>
       </div>
       <div style="font-size: 11.5px; color: #64748b; margin-top: 4px; line-height: 1.45;">
-        相手の発言に対し、自分の言葉で返答して合意を着地させます。途中でタブを切り替えても会話は自動保存され、いつでも再開できます。
+        相手の発言に対し、自分の言葉で返答して合意を着地させます。「🎲 おまかせランダム」で瞬時に即興マッチが可能です。
       </div>
 
       <!-- キャラクター＆シナリオ選択 -->
@@ -2830,6 +2838,8 @@
             <option value="rajesh">👨‍💻 Rajesh (テックリード)</option>
             <option value="david">🛡️ David (QAマネージャー)</option>
             <option value="elena">🤝 Elena (グローバルPM)</option>
+            <option value="alex">🏢 Alex (クライアント意思決定者)</option>
+            <option value="michael">👔 Michael (経営役員)</option>
           </select>
         </div>
         <div>
@@ -2839,6 +2849,8 @@
             <option value="issue">🛡️ トラブル初動報告と期日約束</option>
             <option value="clarify">🔍 曖昧な要件の明確化</option>
             <option value="freeze">⚖️ 仕様凍結と優先順位の合意</option>
+            <option value="escalation">🤝 他部門への支援要請</option>
+            <option value="cost">💰 リソース・代替案の折衝</option>
           </select>
         </div>
       </div>
@@ -4952,7 +4964,7 @@
     updateDashboard();
   }
 
-  function loadStage() {
+  function loadStage(autoSpeak = false) {
     if (!scenarios || scenarios.length === 0) return;
 
     // ステージ読み込み時に現在の進行状況を自動永続化 & ステージピル更新
@@ -5071,7 +5083,9 @@
 
     applyAnswerModeUI();
     updateDashboard();
-    speakText(data.ai_en);
+    if (autoSpeak) {
+      speakText(data.ai_en);
+    }
   }
 
   function speakPattern() {
@@ -6428,6 +6442,16 @@
       name: "Elena (Global PM)",
       avatar: "🤝",
       role: "多国籍チームをまとめるPM。合意形成と現実的なタイムラインへの着地を望んでいる。"
+    },
+    alex: {
+      name: "Alex (Client Stakeholder)",
+      avatar: "🏢",
+      role: "クライアント企業の意思決定者。投資対効果とリスクヘッジを重視し、現実的な代替策を求める。"
+    },
+    michael: {
+      name: "Michael (Executive Director)",
+      avatar: "👔",
+      role: "経営役員。細部よりも『いつまでに何が完了するか』の結論を即断即決で求める。"
     }
   };
 
@@ -6474,6 +6498,28 @@
         "If we take item 1 now, we will need to move items 2 and 3 to next sprint.",
         "What if we focus on the highest-impact request first to protect the pilot date?",
         "I will make sure we deliver the top priority, provided we freeze all other changes."
+      ]
+    },
+    escalation: {
+      title: "他部門への協力要請とエスカレーション",
+      initialPrompt: "Alex: 'We are facing a dependency block from the infrastructure team. If this continues, the release will slip. How do we unblock this today?'",
+      initialJp: "「インフラチーム側の依存タスクで作業が止まっています。このままだとリリースが遅延します。本日中にどうやって解消しますか？」",
+      goal: "感情的にならず、具体的な支援依頼と期限を定めて巻き込む",
+      starterSuggestions: [
+        "Let me speak directly with their lead and secure a priority slot today.",
+        "Could we set up a quick 10-minute sync with the stakeholders to resolve the blocker?",
+        "I will follow up with infrastructure now and update you by 2 PM."
+      ]
+    },
+    cost: {
+      title: "追加リソース・代替プランの折衝",
+      initialPrompt: "Michael: 'The proposed scope looks good, but our budget cannot cover extra contractor hours. What is our plan B?'",
+      initialJp: "「提案されたスコープは良いですが、予算上これ以上の委託費用は出せません。代替案はありますか？」",
+      goal: "予算増額を求めず、社内リソース配分や機能段階化で対応策を提示する",
+      starterSuggestions: [
+        "What if we use our internal team to handle the core parts first?",
+        "To stay within budget, let's postpone non-critical items to phase 2.",
+        "Let me adjust our resource allocation today and share a zero-cost plan."
       ]
     }
   };
@@ -6588,6 +6634,34 @@
     }
     roleplayState.topicKey = topicKey;
     resetRoleplaySession(true);
+  }
+
+  function startRandomRoleplay() {
+    const charKeys = Object.keys(ROLEPLAY_CHARACTERS);
+    const topicKeys = Object.keys(ROLEPLAY_TOPICS);
+    
+    let nextChar = charKeys[Math.floor(Math.random() * charKeys.length)];
+    let nextTopic = topicKeys[Math.floor(Math.random() * topicKeys.length)];
+    
+    // 直前と同じ組み合わせにならないよう配慮
+    if (charKeys.length > 1 && nextChar === roleplayState.characterKey) {
+      const otherChars = charKeys.filter(k => k !== roleplayState.characterKey);
+      nextChar = otherChars[Math.floor(Math.random() * otherChars.length)];
+    }
+    if (topicKeys.length > 1 && nextTopic === roleplayState.topicKey) {
+      const otherTopics = topicKeys.filter(k => k !== roleplayState.topicKey);
+      nextTopic = otherTopics[Math.floor(Math.random() * otherTopics.length)];
+    }
+
+    roleplayState.characterKey = nextChar;
+    roleplayState.topicKey = nextTopic;
+
+    resetRoleplaySession(false);
+    switchTab('roleplay');
+
+    const char = ROLEPLAY_CHARACTERS[nextChar];
+    const topic = ROLEPLAY_TOPICS[nextTopic];
+    toast(`🎲 【おまかせマッチ】${char.name} との「${topic.title}」を開始しました！`);
   }
 
   function resetRoleplaySession(showToast = true) {
@@ -7069,6 +7143,7 @@
   window.changeRoleplayCharacter = changeRoleplayCharacter;
   window.changeRoleplayTopic = changeRoleplayTopic;
   window.resetRoleplaySession = resetRoleplaySession;
+  window.startRandomRoleplay = startRandomRoleplay;
   window.toggleRoleplayMic = toggleRoleplayMic;
   window.handleRoleplayKeyDown = handleRoleplayKeyDown;
   window.sendRoleplayMessage = sendRoleplayMessage;
