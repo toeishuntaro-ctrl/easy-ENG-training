@@ -5389,24 +5389,35 @@
       return;
     }
 
+    const patternInfo = deriveKeyPatternInfo(
+      current.target,
+      current.key_pattern,
+      current.key_pattern_jp,
+      current.pattern_rationale,
+      current.guide
+    );
+
     const newWeapon = {
       id: Date.now(),
       target: current.target,
-      guide: current.guide,
+      guide: current.guide || patternInfo.guide,
       ai_en: current.ai_en,
       ai_jp: current.ai_jp || '',
       ai_name: current.ai_name || '',
       email_subject: current.email_subject || '',
-      key_pattern: current.key_pattern || '',
-      key_pattern_jp: current.key_pattern_jp || '',
-      pattern_rationale: current.pattern_rationale || '',
-      parts_hint: current.parts_hint || '',
+      key_pattern: patternInfo.key_pattern,
+      key_pattern_jp: patternInfo.key_pattern_jp,
+      pattern_rationale: patternInfo.pattern_rationale,
+      parts_hint: patternInfo.parts_hint,
       counterpart_reaction_en: current.counterpart_reaction_en || '',
       counterpart_reaction_jp: current.counterpart_reaction_jp || '',
       chunks: current.chunks || splitTargetIntoChunks(current.target),
       choices: current.choices || buildDefaultChoices(current.target),
       topic: selectedTopic || current.topic || '',
       mode: trainingMode || 'speech',
+      srsLevel: 1,
+      lastReviewedAt: Date.now(),
+      nextReviewAt: Date.now() + 86400000,
       addedDate: new Date().toLocaleDateString('ja-JP')
     };
     library.unshift(newWeapon);
@@ -5415,6 +5426,152 @@
     if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
     toast("⭐ フレーズ帳に追加しました！");
     renderLibrary();
+    updateSrsRecommendUI();
+  }
+
+  // ==========================================
+  // インテリジェントな「型（構文パターン）」自動導出・抽出エンジン
+  // ==========================================
+  function deriveKeyPatternInfo(target, existingPattern, existingPatternJp, existingRationale, existingGuide) {
+    const rawPattern = (existingPattern || '').trim();
+    const isDummyPattern = !rawPattern || 
+      rawPattern.toLowerCase().includes('practice your saved pattern') ||
+      rawPattern.toLowerCase().includes('plain english core weapon') ||
+      rawPattern === 'Plain English Core' ||
+      rawPattern === 'Core Weapon' ||
+      rawPattern.length < 5;
+
+    // 既に有意義な型が保存されている場合はそれを活用
+    if (!isDummyPattern) {
+      const validJp = (existingPatternJp && !existingPatternJp.includes('保存した型') && !existingPatternJp.includes('Practice'))
+        ? existingPatternJp
+        : '実務必須のビジネス型';
+      return {
+        key_pattern: rawPattern,
+        key_pattern_jp: validJp,
+        pattern_rationale: existingRationale && existingRationale.length > 10
+          ? existingRationale
+          : '相手の不安を取り除き、主語＋基本動詞で迷わず言い切る実践的なPlain English構文です。スラスラ言えるまで反復しましょう。',
+        parts_hint: '基本パーツ（動詞句・目的語・期限）を意識して組み立てましょう！',
+        guide: existingGuide || '保存した重要フレーズをアウトプットしてください。'
+      };
+    }
+
+    const text = (target || '').trim();
+    if (!text) {
+      return {
+        key_pattern: 'I will [verb] and [verb] by [time]...',
+        key_pattern_jp: '〜を行い、[時間]までに〜します',
+        pattern_rationale: '相手の不安を取り除くため、具体的なアクションと期限を明確にする型です。',
+        parts_hint: '動詞句と期限の組み合わせを意識しましょう。',
+        guide: '状況に合わせた適切な回答を述べてください。'
+      };
+    }
+
+    // 1. I am looking into ... and will ... by ...
+    if (/^i am looking into/i.test(text)) {
+      return {
+        key_pattern: 'I am looking into [matter] and will [verb] by [time]...',
+        key_pattern_jp: '〜を調査中であり、[時間]までに[対応]いたします…',
+        pattern_rationale: '受領と調査中である事実を即座に伝え、具体的な期限を明示することで相手の不安を解消する基本型です。',
+        parts_hint: '"this matter" と "send an update" などの組み合わせ',
+        guide: existingGuide || '調査中であることと、期日までに連絡する旨を伝えてください。'
+      };
+    }
+    // 2. Let me check with ... and get back to you by ...
+    if (/^let me check with/i.test(text) || /^let me check/i.test(text)) {
+      return {
+        key_pattern: 'Let me check with [team] and get back to you by [time]...',
+        key_pattern_jp: '[関係者]に確認の上、[時間]までにご連絡いたします…',
+        pattern_rationale: '独断を避けつつ迅速なボールの打ち返しを行う、チーム連携時の必須型です。',
+        parts_hint: '"my team" や "get back to you" のパーツを活用',
+        guide: existingGuide || '確認の上、期日までに折り返す旨を伝えてください。'
+      };
+    }
+    // 3. We need to ... in order to / by ...
+    if (/^we need to/i.test(text) || /^i need to/i.test(text)) {
+      return {
+        key_pattern: 'We need to [verb] in order to [verb / goal]...',
+        key_pattern_jp: '〜するために、〜する必要があります…',
+        pattern_rationale: '「必要性（need）」と「その目的」を明快に結びつけ、優先順位を共有する型です。',
+        parts_hint: '必要とするアクションをストレートに配置',
+        guide: existingGuide || '必要なアクションと期限・目的を明確に伝えてください。'
+      };
+    }
+    // 4. Could you please ... by ...?
+    if (/^could you (please )?/i.test(text)) {
+      return {
+        key_pattern: 'Could you please [verb] by [time / condition]?',
+        key_pattern_jp: '[期日]までに〜を[提出/確認]していただけますでしょうか？',
+        pattern_rationale: '丁寧さとビジネス上の期限設定を両立させ、確実なアクションを促す依頼の型です。',
+        parts_hint: '"Could you please" ＋ 基本動詞',
+        guide: existingGuide || '丁寧かつ期限を明確にして依頼を伝えてください。'
+      };
+    }
+    // 5. I will check/send/update/confirm ...
+    if (/^i will /i.test(text)) {
+      const match = text.match(/^i will (\w+)/i);
+      const v = match ? match[1] : 'handle';
+      return {
+        key_pattern: `I will ${v} [item] and will [action] by [time]...`,
+        key_pattern_jp: `〜を${v}し、[時間]までに[対応]いたします…`,
+        pattern_rationale: '意志動詞（will）を用いて確実なコミットメントを相手に示す型です。',
+        parts_hint: '主語 + will + 基本動詞の明快な骨組み',
+        guide: existingGuide || '迅速な対応アクションを明確に伝えてください。'
+      };
+    }
+    // 6. To avoid / To ensure / To finalize ...
+    if (/^to (avoid|ensure|meet|finalize|clarify)/i.test(text)) {
+      return {
+        key_pattern: 'To [goal], we should [action] by [time]...',
+        key_pattern_jp: '[目標・リスク回避]のために、〜までに〜すべきです…',
+        pattern_rationale: '冒頭に目的（To + 動詞）を置くことで、提案の正当性を一瞬で納得させる型です。',
+        parts_hint: 'To + 目的, 主語 + should + 動詞',
+        guide: existingGuide || '目的を明確にして提案を述べてください。'
+      };
+    }
+    // 7. Thank you for ...
+    if (/^thank you for/i.test(text)) {
+      return {
+        key_pattern: 'Thank you for [noun], and we will [action]...',
+        key_pattern_jp: '〜ありがとうございます。[対応]を進めます…',
+        pattern_rationale: '感謝から始めてスムーズに次のアクションに繋げるプロフェッショナルな型です。',
+        parts_hint: 'Thank you for ... ＋ will + 動詞',
+        guide: existingGuide || '感謝を述べた上で対応方針を伝えてください。'
+      };
+    }
+    // 8. Please note that ...
+    if (/^please note that/i.test(text) || /^please make sure/i.test(text)) {
+      return {
+        key_pattern: 'Please note that [clause] so that we can [verb]...',
+        key_pattern_jp: '〜にご留意ください（〜を進めるため）…',
+        pattern_rationale: '重要な前提条件や注意点を相手に過不足なく共有する型です。',
+        parts_hint: 'Please note that + 文',
+        guide: existingGuide || '注意点と目的を明確に伝えてください。'
+      };
+    }
+    // 9. I suggest / We recommend ...
+    if (/^(i suggest|we recommend)/i.test(text)) {
+      return {
+        key_pattern: 'I suggest we [verb] in order to [goal]...',
+        key_pattern_jp: '〜するために、〜することを提案いたします…',
+        pattern_rationale: '控えめながらも確実な前進を生む建設的な提案の型です。',
+        parts_hint: 'I suggest + we + 動詞原形',
+        guide: existingGuide || '建設的な提案を明快に伝えてください。'
+      };
+    }
+
+    // 10. 一般的な文から先頭語句を抽出して実践型を構築
+    const words = text.split(/\s+/);
+    let lead = words.slice(0, Math.min(3, words.length)).join(' ');
+    lead = lead.replace(/[.,?!]$/, '');
+    return {
+      key_pattern: `${lead} [action / details]...`,
+      key_pattern_jp: '実務必須のコア構文パターン',
+      pattern_rationale: '実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して、スラスラ言えるまで反復しましょう。',
+      parts_hint: '中学英単語のパーツを組み合わせて声に出してみましょう！',
+      guide: existingGuide || '保存した重要フレーズをアウトプットしてください。'
+    };
   }
 
   // チャンク分割補助（古いデータ救済用）
@@ -5445,22 +5602,34 @@
   }
 
   function buildScenarioFromLibraryItem(item, idx) {
+    const patternInfo = deriveKeyPatternInfo(
+      item.target,
+      item.key_pattern,
+      item.key_pattern_jp,
+      item.pattern_rationale,
+      item.guide
+    );
+
+    const targetText = item.target || '';
+    const chunks = item.chunks && item.chunks.length > 0 ? item.chunks : splitTargetIntoChunks(targetText);
+    const choices = item.choices && item.choices.length > 0 ? item.choices : buildDefaultChoices(targetText);
+
     return {
       stage: idx + 1,
       ai_name: item.ai_name || "Counterpart (Review)",
       email_subject: item.email_subject || (item.mode === 'email' ? "Re: Discussion & Follow-up" : ""),
       ai_en: item.ai_en || "Let's review this saved business situation.",
       ai_jp: item.ai_jp || "保存したビジネス状況の復習です。",
-      key_pattern: item.key_pattern || "Practice your saved pattern",
-      key_pattern_jp: item.key_pattern_jp || "保存した型を定着させましょう",
-      pattern_rationale: item.pattern_rationale || "ライブラリに保存した重要な実践フレーズです。スラスラ言えるまで復習しましょう。",
-      parts_hint: item.parts_hint || "保存したフレーズの型を意識して組み立てましょう！",
-      guide: item.guide || "保存したフレーズをアウトプットしてください。",
-      target: item.target,
+      key_pattern: patternInfo.key_pattern,
+      key_pattern_jp: patternInfo.key_pattern_jp,
+      pattern_rationale: patternInfo.pattern_rationale,
+      parts_hint: patternInfo.parts_hint,
+      guide: item.guide || patternInfo.guide,
+      target: targetText,
       counterpart_reaction_en: item.counterpart_reaction_en || "Understood. Thank you for the clear communication.",
       counterpart_reaction_jp: item.counterpart_reaction_jp || "了解しました。明確なご対応ありがとうございます。",
-      chunks: item.chunks && item.chunks.length > 0 ? item.chunks : splitTargetIntoChunks(item.target),
-      choices: item.choices && item.choices.length > 0 ? item.choices : buildDefaultChoices(item.target)
+      chunks: chunks,
+      choices: choices
     };
   }
 
@@ -5529,9 +5698,8 @@
 
     container.innerHTML = filtered.map(item => {
       const topicName = TOPIC_NAMES[item.topic] || (item.topic ? item.topic : 'ビジネス共通');
-      const patternHtml = item.key_pattern 
-        ? `<div class="lib-item-pattern">🔑 <strong>型:</strong> ${item.key_pattern} <span style="color:#64748b; font-size:10px;">(${item.key_pattern_jp || ''})</span></div>` 
-        : '';
+      const patternInfo = deriveKeyPatternInfo(item.target, item.key_pattern, item.key_pattern_jp, item.pattern_rationale, item.guide);
+      const patternHtml = `<div class="lib-item-pattern">🔑 <strong>型:</strong> ${escapeHtml(patternInfo.key_pattern)} <span style="color:#64748b; font-size:10px;">(${escapeHtml(patternInfo.key_pattern_jp)})</span></div>`;
 
       return `
         <div class="lib-item-card">
@@ -5539,8 +5707,8 @@
             <span class="lib-item-topic">🎯 ${topicName}</span>
             <span style="font-size:10px; color:#94a3b8;">${item.addedDate || ''}</span>
           </div>
-          <div class="lib-item-target">${item.target}</div>
-          <div class="lib-item-guide">💬 ${item.guide}</div>
+          <div class="lib-item-target">${escapeHtml(item.target)}</div>
+          <div class="lib-item-guide">💬 ${escapeHtml(item.guide || patternInfo.guide)}</div>
           ${patternHtml}
           <div class="lib-item-actions">
             <button class="btn-action btn-play" onclick="startSinglePhraseQuiz(${item.id})" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700; font-size:11.5px; padding:4px 10px;">
@@ -6248,16 +6416,31 @@
 
     scenarios.forEach(s => {
       if (s.target && !library.some(item => item.target === s.target)) {
+        const patternInfo = deriveKeyPatternInfo(s.target, s.key_pattern, s.key_pattern_jp, s.pattern_rationale, s.guide);
         const newWeapon = {
           id: Date.now() + Math.random(),
           target: s.target,
-          guide: `${s.key_pattern || ''} (${s.guide || ''})`,
-          ai_en: s.ai_en,
-          key_pattern: s.key_pattern || '',
-          key_pattern_jp: s.key_pattern_jp || '',
-          topic: selectedTopic || ''
+          guide: s.guide || patternInfo.guide,
+          ai_en: s.ai_en || 'Business Scenario',
+          ai_jp: s.ai_jp || '',
+          ai_name: s.ai_name || 'Colleague',
+          email_subject: s.email_subject || '',
+          key_pattern: patternInfo.key_pattern,
+          key_pattern_jp: patternInfo.key_pattern_jp,
+          pattern_rationale: patternInfo.pattern_rationale,
+          parts_hint: patternInfo.parts_hint,
+          counterpart_reaction_en: s.counterpart_reaction_en || '',
+          counterpart_reaction_jp: s.counterpart_reaction_jp || '',
+          chunks: s.chunks || splitTargetIntoChunks(s.target),
+          choices: s.choices || buildDefaultChoices(s.target),
+          topic: selectedTopic || s.topic || '',
+          mode: s.mode || trainingMode || 'speech',
+          srsLevel: 1,
+          lastReviewedAt: Date.now(),
+          nextReviewAt: Date.now() + 86400000,
+          addedDate: new Date().toLocaleDateString('ja-JP')
         };
-        library.push(newWeapon);
+        library.unshift(newWeapon);
         if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
         addedCount++;
       }
@@ -6265,6 +6448,8 @@
 
     localStorage.setItem('english_phrase_library', JSON.stringify(library));
     toast(`⭐ ${addedCount}件のフレーズをライブラリに保存しました！`);
+    renderLibrary();
+    updateSrsRecommendUI();
   }
 
   function restartCurrentSession() {
@@ -7170,23 +7355,35 @@
       return;
     }
 
+    const patternInfo = deriveKeyPatternInfo(betterEn, pattern, '', '', '');
+
     const newWeapon = {
       id: Date.now() + Math.random(),
       target: betterEn,
-      guide: `AI Coach推奨表現 (${pattern || ''})`,
+      guide: `AI Coach推奨表現 (${patternInfo.key_pattern})`,
       ai_en: "AI Roleplay Session",
-      key_pattern: pattern || "Plain English Core",
-      key_pattern_jp: "AIコーチ推奨の洗練パターン",
+      ai_jp: "AIコーチとの実践ロールプレイ",
+      key_pattern: patternInfo.key_pattern,
+      key_pattern_jp: patternInfo.key_pattern_jp,
+      pattern_rationale: patternInfo.pattern_rationale,
+      parts_hint: patternInfo.parts_hint,
+      counterpart_reaction_en: "Thank you for the clear and professional response.",
+      counterpart_reaction_jp: "明快でプロフェッショナルなご対応ありがとうございます。",
+      chunks: splitTargetIntoChunks(betterEn),
+      choices: buildDefaultChoices(betterEn),
       topic: roleplayState.topicKey || 'negotiation',
+      mode: 'speech',
       srsLevel: 1,
       lastReviewedAt: Date.now(),
-      nextReviewAt: Date.now() + 86400000
+      nextReviewAt: Date.now() + 86400000,
+      addedDate: new Date().toLocaleDateString('ja-JP')
     };
 
-    library.push(newWeapon);
+    library.unshift(newWeapon);
     localStorage.setItem('english_phrase_library', JSON.stringify(library));
     if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
     toast("⭐ コーチ推奨フレーズを武器庫に保存しました！");
+    renderLibrary();
     updateSrsRecommendUI();
   }
 
