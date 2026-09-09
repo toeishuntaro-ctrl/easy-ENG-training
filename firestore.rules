@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check authentication and user ownership
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Test connection document for initial health check
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // User profile document
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // User's saved patterns and weapons
+      match /weapons/{weaponId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // User's spaced repetition items
+      match /spaced_items/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+  }
+}

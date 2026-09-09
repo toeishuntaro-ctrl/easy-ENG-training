@@ -129,7 +129,7 @@ export default async function handler(req, res) {
     }
   };
 
-  const { mode, topic, excludeTopics, excludePatterns } = req.body || {};
+  const { mode, topic, customPrompt, excludeTopics, excludePatterns } = req.body || {};
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -291,19 +291,30 @@ export default async function handler(req, res) {
     }
   };
 
-  // Select scenario pool based on requested topic
+  // Select scenario pool based on requested topic or user custom situation
   let selectedCategoryPool = [];
   let topicDisplayTitle = "外資系プロジェクト交渉・実務";
+  let activeTheme = "";
+  let activeRoles = ["Marcus (Global VP)", "Sarah (Regional Lead)", "Julian (Technical Director)"];
 
-  if (topic && topicCategories[topic]) {
+  if (customPrompt && customPrompt.trim()) {
+    topicDisplayTitle = `ユーザー持込案件: 「${customPrompt.trim().substring(0, 30)}」`;
+    activeTheme = `User's real-world business challenge: ${customPrompt.trim()}`;
+    activeRoles = ["Overseas Counterpart (Global Lead)", "Stakeholder / Client", "Project Specialist"];
+  } else if (topic && topicCategories[topic]) {
     selectedCategoryPool = topicCategories[topic].scenarios;
     topicDisplayTitle = topicCategories[topic].title;
+    const item = selectedCategoryPool[Math.floor(Math.random() * selectedCategoryPool.length)];
+    activeTheme = item.theme;
+    activeRoles = item.roles;
   } else {
     // All categories combined
     selectedCategoryPool = Object.values(topicCategories).flatMap(cat => cat.scenarios);
+    const item = selectedCategoryPool[Math.floor(Math.random() * selectedCategoryPool.length)];
+    activeTheme = item.theme;
+    activeRoles = item.roles;
   }
 
-  const selectedItem = selectedCategoryPool[Math.floor(Math.random() * selectedCategoryPool.length)];
   const randomSeed = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
   // Dynamically select 5 distinct pattern categories for Stages 1 to 5 to guarantee high diversity
@@ -357,8 +368,8 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 - Focus Category: "${topicDisplayTitle}"
 - Training Mode: "${mode || 'quiz'}"
 - Mode Focus: ${modeDescription}
-- Scenario Theme: "${selectedItem.theme}"
-- Typical Counterparts: ${selectedItem.roles.join(', ')}
+- Scenario Theme: "${activeTheme}"
+- Typical Counterparts: ${activeRoles.join(', ')}
 - Uniqueness Seed: ${randomSeed}
 
 [5-Stage Story Arc Progression]

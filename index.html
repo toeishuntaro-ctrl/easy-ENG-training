@@ -15,6 +15,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="PlainEnglish">
 
+  <!-- Firebase Cloud Sync モジュール (Firestore & Auth) -->
+  <script type="module" src="/firebase-sync.js"></script>
+
   <style>
     :root {
       --primary: #2563eb;
@@ -1279,11 +1282,65 @@
       0% { transform: translateX(-100%); }
       100% { transform: translateX(250%); }
     }
+
+    /* クラウド同期ステータスバー (Firebase) */
+    .cloud-sync-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 6px 12px;
+      margin-bottom: 12px;
+      font-size: 11.5px;
+      color: #475569;
+    }
+    .sync-status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      transition: background 0.3s ease;
+    }
+    .btn-cloud-auth {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-cloud-auth:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <!-- クラウド同期ステータスバー (Firebase Firestore連携) -->
+  <div class="cloud-sync-bar" id="cloudSyncBar">
+    <div class="sync-status-indicator">
+      <span class="sync-dot" id="cloudSyncDot"></span>
+      <span id="cloudSyncText">☁️ クラウド同期準備中</span>
+    </div>
+    <button class="btn-cloud-auth" id="btnCloudAuth" onclick="window.fbSync?.handleAuthClick()">
+      👤 端末同期 (Google)
+    </button>
+  </div>
+
   <!-- トップ進捗ダッシュボード -->
   <div class="top-dashboard">
     <div class="stat-card"><div class="stat-value" id="xpValue">0</div><div class="stat-label">XP</div></div>
@@ -2000,6 +2057,15 @@
       });
     }
     localStorage.setItem(SPACED_KEY, JSON.stringify(spaced));
+    if (window.fbSync) {
+      window.fbSync.saveSpacedItem({
+        target: current.target,
+        guide: current.guide,
+        ai_en: current.ai_en,
+        dueDate: reviewDueDate,
+        level: level
+      });
+    }
 
     if (level === 1) toast('💡 忘却曲線に基づき、明日優先で再出題します');
     else toast('👍 自己評価を保存しました');
@@ -2083,6 +2149,7 @@
   function saveStats(stats) {
     localStorage.setItem(STATS_KEY, JSON.stringify(stats));
     updateDashboard();
+    if (window.fbSync) window.fbSync.saveStats(stats);
   }
 
   function updateDashboard() {
@@ -2658,6 +2725,34 @@
       loadStage();
     }
     updateDashboard();
+
+    // Firebase Cloud Sync 状態リスナーの登録
+    const checkFbSync = () => {
+      if (window.fbSync) {
+        window.fbSync.onStatusChange((status) => {
+          const textEl = document.getElementById('cloudSyncText');
+          const dotEl = document.getElementById('cloudSyncDot');
+          const authBtn = document.getElementById('btnCloudAuth');
+          if (textEl && status.message) textEl.innerText = status.message;
+          if (dotEl) {
+            dotEl.style.background = status.state === 'synced' ? '#10b981' 
+              : status.state === 'syncing' ? '#3b82f6'
+              : status.state === 'offline' ? '#94a3b8' : '#f59e0b';
+          }
+          if (authBtn) {
+            if (status.isAnonymous === false) {
+              authBtn.innerText = '✅ ログイン中 (切替)';
+              authBtn.title = status.displayName || '';
+            } else {
+              authBtn.innerText = '👤 端末同期 (Google)';
+            }
+          }
+        });
+      } else {
+        setTimeout(checkFbSync, 300);
+      }
+    };
+    checkFbSync();
 
     // PWA Service Worker のブラウザ登録処理
     if ('serviceWorker' in navigator) {
@@ -3533,14 +3628,19 @@
       return;
     }
 
-    library.push({
+    const newWeapon = {
       id: Date.now(),
       target: current.target,
       guide: current.guide,
-      ai_en: current.ai_en
-    });
+      ai_en: current.ai_en,
+      key_pattern: current.key_pattern || '',
+      key_pattern_jp: current.key_pattern_jp || '',
+      topic: selectedTopic || ''
+    };
+    library.push(newWeapon);
 
     localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
     toast("⭐ フレーズ帳に追加しました！");
   }
 
@@ -3571,8 +3671,10 @@
 
   function deleteLibraryItem(id) {
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const toDelete = library.find(item => item.id === id);
     library = library.filter(item => item.id !== id);
     localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    if (window.fbSync && toDelete) window.fbSync.deleteWeapon(toDelete.target);
     renderLibrary();
   }
 
@@ -3989,12 +4091,17 @@
 
     scenarios.forEach(s => {
       if (s.target && !library.some(item => item.target === s.target)) {
-        library.push({
+        const newWeapon = {
           id: Date.now() + Math.random(),
           target: s.target,
           guide: `${s.key_pattern || ''} (${s.guide || ''})`,
-          ai_en: s.ai_en
-        });
+          ai_en: s.ai_en,
+          key_pattern: s.key_pattern || '',
+          key_pattern_jp: s.key_pattern_jp || '',
+          topic: selectedTopic || ''
+        };
+        library.push(newWeapon);
+        if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
         addedCount++;
       }
     });

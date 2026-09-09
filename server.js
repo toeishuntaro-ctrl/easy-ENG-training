@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import generateHandler from './generate.js';
 import chatHandler from './api/chat.js';
+import evaluateHandler from './api/evaluate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +27,9 @@ app.all('/api/generate', generateHandler);
 
 app.post('/api/chat', chatHandler);
 app.all('/api/chat', chatHandler);
+
+app.post('/api/evaluate', evaluateHandler);
+app.all('/api/evaluate', evaluateHandler);
 
 // Static assets
 app.use(express.static(__dirname));
