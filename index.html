@@ -19,6 +19,61 @@
   <script type="module" src="/firebase-sync.js"></script>
 
   <style>
+    /* 旧キャッシュ残存防止: Bossカード・関連要素の完全非表示ルール */
+    .boss-card, [onclick*="launchBoss"], [id*="boss"], [id*="Boss"], .boss-title, .boss-sub {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      max-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* クイズステージナビゲーションピル */
+    .stage-nav-pill-row {
+      display: flex;
+      gap: 5px;
+      margin: 8px 0 10px 0;
+      justify-content: space-between;
+    }
+    .stage-nav-pill {
+      flex: 1;
+      padding: 5px 2px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 6px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .stage-nav-pill:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .stage-nav-pill.active {
+      background: #2563eb;
+      border-color: #1d4ed8;
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(37,99,235,0.25);
+    }
+    .stage-nav-pill.completed {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #15803d;
+    }
+    .stage-nav-pill.completed.active {
+      background: #16a34a;
+      border-color: #15803d;
+      color: #ffffff;
+    }
+
     :root {
       --primary: #2563eb;
       --bg: #f8fafc;
@@ -1556,6 +1611,23 @@
       <div class="home-sub">トピックを絞って生成することで精度が向上。万能な「型」をインプットしてから、中学単語を組み合わせたアウトプットに挑戦します。</div>
     </div>
 
+    <!-- 進行中クイズの中断・再開カード -->
+    <div id="resumeSessionCard" style="display:none; background:#eff6ff; border:1.5px solid #3b82f6; border-radius:12px; padding:12px 14px; margin-top:12px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="background:#2563eb; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">進行中のトレーニング</span>
+            <span id="resumeSessionModeBadge" style="font-size:11px; font-weight:700; color:#1e40af;">🎯 口頭クイズ</span>
+          </div>
+          <div id="resumeSessionTitle" style="font-size:14px; font-weight:800; color:#0f172a; margin-top:3px;">「納期・スコープ交渉」</div>
+          <div id="resumeSessionStage" style="font-size:12px; color:#2563eb; font-weight:700; margin-top:2px;">STAGE 1 / 5 (進捗 20%)</div>
+        </div>
+        <button class="btn-next" style="width:auto; padding:8px 14px; background:#2563eb; font-size:13px; font-weight:800; white-space:nowrap; margin-top:0;" onclick="resumeActiveSession()">
+          続きから再開 ➔
+        </button>
+      </div>
+    </div>
+
     <div class="topic-selector-title">
       <span>🎯 集中トレーニングするトピックを選択</span>
     </div>
@@ -1631,8 +1703,8 @@
       <span class="btn-targeted-start-sub">型インプット ➔ 中学単語の組み合わせで実践 (全5問)</span>
     </button>
 
-    <button class="btn-next" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:12px; font-size:13px;" onclick="switchTab('play')">
-      ▶️ 読み込み済みのクイズを再開する
+    <button class="btn-next" id="btnResumeBottom" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:12px; font-size:13px;" onclick="resumeActiveSession()">
+      ▶️ 進行中クイズの続きから再開する
     </button>
   </div>
 
@@ -1687,6 +1759,11 @@
           ⚡ 1.0x
         </button>
       </div>
+    </div>
+
+    <!-- ステージ進行状況 & ジャンプ用ピル (1 2 3 4 5) -->
+    <div class="stage-nav-pill-row" id="stageNavPillRow">
+      <!-- JSで動的生成 -->
     </div>
 
     <!-- 3ステップ学習切替ステッパー -->
@@ -2118,9 +2195,125 @@
   }
 
   function startTargetedSession() {
+    // 進行中の未完了クイズがある場合、誤ってリセットしないよう確認
+    if (scenarios && scenarios.length > 0 && currentStageIndex > 0 && currentStageIndex < scenarios.length) {
+      const topicName = TOPIC_NAMES[selectedTopic] || '選択トピック';
+      const ok = confirm(`現在受講中のコース（STAGE ${currentStageIndex + 1} / ${scenarios.length}）があります。\n\n進行中の進捗を破棄して「${topicName}」で新しく開始しますか？\n（「キャンセル」を押すと現在のステージの続きから再開できます）`);
+      if (!ok) {
+        resumeActiveSession();
+        return;
+      }
+    }
     setTrainingMode(selectedMode);
     switchTab('play');
     downloadDailyScenarios(selectedTopic);
+  }
+
+  // 進行中セッションの保存と再開管理
+  function saveActiveSession() {
+    if (!scenarios || scenarios.length === 0) return;
+    const session = {
+      historyId: currentHistoryId,
+      stageIndex: currentStageIndex,
+      mode: trainingMode,
+      topic: selectedTopic,
+      updatedAt: Date.now()
+    };
+    localStorage.setItem('english_active_session', JSON.stringify(session));
+
+    if (currentHistoryId) {
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      const idx = history.findIndex(item => item.id === currentHistoryId);
+      if (idx !== -1) {
+        history[idx].lastStageIndex = currentStageIndex;
+        history[idx].mode = trainingMode;
+        if (selectedTopic) history[idx].topic = selectedTopic;
+        localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+      }
+    }
+    updateResumeCardUI();
+  }
+
+  function updateResumeCardUI() {
+    const resumeCard = document.getElementById('resumeSessionCard');
+    const resumeBtnBottom = document.getElementById('btnResumeBottom');
+    if (!resumeCard) return;
+
+    if (!scenarios || scenarios.length === 0) {
+      resumeCard.style.display = 'none';
+      if (resumeBtnBottom) resumeBtnBottom.style.display = 'none';
+      return;
+    }
+
+    const total = scenarios.length;
+    const currentNum = Math.min(total, currentStageIndex + 1);
+    const pct = Math.round((currentNum / total) * 100);
+    const topicTitle = TOPIC_NAMES[selectedTopic] || 'ビジネスPlain English';
+    const modeLabel = getModeLabel(trainingMode);
+
+    const titleEl = document.getElementById('resumeSessionTitle');
+    const stageEl = document.getElementById('resumeSessionStage');
+    const badgeEl = document.getElementById('resumeSessionModeBadge');
+
+    if (titleEl) titleEl.innerText = `「${topicTitle}」`;
+    if (stageEl) stageEl.innerText = `STAGE ${currentNum} / ${total} (進捗 ${pct}%)`;
+    if (badgeEl) badgeEl.innerText = modeLabel;
+
+    if (resumeBtnBottom) {
+      resumeBtnBottom.style.display = 'block';
+      resumeBtnBottom.innerText = `▶️ 【${topicTitle}】STAGE ${currentNum} / ${total} の続きから再開する`;
+    }
+
+    resumeCard.style.display = 'block';
+  }
+
+  function resumeActiveSession() {
+    if (!scenarios || scenarios.length === 0) {
+      const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      if (history.length > 0 && history[0].data) {
+        scenarios = history[0].data;
+        currentHistoryId = history[0].id;
+        if (history[0].mode) setTrainingMode(history[0].mode);
+        if (history[0].topic) selectedTopic = history[0].topic;
+        currentStageIndex = typeof history[0].lastStageIndex === 'number' ? history[0].lastStageIndex : 0;
+      } else {
+        toast('受講可能なクイズを新しく生成します');
+        startTargetedSession();
+        return;
+      }
+    }
+    switchTab('play');
+    loadStage();
+    toast(`▶️ STAGE ${currentStageIndex + 1} / ${scenarios.length} の続きから再開しました`);
+  }
+
+  function renderStageNavPills() {
+    const row = document.getElementById('stageNavPillRow');
+    if (!row || !scenarios || scenarios.length === 0) return;
+
+    row.innerHTML = scenarios.map((s, idx) => {
+      const isCurrent = idx === currentStageIndex;
+      // 過去に回答済みか、または現在のインデックス未満ならcompleted
+      const isCompleted = idx < currentStageIndex;
+      const label = `STAGE ${idx + 1}${isCompleted ? ' ✓' : ''}`;
+      const classes = ['stage-nav-pill'];
+      if (isCurrent) classes.push('active');
+      if (isCompleted) classes.push('completed');
+
+      return `
+        <button class="${classes.join(' ')}" onclick="jumpToStage(${idx})" title="STAGE ${idx + 1}へ移動">
+          ${label}
+        </button>
+      `;
+    }).join('');
+  }
+
+  function jumpToStage(stageIdx) {
+    if (!scenarios || stageIdx < 0 || stageIdx >= scenarios.length) return;
+    if (stageIdx === currentStageIndex) return;
+    currentStageIndex = stageIdx;
+    loadStage();
+    toast(`📍 STAGE ${currentStageIndex + 1} に移動しました`);
   }
 
   // 耳トレ用ステート
@@ -2199,6 +2392,9 @@
   }
 
   function quickSwitchMode(selectedId) {
+    if (!selectedId) return;
+    saveActiveSession(); // 切替前の進捗を確実に保存
+
     const idNum = Number(selectedId);
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const target = history.find(item => item.id === idNum);
@@ -2207,8 +2403,15 @@
       scenarios = target.data;
       currentHistoryId = target.id;
       if (target.mode) setTrainingMode(target.mode);
-      currentStageIndex = 0;
-      toast(`📌 [${getModeLabel(target.mode)} - ${target.date}] を読み込みました`);
+      if (target.topic) selectedTopic = target.topic;
+
+      // 前回の進捗ステージを復元（完了済みなら0、進行中なら前回のステージ）
+      const total = scenarios.length;
+      let resumeIdx = typeof target.lastStageIndex === 'number' ? target.lastStageIndex : 0;
+      if (resumeIdx >= total) resumeIdx = 0; // 全問解き終わっていれば最初から復習
+      currentStageIndex = resumeIdx;
+
+      toast(`📌 [${getModeLabel(target.mode)}] STAGE ${currentStageIndex + 1} / ${total} を再開しました`);
       loadStage();
     }
   }
@@ -2586,7 +2789,13 @@
     if (tabName === 'history') renderHistory();
     if (tabName === 'library') renderLibrary();
     
-    if (tabName !== 'play') stopSimTimer();
+    if (tabName !== 'play') {
+      stopSimTimer();
+      saveActiveSession(); // 他のタブに移動した際も現在のクイズ進捗を確実に保存
+    }
+    if (tabName === 'home') {
+      updateResumeCardUI(); // ホームに戻った際に「続きから再開」カードを最新化
+    }
     if (tabName !== 'script' && isHandsFree) toggleHandsFree();
     updateDashboard();
   }
@@ -2933,6 +3142,8 @@
       id: id,
       date: dateStr,
       mode: trainingMode,
+      topic: selectedTopic,
+      lastStageIndex: 0,
       status: 'unplayed',
       answered: 0,
       correct: 0,
@@ -2944,6 +3155,7 @@
     localStorage.setItem('english_scenarios_history', JSON.stringify(history));
     currentHistoryId = id;
     if (window.fbSync) window.fbSync.saveQuizHistory(historyItem);
+    saveActiveSession();
     return id;
   }
 
@@ -2953,6 +3165,7 @@
     const idx = history.findIndex(item => item.id === currentHistoryId);
     if (idx !== -1) {
       history[idx].answered = (history[idx].answered || 0) + 1;
+      history[idx].lastStageIndex = currentStageIndex;
       if (isCorrect) history[idx].correct = (history[idx].correct || 0) + 1;
       
       const total = history[idx].data ? history[idx].data.length : 5;
@@ -3034,17 +3247,50 @@
   }
 
   function initApp() {
+    // 1. 旧キャッシュ等によるBoss関連要素の完全パージ
+    document.querySelectorAll('.boss-card, [onclick*="launchBoss"], [id*="boss"], [id*="Boss"]').forEach(el => el.remove());
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.update());
+      }).catch(() => {});
+    }
+
+    // 2. 進行中セッションまたは直近履歴からステージ進捗を復元
+    const activeSession = JSON.parse(localStorage.getItem('english_active_session') || 'null');
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    if (history.length > 0) {
-      scenarios = history[0].data;
-      currentHistoryId = history[0].id;
-      if (history[0].mode) trainingMode = history[0].mode;
+
+    let targetItem = null;
+    if (activeSession && activeSession.historyId && history.length > 0) {
+      targetItem = history.find(h => h.id === activeSession.historyId);
+    }
+    if (!targetItem && history.length > 0) {
+      targetItem = history[0];
+    }
+
+    if (targetItem && targetItem.data && targetItem.data.length > 0) {
+      scenarios = targetItem.data;
+      currentHistoryId = targetItem.id;
+      if (targetItem.mode) setTrainingMode(targetItem.mode);
+      if (targetItem.topic) selectedTopic = targetItem.topic;
+
+      const total = scenarios.length;
+      let resumeIdx = 0;
+      if (activeSession && typeof activeSession.stageIndex === 'number') {
+        resumeIdx = activeSession.stageIndex;
+      } else if (typeof targetItem.lastStageIndex === 'number') {
+        resumeIdx = targetItem.lastStageIndex;
+      }
+      if (resumeIdx >= total) resumeIdx = 0;
+      currentStageIndex = resumeIdx;
+
       loadStage();
     } else {
       scenarios = getFallbackScenarios(trainingMode);
+      currentStageIndex = 0;
       loadStage();
     }
     updateDashboard();
+    updateResumeCardUI();
 
     // Global exposure for Firebase Sync callbacks
     window.updateDashboard = updateDashboard;
@@ -3840,6 +4086,9 @@
   function loadStage() {
     if (!scenarios || scenarios.length === 0) return;
 
+    // ステージ読み込み時に現在の進行状況を自動永続化 & ステージピル更新
+    saveActiveSession();
+    renderStageNavPills();
     updateModeUI();
 
     const data = scenarios[currentStageIndex];
@@ -4139,14 +4388,25 @@
         ? '<span class="log-status-badge needs_review">🟡 要復習</span>' 
         : '<span class="log-status-badge unplayed">🔵 未学習</span>';
 
+      const totalStages = item.data ? item.data.length : 5;
+      const lastIdx = typeof item.lastStageIndex === 'number' ? item.lastStageIndex : 0;
+      const isOngoing = lastIdx > 0 && st !== 'completed';
+      const resumeStageNum = Math.min(totalStages, lastIdx + 1);
+      const actionBtnText = isOngoing ? `▶️ STAGE ${resumeStageNum}から再開` : '復習する';
+      const subInfo = isOngoing 
+        ? `<span style="color:#2563eb; font-weight:700;">進行中: STAGE ${resumeStageNum} / ${totalStages}</span>` 
+        : `${totalStages} ステージ収録`;
+
       return `
         <div class="list-item">
           <div class="list-info">
             <div class="list-title">📅 ${item.date} [${(item.mode || 'quiz').toUpperCase()}] ${statusTag}</div>
-            <div class="list-sub">${item.data ? item.data.length : 5} ステージ収録</div>
+            <div class="list-sub">${subInfo}</div>
           </div>
-          <div>
-            <button class="btn-action btn-play" onclick="loadHistoryItem(${item.id})">復習する</button>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn-action btn-play" onclick="loadHistoryItem(${item.id})" style="${isOngoing ? 'background:#2563eb; color:#fff; font-weight:700;' : ''}">
+              ${actionBtnText}
+            </button>
             <button class="btn-action btn-delete" onclick="deleteHistoryItem(${item.id})">削除</button>
           </div>
         </div>
@@ -4155,15 +4415,23 @@
   }
 
   function loadHistoryItem(id) {
+    saveActiveSession(); // 直前の進捗を保存
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const target = history.find(item => item.id === id);
-    if (target) {
+    if (target && target.data) {
       scenarios = target.data;
       currentHistoryId = target.id;
       if (target.mode) setTrainingMode(target.mode);
-      currentStageIndex = 0;
+      if (target.topic) selectedTopic = target.topic;
+
+      const total = scenarios.length;
+      let resumeIdx = typeof target.lastStageIndex === 'number' ? target.lastStageIndex : 0;
+      if (resumeIdx >= total) resumeIdx = 0;
+      currentStageIndex = resumeIdx;
+
       switchTab('play');
       loadStage();
+      toast(`📌 [${getModeLabel(target.mode)}] STAGE ${currentStageIndex + 1} / ${total} を再開しました`);
     }
   }
 
@@ -4642,6 +4910,20 @@
   }
 
   function showSessionSummary() {
+    // コース完了処理: 履歴を完了にし、アクティブセッションをリセット
+    if (currentHistoryId) {
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      const idx = history.findIndex(item => item.id === currentHistoryId);
+      if (idx !== -1) {
+        history[idx].status = 'completed';
+        history[idx].lastStageIndex = 0;
+        localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+        if (window.fbSync && history[idx]) window.fbSync.saveQuizHistory(history[idx]);
+      }
+    }
+    localStorage.removeItem('english_active_session');
+    updateResumeCardUI();
+
     const totalSurvival = survivalQuestions.length || scenarios.length || 5;
     const survivalPct = Math.round((survivalCorrectCount / totalSurvival) * 100);
     const modal = document.getElementById('sessionCompleteModal');
