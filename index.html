@@ -32,16 +32,24 @@
       pointer-events: none !important;
     }
 
-    /* クイズステージナビゲーションピル */
+    /* クイズステージナビゲーションピル (5問〜10問以上対応・見切れ防止) */
     .stage-nav-pill-row {
       display: flex;
       gap: 5px;
       margin: 8px 0 10px 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
       justify-content: space-between;
+    }
+    .stage-nav-pill-row::-webkit-scrollbar {
+      display: none;
     }
     .stage-nav-pill {
       flex: 1;
-      padding: 5px 2px;
+      min-width: 44px;
+      padding: 6px 2px;
       font-size: 11px;
       font-weight: 700;
       text-align: center;
@@ -52,6 +60,11 @@
       cursor: pointer;
       transition: all 0.15s ease;
       user-select: none;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
     .stage-nav-pill:hover {
       background: #e2e8f0;
@@ -72,6 +85,19 @@
       background: #16a34a;
       border-color: #15803d;
       color: #ffffff;
+    }
+    /* 6ステージ以上（10ステージ等）のコンパクト表示 */
+    .stage-nav-pill-row.compact-pills {
+      justify-content: flex-start;
+      gap: 6px;
+    }
+    .stage-nav-pill-row.compact-pills .stage-nav-pill {
+      flex: 0 0 auto;
+      min-width: 32px;
+      height: 32px;
+      padding: 0 5px;
+      font-size: 11.5px;
+      border-radius: 8px;
     }
 
     :root {
@@ -2699,26 +2725,28 @@
 
   <!-- 3. セッション完了サマリーモーダル -->
   <div class="session-modal-backdrop" id="sessionCompleteModal">
-    <div class="session-modal-content">
-      <div style="text-align:center; margin-bottom:14px;">
+    <div class="session-modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
+      <div style="text-align:center; margin-bottom:12px; flex-shrink: 0;">
         <div style="font-size:36px;">🎉</div>
-        <div style="font-size:17px; font-weight:800; color:#1e293b; margin-top:6px;">全5ステージ完了！</div>
+        <div style="font-size:17px; font-weight:800; color:#1e293b; margin-top:4px;" id="modalTitleText">全ステージ完了！</div>
         <div style="font-size:12px; color:#64748b; margin-top:2px;" id="modalScoreText">正答率: 100% | 連続学習記録更新！</div>
       </div>
 
-      <div style="font-size:12px; font-weight:bold; color:#334155; margin-bottom:8px;">💡 本日習得した5つの武器（型）:</div>
-      <div id="modalPatternList" style="margin-bottom:14px;">
+      <div style="font-size:12px; font-weight:bold; color:#334155; margin-bottom:6px; flex-shrink: 0;" id="modalPatternHeading">💡 本日習得した武器（型）:</div>
+      <div id="modalPatternList" style="margin-bottom:12px; max-height: 38vh; overflow-y: auto; padding-right: 4px;">
       </div>
 
-      <button class="btn-next" style="background:#f59e0b; margin-bottom:8px;" onclick="saveAllSessionPhrases()">
-        ⭐ 5つの重要フレーズをまとめてストック
-      </button>
-      <button class="btn-next" style="background:#2563eb; margin-bottom:8px;" onclick="restartCurrentSession()">
-        🔁 このコースをもう一度復習する
-      </button>
-      <button class="btn-next" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;" onclick="closeSessionModalAndGoHome()">
-        🏠 ホームに戻って新しいトピックを選ぶ
-      </button>
+      <div style="flex-shrink: 0;">
+        <button class="btn-next" id="btnModalSaveAll" style="background:#f59e0b; margin-bottom:8px;" onclick="saveAllSessionPhrases()">
+          ⭐ 重要フレーズをまとめてストック
+        </button>
+        <button class="btn-next" style="background:#2563eb; margin-bottom:8px;" onclick="restartCurrentSession()">
+          🔁 このコースをもう一度復習する
+        </button>
+        <button class="btn-next" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;" onclick="closeSessionModalAndGoHome()">
+          🏠 ホームに戻って新しいトピックを選ぶ
+        </button>
+      </div>
     </div>
   </div>
 
@@ -3156,21 +3184,38 @@
     const row = document.getElementById('stageNavPillRow');
     if (!row || !scenarios || scenarios.length === 0) return;
 
+    const total = scenarios.length;
+    const isCompact = total > 5;
+    row.className = isCompact ? 'stage-nav-pill-row compact-pills' : 'stage-nav-pill-row';
+
     row.innerHTML = scenarios.map((s, idx) => {
       const isCurrent = idx === currentStageIndex;
       // 過去に回答済みか、または現在のインデックス未満ならcompleted
       const isCompleted = idx < currentStageIndex;
-      const label = `STAGE ${idx + 1}${isCompleted ? ' ✓' : ''}`;
+      
+      // 5問以下なら "STAGE 1", 6問以上（10問等）なら "1 ✓" や "1" のスマートコンパクト表示
+      const label = isCompact
+        ? `${idx + 1}${isCompleted ? '✓' : ''}`
+        : `STAGE ${idx + 1}${isCompleted ? ' ✓' : ''}`;
+
       const classes = ['stage-nav-pill'];
       if (isCurrent) classes.push('active');
       if (isCompleted) classes.push('completed');
 
       return `
-        <button class="${classes.join(' ')}" onclick="jumpToStage(${idx})" title="STAGE ${idx + 1}へ移動">
+        <button id="stageNavPill_${idx}" class="${classes.join(' ')}" onclick="jumpToStage(${idx})" title="STAGE ${idx + 1}へ移動">
           ${label}
         </button>
       `;
     }).join('');
+
+    // アクティブなピルを画面中央に見やすく自動スクロール
+    setTimeout(() => {
+      const activeBtn = document.getElementById(`stageNavPill_${currentStageIndex}`);
+      if (activeBtn && row) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 40);
   }
 
   function jumpToStage(stageIdx) {
@@ -6152,8 +6197,25 @@
     const totalSurvival = survivalQuestions.length || scenarios.length || 5;
     const survivalPct = Math.round((survivalCorrectCount / totalSurvival) * 100);
     const modal = document.getElementById('sessionCompleteModal');
+    const titleText = document.getElementById('modalTitleText');
     const scoreText = document.getElementById('modalScoreText');
+    const headingText = document.getElementById('modalPatternHeading');
     const list = document.getElementById('modalPatternList');
+    const btnSaveAll = document.getElementById('btnModalSaveAll');
+
+    if (titleText) {
+      titleText.innerText = reviewMode
+        ? `🎉 忘却曲線復習完了！ (全${scenarios.length}問)`
+        : `🎉 全${scenarios.length}ステージ完了！`;
+    }
+
+    if (headingText) {
+      headingText.innerText = `💡 習得・復習した${scenarios.length}個の武器（型）:`;
+    }
+
+    if (btnSaveAll) {
+      btnSaveAll.innerText = `⭐ ${scenarios.length}個の重要フレーズをまとめてストック`;
+    }
 
     if (scoreText) {
       scoreText.innerHTML = `
@@ -6376,47 +6438,42 @@
       return;
     }
 
-    const reviewScenariosList = dueItems.slice(0, 10).map((item, idx) => {
-      const targetText = item.target || '';
-      let chunks = item.chunks;
-      if (!Array.isArray(chunks) || chunks.length < 2) {
-        chunks = createFallbackChunks(targetText);
-      }
-      let choices = item.choices;
-      if (!Array.isArray(choices) || choices.length < 2) {
-        choices = [
-          { type: 'PERFECT', text: targetText, advice: '完璧です！シンプルで力強い表現です。' },
-          { type: 'TOO_COMPLEX', text: `It is of utmost imperative that ${targetText}`, advice: '同じ意図ですが、無駄に硬く伝わりにくいです。' },
-          { type: 'TOO_DIRECT', text: `You must know: ${targetText}`, advice: '同じ意図ですが、角が立ち信頼関係を損ないます。' }
-        ];
-      }
+    const reviewScenariosList = dueItems.slice(0, 10).map((item, idx) => buildScenarioFromLibraryItem(item, idx));
 
-      return {
-        stage: idx + 1,
-        ai_name: "AI Review Coach",
-        ai_en: item.ai_en || "Let's review this critical plain English weapon.",
-        ai_jp: "エビングハウスの忘却曲線に基づく復習ドリルです。",
-        key_pattern: item.key_pattern || "Plain English Core Weapon",
-        key_pattern_jp: item.key_pattern_jp || "実践必須のビジネス型",
-        pattern_rationale: "間隔反復ドリルで長期記憶に定着させます。",
-        parts_hint: "基本動詞を意識して組み立てましょう。",
-        guide: item.guide || targetText,
-        target: targetText,
-        counterpart_reaction_en: "Understood. That is crystal clear.",
-        counterpart_reaction_jp: "了解です。極めて明快で納得できました。",
-        chunks: chunks,
-        choices: choices
-      };
-    });
+    const now = new Date();
+    const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const historyId = Date.now();
+    const historyItem = {
+      id: historyId,
+      date: `${dateStr} [🔔忘却曲線復習]`,
+      mode: 'speech',
+      topic: 'SRS_REVIEW',
+      lastStageIndex: 0,
+      status: 'unplayed',
+      answered: 0,
+      correct: 0,
+      data: reviewScenariosList
+    };
+
+    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    history.unshift(historyItem);
+    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
 
     scenarios = reviewScenariosList;
+    currentHistoryId = historyId;
     currentStageIndex = 0;
     sessionCorrect = 0;
     sessionAnswered = 0;
     reviewMode = true;
+
+    const loadingArea = document.getElementById('stageLoadingArea');
+    const stageArea = document.getElementById('playStageArea');
+    if (loadingArea) loadingArea.style.display = 'none';
+    if (stageArea) stageArea.style.display = 'block';
+
     switchTab('play');
-    toast(`🔔 忘却曲線復習ドリル (全${reviewScenariosList.length}問) を開始しました！`);
     loadStage();
+    toast(`🔔 忘却曲線復習ドリル (全${reviewScenariosList.length}問) を開始しました！`);
   }
 
   // ==========================================
