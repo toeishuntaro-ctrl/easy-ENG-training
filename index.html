@@ -2808,14 +2808,17 @@
   <!-- 6. AI連続ラリー対話（フリースタイル・ロールプレイ）ビュー -->
   <div id="viewRoleplay" style="display: none; padding-bottom: 90px;">
     <div class="roleplay-header-box">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
         <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
-          <span>💬</span> AI連続ラリー対話 (フリースタイル)
+          <span>💬</span> AI連続ラリー対話
+          <span style="font-size: 10px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 1px 6px; border-radius: 4px; border: 1px solid #bbf7d0;">💾 自動保存中</span>
         </div>
-        <button class="ctrl-btn" onclick="resetRoleplaySession()" style="font-size: 11px; padding: 4px 8px;">↺ リセット</button>
+        <div style="display: flex; gap: 4px;">
+          <button class="ctrl-btn" onclick="resetRoleplaySession()" title="現在のラリーを最初からやり直す" style="font-size: 11px; padding: 4px 8px; font-weight: 700;">↺ 最初から</button>
+        </div>
       </div>
-      <div style="font-size: 11.5px; color: #64748b; margin-top: 3px; line-height: 1.45;">
-        相手の発言に対し、自分の言葉で返答して合意を着地させます。AIがリアルタイムに相手の反応とPlain Englishアドバイス（中学生動詞での洗練表現）を提示します。
+      <div style="font-size: 11.5px; color: #64748b; margin-top: 4px; line-height: 1.45;">
+        相手の発言に対し、自分の言葉で返答して合意を着地させます。途中でタブを切り替えても会話は自動保存され、いつでも再開できます。
       </div>
 
       <!-- キャラクター＆シナリオ選択 -->
@@ -2830,7 +2833,7 @@
           </select>
         </div>
         <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">シチュエーション:</div>
+          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">シチュエーション (話題):</div>
           <select class="mode-select" id="roleplayTopicSelect" onchange="changeRoleplayTopic(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
             <option value="pushback">🚀 納期・スコープの交渉</option>
             <option value="issue">🛡️ トラブル初動報告と期日約束</option>
@@ -6486,23 +6489,108 @@
     isConcluded: false
   };
 
+  const ROLEPLAY_STORAGE_KEY = 'english_roleplay_current_session';
+
+  function saveRoleplaySession() {
+    try {
+      const stateToSave = {
+        characterKey: roleplayState.characterKey,
+        topicKey: roleplayState.topicKey,
+        turn: roleplayState.turn,
+        maxTurns: roleplayState.maxTurns,
+        messages: roleplayState.messages,
+        isConcluded: roleplayState.isConcluded,
+        savedAt: Date.now()
+      };
+      localStorage.setItem(ROLEPLAY_STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (e) {
+      console.warn("Failed to save roleplay session to localStorage:", e);
+    }
+  }
+
+  function loadRoleplaySession() {
+    try {
+      const saved = localStorage.getItem(ROLEPLAY_STORAGE_KEY);
+      if (!saved) return false;
+      const parsed = JSON.parse(saved);
+      if (parsed && Array.isArray(parsed.messages) && parsed.messages.length > 0) {
+        roleplayState.characterKey = parsed.characterKey || 'sarah';
+        roleplayState.topicKey = parsed.topicKey || 'pushback';
+        roleplayState.turn = parsed.turn || 1;
+        roleplayState.maxTurns = parsed.maxTurns || 4;
+        roleplayState.messages = parsed.messages;
+        roleplayState.isConcluded = !!parsed.isConcluded;
+
+        // セレクトボックスのUI同期
+        const charSelect = document.getElementById('roleplayCharSelect');
+        if (charSelect) charSelect.value = roleplayState.characterKey;
+        const topicSelect = document.getElementById('roleplayTopicSelect');
+        if (topicSelect) topicSelect.value = roleplayState.topicKey;
+
+        updateRoleplayHeaderUI();
+        renderRoleplayTimeline();
+
+        if (roleplayState.isConcluded) {
+          const summaryCard = document.getElementById('roleplaySummaryCard');
+          const inputBar = document.getElementById('roleplayInputBar');
+          const repliesSec = document.getElementById('roleplayQuickRepliesSection');
+          if (inputBar) inputBar.style.display = 'none';
+          if (repliesSec) repliesSec.style.display = 'none';
+          if (summaryCard) summaryCard.style.display = 'block';
+        } else {
+          const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
+          renderRoleplayQuickReplies(topic.starterSuggestions);
+        }
+        return true;
+      }
+    } catch (e) {
+      console.warn("Failed to load roleplay session:", e);
+    }
+    return false;
+  }
+
   function initRoleplayIfNeeded() {
     if (roleplayState.messages.length === 0) {
-      resetRoleplaySession();
+      const restored = loadRoleplaySession();
+      if (!restored) {
+        resetRoleplaySession(false);
+      }
+    } else {
+      // 既存状態のUI反映
+      const charSelect = document.getElementById('roleplayCharSelect');
+      if (charSelect) charSelect.value = roleplayState.characterKey;
+      const topicSelect = document.getElementById('roleplayTopicSelect');
+      if (topicSelect) topicSelect.value = roleplayState.topicKey;
+      updateRoleplayHeaderUI();
+      renderRoleplayTimeline();
     }
   }
 
   function changeRoleplayCharacter(charKey) {
+    if (roleplayState.messages.length > 1 && !roleplayState.isConcluded) {
+      if (!confirm("対話相手を変更すると現在のラリーは新しく開始されます。変更しますか？")) {
+        const charSelect = document.getElementById('roleplayCharSelect');
+        if (charSelect) charSelect.value = roleplayState.characterKey;
+        return;
+      }
+    }
     roleplayState.characterKey = charKey;
-    resetRoleplaySession();
+    resetRoleplaySession(true);
   }
 
   function changeRoleplayTopic(topicKey) {
+    if (roleplayState.messages.length > 1 && !roleplayState.isConcluded) {
+      if (!confirm("シチュエーションを変更すると新しい話題でラリーが始まります。変更しますか？")) {
+        const topicSelect = document.getElementById('roleplayTopicSelect');
+        if (topicSelect) topicSelect.value = roleplayState.topicKey;
+        return;
+      }
+    }
     roleplayState.topicKey = topicKey;
-    resetRoleplaySession();
+    resetRoleplaySession(true);
   }
 
-  function resetRoleplaySession() {
+  function resetRoleplaySession(showToast = true) {
     const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
     const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
 
@@ -6528,9 +6616,20 @@
     const inputBar = document.getElementById('roleplayInputBar');
     if (inputBar) inputBar.style.display = 'flex';
 
+    // セレクトボックスの選択状態を同期
+    const charSelect = document.getElementById('roleplayCharSelect');
+    if (charSelect) charSelect.value = roleplayState.characterKey;
+    const topicSelect = document.getElementById('roleplayTopicSelect');
+    if (topicSelect) topicSelect.value = roleplayState.topicKey;
+
     updateRoleplayHeaderUI();
     renderRoleplayTimeline();
     renderRoleplayQuickReplies(topic.starterSuggestions);
+    saveRoleplaySession();
+
+    if (showToast) {
+      toast(`💬 ${topic.title} の新しいラリーを開始しました！`);
+    }
   }
 
   function updateRoleplayHeaderUI() {
@@ -6758,6 +6857,7 @@
       roleplayState.turn++;
       updateRoleplayHeaderUI();
       renderRoleplayTimeline();
+      saveRoleplaySession();
 
       // AI音声を自動再生
       speakText(data.ai_reply_en);
@@ -6834,6 +6934,7 @@
     roleplayState.turn++;
     updateRoleplayHeaderUI();
     renderRoleplayTimeline();
+    saveRoleplaySession();
     speakText(fb.ai);
 
     if (fb.concluded || roleplayState.turn > roleplayState.maxTurns) {
@@ -6848,6 +6949,7 @@
 
   function showRoleplayConclusion(data) {
     roleplayState.isConcluded = true;
+    saveRoleplaySession();
     const summaryCard = document.getElementById('roleplaySummaryCard');
     const inputBar = document.getElementById('roleplayInputBar');
     const repliesSec = document.getElementById('roleplayQuickRepliesSection');

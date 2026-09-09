@@ -86,7 +86,7 @@ Output strictly JSON adhering to the schema.`;
     ]
   };
 
-  const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+  const models = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
   let lastError = null;
 
   for (const model of models) {
@@ -97,7 +97,9 @@ Output strictly JSON adhering to the schema.`;
         config: {
           responseMimeType: "application/json",
           responseSchema,
-          thinkingConfig: { thinkingLevel: "LOW" }
+          thinkingConfig: { thinkingBudget: 0 },
+          temperature: 0.5,
+          maxOutputTokens: 800
         }
       });
 
