@@ -5780,6 +5780,13 @@
     ];
   }
 
+  function synthesizePatternVariations(pattern, patternJp, target) {
+    if (typeof synthesizeClientPatternVariations === 'function') {
+      return synthesizeClientPatternVariations(pattern, patternJp, target);
+    }
+    return [];
+  }
+
   function buildScenarioFromLibraryItem(item, idx) {
     // 過去履歴やフォールバックから元の完全データを検索
     const original = findOriginalStageData(item.target, item.ai_en);
@@ -5821,7 +5828,11 @@
       ? original.variations
       : (item.variations && item.variations.length > 0 ? item.variations : null);
     if (!variations || variations.length < 2) {
-      variations = synthesizePatternVariations(patternInfo.key_pattern, patternInfo.key_pattern_jp, targetText);
+      if (typeof synthesizeClientPatternVariations === 'function') {
+        variations = synthesizeClientPatternVariations(patternInfo.key_pattern, patternInfo.key_pattern_jp, targetText);
+      } else {
+        variations = synthesizePatternVariations(patternInfo.key_pattern, patternInfo.key_pattern_jp, targetText);
+      }
     }
 
     return {
@@ -6931,48 +6942,100 @@
   }
 
   function startSrsReviewSession() {
-    const dueItems = getDueSrsItems();
-    if (dueItems.length === 0) {
-      toast('✨ 本日の復習推奨フレーズはすべて完了しています！');
-      return;
+    const btn = document.getElementById('btnStartSrsReview');
+    const originalBtnText = btn ? btn.innerText : '';
+    try {
+      if (btn) {
+        btn.innerText = '⏳ 復習ドリルを準備中...';
+        btn.style.opacity = '0.7';
+      }
+
+      const dueItems = getDueSrsItems();
+      if (!dueItems || dueItems.length === 0) {
+        toast('✨ 現在、復習期日に達したフレーズはありません（本日の復習はすべて完了しています）');
+        if (btn) {
+          btn.innerText = originalBtnText || '🚀 今すぐ「今日の復習ドリル」を開始';
+          btn.style.opacity = '1';
+        }
+        return;
+      }
+
+      toast(`⏳ 忘却曲線復習ドリル (${Math.min(10, dueItems.length)}問) を読み込んでいます...`);
+
+      const reviewScenariosList = dueItems.slice(0, 10).map((item, idx) => {
+        try {
+          return buildScenarioFromLibraryItem(item, idx);
+        } catch (itemErr) {
+          console.warn('Error building scenario from item:', item, itemErr);
+          // 最低限のフォールバック
+          return {
+            stage: idx + 1,
+            ai_name: item.ai_name || "Counterpart (Review)",
+            email_subject: item.email_subject || "",
+            ai_en: item.ai_en || "Let's review this saved business situation.",
+            ai_jp: item.ai_jp || resolveCounterpartTranslation(item.ai_en, item.guide),
+            key_pattern: item.key_pattern || "I will [action] by [time]...",
+            key_pattern_jp: item.key_pattern_jp || "〜を行い、〜までに対応します",
+            pattern_rationale: item.pattern_rationale || "相手の不安を取り除き、主語＋基本動詞で迷わず言い切る実践的なPlain English構文です。",
+            parts_hint: item.parts_hint || "基本パーツ（動詞句・目的語・期限）を意識して組み立てましょう！",
+            guide: item.guide || "保存した重要フレーズをアウトプットしてください。",
+            target: item.target || "",
+            counterpart_reaction_en: item.counterpart_reaction_en || "Understood. Thank you for the clear communication.",
+            counterpart_reaction_jp: item.counterpart_reaction_jp || "了解しました。明確なご対応ありがとうございます。",
+            chunks: item.chunks || splitTargetIntoChunks(item.target || ''),
+            choices: item.choices || buildDefaultChoices(item.target || ''),
+            variations: item.variations || []
+          };
+        }
+      });
+
+      if (!reviewScenariosList || reviewScenariosList.length === 0) {
+        throw new Error('復習問題の構築に失敗しました。');
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const historyId = Date.now();
+      const historyItem = {
+        id: historyId,
+        date: `${dateStr} [🔔忘却曲線復習]`,
+        mode: 'speech',
+        topic: 'SRS_REVIEW',
+        lastStageIndex: 0,
+        status: 'unplayed',
+        answered: 0,
+        correct: 0,
+        data: reviewScenariosList
+      };
+
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      history.unshift(historyItem);
+      localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+
+      scenarios = reviewScenariosList;
+      currentHistoryId = historyId;
+      currentStageIndex = 0;
+      sessionCorrect = 0;
+      sessionAnswered = 0;
+      reviewMode = true;
+
+      const loadingArea = document.getElementById('stageLoadingArea');
+      const stageArea = document.getElementById('playStageArea');
+      if (loadingArea) loadingArea.style.display = 'none';
+      if (stageArea) stageArea.style.display = 'block';
+
+      switchTab('play');
+      loadStage();
+      toast(`🔔 忘却曲線復習ドリル (全${reviewScenariosList.length}問) を開始しました！`);
+    } catch (err) {
+      console.error('startSrsReviewSession error:', err);
+      toast(`⚠️ 復習ドリルの生成中にエラーが発生しました: ${err.message || err}`);
+    } finally {
+      if (btn) {
+        btn.innerText = originalBtnText || '🚀 今すぐ「今日の復習ドリル」を開始';
+        btn.style.opacity = '1';
+      }
     }
-
-    const reviewScenariosList = dueItems.slice(0, 10).map((item, idx) => buildScenarioFromLibraryItem(item, idx));
-
-    const now = new Date();
-    const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const historyId = Date.now();
-    const historyItem = {
-      id: historyId,
-      date: `${dateStr} [🔔忘却曲線復習]`,
-      mode: 'speech',
-      topic: 'SRS_REVIEW',
-      lastStageIndex: 0,
-      status: 'unplayed',
-      answered: 0,
-      correct: 0,
-      data: reviewScenariosList
-    };
-
-    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    history.unshift(historyItem);
-    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
-
-    scenarios = reviewScenariosList;
-    currentHistoryId = historyId;
-    currentStageIndex = 0;
-    sessionCorrect = 0;
-    sessionAnswered = 0;
-    reviewMode = true;
-
-    const loadingArea = document.getElementById('stageLoadingArea');
-    const stageArea = document.getElementById('playStageArea');
-    if (loadingArea) loadingArea.style.display = 'none';
-    if (stageArea) stageArea.style.display = 'block';
-
-    switchTab('play');
-    loadStage();
-    toast(`🔔 忘却曲線復習ドリル (全${reviewScenariosList.length}問) を開始しました！`);
   }
 
   // ==========================================
