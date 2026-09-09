@@ -1487,6 +1487,595 @@
       border-top: 1px solid #e2e8f0;
       background: #f8fafc;
     }
+
+    /* ライブラリ復習 & フラッシュカード専用スタイル */
+    .library-header-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .library-count-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid #bfdbfe;
+    }
+    .library-action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .library-action-card {
+      background: linear-gradient(135deg, #ffffff, #f8fafc);
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .library-action-card:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(37,99,235,0.12);
+    }
+    .library-action-card.primary {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-color: #93c5fd;
+    }
+    .library-action-card.primary:hover {
+      border-color: #2563eb;
+    }
+    .lib-act-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 3px;
+    }
+    .lib-act-sub {
+      font-size: 10.5px;
+      color: #64748b;
+      line-height: 1.3;
+    }
+
+    .library-filter-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .library-filter-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .lib-filter-pill {
+      white-space: nowrap;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 20px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .lib-filter-pill.active {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #ffffff;
+    }
+
+    .lib-item-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      transition: border-color 0.15s ease;
+    }
+    .lib-item-card:hover {
+      border-color: #cbd5e1;
+    }
+    .lib-item-topic {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .lib-item-target {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e40af;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .lib-item-guide {
+      font-size: 12px;
+      color: #334155;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+    .lib-item-pattern {
+      font-size: 11px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    .lib-item-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
+      margin-top: 4px;
+    }
+
+    /* フラッシュカードモーダル */
+    .flashcard-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .flashcard-box {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .flashcard-main-card {
+      min-height: 180px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .flashcard-main-card:hover {
+      border-color: #93c5fd;
+      background: #f0fdf4;
+    }
+    .flashcard-main-card.flipped {
+      background: #eff6ff;
+      border-color: #3b82f6;
+    }
+    .flashcard-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .flashcard-flip-prompt {
+      position: absolute;
+      bottom: 8px;
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    /* --- 忘却曲線 (Spaced Repetition) レコメンドカード --- */
+    .srs-recommend-card {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1.5px solid #f59e0b;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 12px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);
+    }
+    .srs-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .srs-badge {
+      background: #b45309;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .srs-count-pill {
+      background: #fff;
+      color: #d97706;
+      border: 1px solid #fde68a;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .srs-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #78350f;
+      margin-top: 5px;
+    }
+    .srs-desc {
+      font-size: 11.5px;
+      color: #92400e;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+    .srs-item-preview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px solid #fef08a;
+    }
+    .srs-item-preview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11.5px;
+    }
+    .srs-item-guide {
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .srs-level-badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #475569;
+      white-space: nowrap;
+    }
+    .srs-level-badge.lvl-1 { background: #fee2e2; color: #991b1b; }
+    .srs-level-badge.lvl-2 { background: #ffedd5; color: #9a3412; }
+    .srs-level-badge.lvl-3 { background: #fef9c3; color: #854d0e; }
+    .srs-level-badge.lvl-4 { background: #dcfce7; color: #166534; }
+    .srs-level-badge.lvl-5 { background: #e0e7ff; color: #3730a3; }
+    .btn-srs-start {
+      width: 100%;
+      background: #d97706;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+      transition: all 0.15s ease;
+    }
+    .btn-srs-start:hover {
+      background: #b45309;
+    }
+
+    /* --- ロールプレイ (連続ラリー対話) スタイル --- */
+    .roleplay-header-box {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .roleplay-char-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .roleplay-avatar-lg {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e0e7ff;
+      color: #4338ca;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .roleplay-char-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .roleplay-char-role {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .roleplay-rally-progress {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .roleplay-step-dot {
+      flex: 1;
+      height: 4px;
+      border-radius: 9999px;
+      background: #cbd5e1;
+      transition: all 0.2s ease;
+    }
+    .roleplay-step-dot.active {
+      background: #2563eb;
+    }
+    .roleplay-step-dot.done {
+      background: #10b981;
+    }
+
+    .roleplay-chat-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 14px;
+      min-height: 220px;
+    }
+    .chat-msg-row {
+      display: flex;
+      gap: 8px;
+      max-width: 90%;
+    }
+    .chat-msg-row.ai {
+      align-self: flex-start;
+    }
+    .chat-msg-row.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+    .chat-msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .chat-msg-row.ai .chat-msg-avatar {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+    }
+    .chat-msg-row.user .chat-msg-avatar {
+      background: #2563eb;
+      color: #fff;
+    }
+    .chat-bubble {
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      position: relative;
+    }
+    .chat-msg-row.ai .chat-bubble {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      border-top-left-radius: 2px;
+    }
+    .chat-msg-row.user .chat-bubble {
+      background: #2563eb;
+      color: #ffffff;
+      border-top-right-radius: 2px;
+      font-weight: 500;
+    }
+    .chat-bubble-jp {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 4px;
+      line-height: 1.4;
+    }
+    .chat-bubble-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    /* コーチングアドバイス枠 */
+    .coach-feedback-box {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 4px;
+      font-size: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+    .coach-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #166534;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .coach-plain-tag {
+      background: #ffffff;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-top: 6px;
+      font-family: inherit;
+    }
+    .coach-pattern-tag {
+      font-size: 11px;
+      color: #15803d;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* クイック選択肢 */
+    .roleplay-quick-replies {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .quick-reply-pill {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #1e293b;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quick-reply-pill:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    /* 入力エリア */
+    .roleplay-input-bar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 6px 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .roleplay-input-bar:focus-within {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+    .roleplay-input-field {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      font-family: inherit;
+      color: #0f172a;
+      resize: none;
+      height: 38px;
+      line-height: 1.4;
+      padding: 4px 0;
+    }
+    .btn-mic-input {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      color: #475569;
+      transition: all 0.15s ease;
+    }
+    .btn-mic-input.listening {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #dc2626;
+      animation: genPulse 1.2s infinite ease-in-out;
+    }
+    .btn-roleplay-send {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0 14px;
+      height: 36px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .btn-roleplay-send:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* 終了サマリーカード */
+    .roleplay-summary-card {
+      background: #ffffff;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -1609,6 +2198,41 @@
     <div class="home-card">
       <div class="home-title">実践Plain English トレーニング</div>
       <div class="home-sub">トピックを絞って生成することで精度が向上。万能な「型」をインプットしてから、中学単語を組み合わせたアウトプットに挑戦します。</div>
+    </div>
+
+    <!-- 忘却曲線 (Spaced Repetition) 自動レコメンドカード -->
+    <div id="srsRecommendCard" class="srs-recommend-card" style="display: none;">
+      <div class="srs-header-row">
+        <span class="srs-badge">🔔 忘却曲線レコメンド</span>
+        <span class="srs-count-pill" id="srsDueCountPill">0件 要復習</span>
+      </div>
+      <div class="srs-title" id="srsTitleText">エビングハウスの忘却曲線に基づく今日の復習</div>
+      <div class="srs-desc" id="srsDescText">
+        記憶が薄れ始めている重要フレーズをピックアップしました。今復習すると定着率が最大化されます！
+      </div>
+      <div class="srs-item-preview-list" id="srsPreviewList">
+        <!-- JSで復習対象アイテムを動的表示 -->
+      </div>
+      <button class="btn-srs-start" id="btnStartSrsReview" onclick="startSrsReviewSession()">
+        🚀 今すぐ「今日の復習ドリル」を開始する
+      </button>
+    </div>
+
+    <!-- AI連続ラリー会話 (フリースタイル・ロールプレイ) クイック起動バナー -->
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 14px; margin-top: 12px; margin-bottom: 12px; color: #fff; cursor: pointer; box-shadow: 0 3px 8px rgba(30, 27, 75, 0.15); display: flex; justify-content: space-between; align-items: center; gap: 10px;" onclick="switchTab('roleplay')">
+      <div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="background: #4f46e5; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">NEW 機能</span>
+          <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">フリースタイル実践</span>
+        </div>
+        <div style="font-size: 14px; font-weight: 800; margin-top: 3px; color: #ffffff;">💬 AIと連続ラリー対話（ロールプレイ）</div>
+        <div style="font-size: 11.5px; color: #e0e7ff; margin-top: 2px; line-height: 1.4;">
+          AI相手と3〜4往復の会話で合意形成。リアルタイムに中学生英語での洗練アドバイスを提供！
+        </div>
+      </div>
+      <div style="background: #4338ca; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 800; white-space: nowrap; flex-shrink: 0;">
+        対話開始 ➔
+      </div>
     </div>
 
     <!-- 進行中クイズの中断・再開カード -->
@@ -2103,11 +2727,192 @@
 
   <!-- 5. 重要フレーズライブラリビュー -->
   <div id="viewLibrary" style="display: none;">
-    <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📚 保存した重要フレーズ</div>
-    <input class="search-box" id="librarySearch" placeholder="フレーズを検索…" oninput="renderLibrary()">
+    <div class="library-header-box">
+      <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+        <span>📚</span> 保存した重要フレーズ (武器庫)
+      </div>
+      <span class="library-count-badge" id="libraryCountBadge">0件 保存</span>
+    </div>
+
+    <!-- 復習アクションカード（特訓クイズ & 瞬間想起フラッシュカード） -->
+    <div class="library-action-grid">
+      <div class="library-action-card primary" onclick="startLibraryQuiz()">
+        <div>
+          <div class="lib-act-title">
+            <span>🚀</span> 特訓クイズを開始
+          </div>
+          <div class="lib-act-sub">保存フレーズから実践クイズ（並び替え・3択）を編成して特訓</div>
+        </div>
+      </div>
+      <div class="library-action-card" onclick="openFlashcardModal()">
+        <div>
+          <div class="lib-act-title">
+            <span>⚡</span> 瞬間想起カード
+          </div>
+          <div class="lib-act-sub">日本語を見て英語がパッと出るかめくって確認</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- トピック別フィルターピル -->
+    <div class="library-filter-scroll" id="libraryFilterRow">
+      <!-- JSで動的生成 -->
+    </div>
+
+    <!-- 検索ボックス -->
+    <input class="search-box" id="librarySearch" placeholder="フレーズ・型・和訳を検索…" oninput="renderLibrary()" style="margin-bottom: 10px;">
+
+    <!-- フレーズ一覧コンテナ -->
     <div id="libraryListContainer"></div>
   </div>
 </div>
+
+<!-- フラッシュカード（瞬間想起トレーニング）モーダル -->
+<div id="flashcardModal" class="flashcard-overlay" style="display: none;" onclick="if(event.target===this) closeFlashcardModal()">
+  <div class="flashcard-box">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-weight: 800; font-size: 14px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+        <span>⚡</span> 瞬間想起フラッシュカード
+      </div>
+      <span id="flashcardProgressBadge" style="font-size: 11px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 6px;">1 / 5</span>
+    </div>
+
+    <!-- メインカード（タップで表裏反転） -->
+    <div class="flashcard-main-card" id="flashcardCard" onclick="flipFlashcard()">
+      <span class="flashcard-badge" id="flashcardTopicBadge">トピック</span>
+      
+      <!-- 表面（ミッション・日本語） -->
+      <div id="flashcardFront" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+        <div style="font-size: 11px; font-weight: 700; color: #64748b;">【日本語ミッション】瞬時に英語を口に出してみよう</div>
+        <div id="flashcardGuide" style="font-size: 15px; font-weight: 800; color: #0f172a; line-height: 1.5; padding: 0 10px;"></div>
+        <div id="flashcardPatternHint" style="font-size: 11px; color: #2563eb; background: #eff6ff; padding: 4px 8px; border-radius: 6px; margin-top: 4px;"></div>
+      </div>
+
+      <!-- 裏面（正解英文＋発音＋型） -->
+      <div id="flashcardBack" style="display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+        <div style="font-size: 11px; font-weight: 700; color: #16a34a;">【正解のPlain English】</div>
+        <div id="flashcardTarget" style="font-size: 16px; font-weight: 800; color: #1e40af; line-height: 1.4; padding: 0 10px;"></div>
+        <button class="btn-action btn-play" id="btnFlashcardSpeak" onclick="event.stopPropagation(); speakFlashcardTarget()" style="margin-top: 4px; padding: 5px 12px; font-size: 12px; font-weight: 700;">
+          🔊 ネイティブ音声を聞く
+        </button>
+      </div>
+
+      <div class="flashcard-flip-prompt" id="flashcardFlipPrompt">👆 タップして正解英文を確認</div>
+    </div>
+
+    <!-- 操作ボタン群 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+      <button class="btn-action" style="flex: 1; padding: 10px; font-size: 12.5px; font-weight: 700;" onclick="prevFlashcard()">
+        ◀️ 前へ
+      </button>
+      <button class="btn-action" style="flex: 1; padding: 10px; font-size: 12.5px; font-weight: 700; background: #2563eb; color: #ffffff; border: none;" onclick="nextFlashcard()">
+        次へ ▶️
+      </button>
+    </div>
+
+    <button class="btn-action" style="width: 100%; padding: 8px; font-size: 12px; color: #64748b;" onclick="closeFlashcardModal()">
+      閉じる
+    </button>
+  </div>
+</div>
+
+  <!-- 6. AI連続ラリー対話（フリースタイル・ロールプレイ）ビュー -->
+  <div id="viewRoleplay" style="display: none; padding-bottom: 30px;">
+    <div class="roleplay-header-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+          <span>💬</span> AI連続ラリー対話 (フリースタイル)
+        </div>
+        <button class="ctrl-btn" onclick="resetRoleplaySession()" style="font-size: 11px; padding: 4px 8px;">↺ リセット</button>
+      </div>
+      <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+        相手の発言に対し、自分の言葉で返答して合意を着地させます。AIがリアルタイムに相手の反応とPlain Englishアドバイス（中学生動詞での洗練表現）を提示します。
+      </div>
+
+      <!-- キャラクター＆シナリオ選択 -->
+      <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">対話相手:</div>
+          <select class="mode-select" id="roleplayCharSelect" onchange="changeRoleplayCharacter(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
+            <option value="sarah">👩‍💼 Sarah (グローバルスポンサー)</option>
+            <option value="rajesh">👨‍💻 Rajesh (テックリード)</option>
+            <option value="david">🛡️ David (QAマネージャー)</option>
+            <option value="elena">🤝 Elena (グローバルPM)</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">シチュエーション:</div>
+          <select class="mode-select" id="roleplayTopicSelect" onchange="changeRoleplayTopic(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
+            <option value="pushback">🚀 納期・スコープの交渉</option>
+            <option value="issue">🛡️ トラブル初動報告と期日約束</option>
+            <option value="clarify">🔍 曖昧な要件の明確化</option>
+            <option value="freeze">⚖️ 仕様凍結と優先順位の合意</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ラリー進行バー -->
+      <div style="margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: #475569;">
+          <span id="roleplayRallyTurnText">ラリー 1 / 4</span>
+          <span id="roleplayGoalBadge" style="color: #2563eb;">🎯 目標: 建設的な合意形成</span>
+        </div>
+        <div class="roleplay-rally-progress" id="roleplayRallyProgress">
+          <div class="roleplay-step-dot active"></div>
+          <div class="roleplay-step-dot"></div>
+          <div class="roleplay-step-dot"></div>
+          <div class="roleplay-step-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- チャットログタイムライン -->
+    <div class="roleplay-chat-timeline" id="roleplayTimeline">
+      <!-- メッセージが動的に挿入される -->
+    </div>
+
+    <!-- AI応答待機中スピナー -->
+    <div id="roleplayThinking" style="display: none; text-align: center; padding: 12px; font-size: 12px; color: #2563eb; background: #eff6ff; border-radius: 8px; margin-bottom: 10px;">
+      <span style="display: inline-block; animation: genPulse 1.2s infinite;">🤖</span> AIパートナーが返答＆アドバイスを検討中...
+    </div>
+
+    <!-- おすすめクイック返答ピル（迷ったとき用） -->
+    <div id="roleplayQuickRepliesSection" style="display: none;">
+      <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+        <span>💡 おすすめの返信候補（タップして入力欄にセット）:</span>
+      </div>
+      <div class="roleplay-quick-replies" id="roleplayQuickRepliesContainer"></div>
+    </div>
+
+    <!-- 入力バー -->
+    <div class="roleplay-input-bar" id="roleplayInputBar">
+      <button class="btn-mic-input" id="btnRoleplayMic" onclick="toggleRoleplayMic()" title="英語を話して音声入力">
+        🎤
+      </button>
+      <input type="text" class="roleplay-input-field" id="roleplayInputField" placeholder="Type your response in English..." onkeydown="handleRoleplayKeyDown(event)">
+      <button class="btn-roleplay-send" id="btnRoleplaySend" onclick="sendRoleplayMessage()">
+        送信
+      </button>
+    </div>
+
+    <!-- セッション完了サマリーカード -->
+    <div id="roleplaySummaryCard" class="roleplay-summary-card" style="display: none;">
+      <div style="font-size: 24px;">🎉</div>
+      <div style="font-size: 16px; font-weight: 800; color: #065f46; margin-top: 4px;" id="roleplaySummaryTitle">合意形成に成功しました！</div>
+      <div style="font-size: 13px; color: #047857; margin-top: 4px;" id="roleplaySummaryScore">Plain Englishスコア: 95点</div>
+      <div style="font-size: 12px; color: #1f2937; margin-top: 8px; line-height: 1.5; background: #f0fdf4; border-radius: 8px; padding: 10px;" id="roleplaySummaryText">
+        相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました。
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-action" style="flex: 1; padding: 10px; background: #2563eb; color: #fff; border: none; font-weight: 700;" onclick="resetRoleplaySession()">
+          🔄 次のシチュエーションで練習
+        </button>
+        <button class="btn-action" style="padding: 10px 14px;" onclick="switchTab('home')">
+          🏠 ホームへ
+        </button>
+      </div>
+    </div>
+  </div>
 
 <!-- 固定ボトムナビゲーションバー -->
 <div class="bottom-nav">
@@ -2118,6 +2923,10 @@
   <button class="nav-item" id="navPlay" onclick="switchTab('play')">
     <div class="nav-icon">🎮</div>
     <div>クイズ</div>
+  </button>
+  <button class="nav-item" id="navRoleplay" onclick="switchTab('roleplay')">
+    <div class="nav-icon">💬</div>
+    <div>ラリー</div>
   </button>
   <button class="nav-item" id="navScript" onclick="switchTab('script')">
     <div class="nav-icon">🎧</div>
@@ -2775,12 +3584,14 @@
     currentTab = tabName;
     document.getElementById('navHome').classList.toggle('active', tabName === 'home');
     document.getElementById('navPlay').classList.toggle('active', tabName === 'play');
+    if (document.getElementById('navRoleplay')) document.getElementById('navRoleplay').classList.toggle('active', tabName === 'roleplay');
     document.getElementById('navScript').classList.toggle('active', tabName === 'script');
     document.getElementById('navHistory').classList.toggle('active', tabName === 'history');
     document.getElementById('navLibrary').classList.toggle('active', tabName === 'library');
 
     document.getElementById('viewHome').style.display = tabName === 'home' ? 'block' : 'none';
     document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
+    if (document.getElementById('viewRoleplay')) document.getElementById('viewRoleplay').style.display = tabName === 'roleplay' ? 'block' : 'none';
     document.getElementById('viewScript').style.display = tabName === 'script' ? 'block' : 'none';
     document.getElementById('viewHistory').style.display = tabName === 'history' ? 'block' : 'none';
     document.getElementById('viewLibrary').style.display = tabName === 'library' ? 'block' : 'none';
@@ -2788,6 +3599,7 @@
     if (tabName === 'script') renderScript();
     if (tabName === 'history') renderHistory();
     if (tabName === 'library') renderLibrary();
+    if (tabName === 'roleplay') initRoleplayIfNeeded();
     
     if (tabName !== 'play') {
       stopSimTimer();
@@ -2795,6 +3607,7 @@
     }
     if (tabName === 'home') {
       updateResumeCardUI(); // ホームに戻った際に「続きから再開」カードを最新化
+      updateSrsRecommendUI(); // 忘却曲線レコメンドカードを最新化
     }
     if (tabName !== 'script' && isHandsFree) toggleHandsFree();
     updateDashboard();
@@ -3298,6 +4111,17 @@
     window.renderHistory = renderHistory;
     window.populateScriptLogSelect = populateScriptLogSelect;
     window.populateQuickModeSelect = populateQuickModeSelect;
+    window.startLibraryQuiz = startLibraryQuiz;
+    window.startSinglePhraseQuiz = startSinglePhraseQuiz;
+    window.setLibraryFilterTopic = setLibraryFilterTopic;
+    window.openFlashcardModal = openFlashcardModal;
+    window.flipFlashcard = flipFlashcard;
+    window.nextFlashcard = nextFlashcard;
+    window.prevFlashcard = prevFlashcard;
+    window.closeFlashcardModal = closeFlashcardModal;
+    window.speakFlashcardTarget = speakFlashcardTarget;
+    window.saveCurrentPhrase = saveCurrentPhrase;
+    window.deleteLibraryItem = deleteLibraryItem;
 
     // --- 端末同期モーダル操作関数 ---
     window.openSyncModal = function() {
@@ -4063,6 +4887,7 @@
       toast(`🎯 正解！ Combo ×${combo}`);
       showResultCard(true, current);
       speakText(current.target);
+      if (typeof advanceSrsItemLevel === 'function') advanceSrsItemLevel(current.target);
     } else {
       combo = 0;
       awardXP(3, false);
@@ -4445,6 +5270,12 @@
     if (window.fbSync) window.fbSync.deleteQuizHistory(id);
   }
 
+  // --- 重要フレーズ（武器庫）ライブラリ & 復習システム ---
+  let currentLibraryFilterTopic = 'ALL';
+  let flashcardList = [];
+  let flashcardIndex = 0;
+  let isFlashcardFlipped = false;
+
   function saveCurrentPhrase() {
     if (!scenarios || scenarios.length === 0) return;
     const current = scenarios[currentStageIndex];
@@ -4460,49 +5291,384 @@
       target: current.target,
       guide: current.guide,
       ai_en: current.ai_en,
+      ai_jp: current.ai_jp || '',
+      ai_name: current.ai_name || '',
+      email_subject: current.email_subject || '',
       key_pattern: current.key_pattern || '',
       key_pattern_jp: current.key_pattern_jp || '',
-      topic: selectedTopic || ''
+      pattern_rationale: current.pattern_rationale || '',
+      parts_hint: current.parts_hint || '',
+      counterpart_reaction_en: current.counterpart_reaction_en || '',
+      counterpart_reaction_jp: current.counterpart_reaction_jp || '',
+      chunks: current.chunks || splitTargetIntoChunks(current.target),
+      choices: current.choices || buildDefaultChoices(current.target),
+      topic: selectedTopic || current.topic || '',
+      mode: trainingMode || 'speech',
+      addedDate: new Date().toLocaleDateString('ja-JP')
     };
-    library.push(newWeapon);
+    library.unshift(newWeapon);
 
     localStorage.setItem('english_phrase_library', JSON.stringify(library));
     if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
     toast("⭐ フレーズ帳に追加しました！");
+    renderLibrary();
   }
 
+  // チャンク分割補助（古いデータ救済用）
+  function splitTargetIntoChunks(text) {
+    if (!text) return [];
+    const parts = text.split(/([,.?!])\s*/).filter(Boolean);
+    if (parts.length >= 3) return parts;
+    const words = text.split(' ');
+    const chunks = [];
+    let current = [];
+    for (const w of words) {
+      current.push(w);
+      if (current.length >= 3 || w.endsWith('.') || w.endsWith(',') || w.endsWith('?')) {
+        chunks.push(current.join(' '));
+        current = [];
+      }
+    }
+    if (current.length > 0) chunks.push(current.join(' '));
+    return chunks.length >= 2 ? chunks : [text];
+  }
+
+  function buildDefaultChoices(targetText) {
+    return [
+      { type: "PERFECT", text: targetText, advice: "保存した重要なPlain English表現です。完璧です！" },
+      { type: "TOO_COMPLEX", text: targetText.replace(/send/gi, 'transmit').replace(/check/gi, 'investigate comprehensively').replace(/need/gi, 'require immediately'), advice: "意味は通じますが、過剰に硬い単語になっています。" },
+      { type: "TOO_DIRECT", text: targetText.replace(/please/gi, '').replace(/could you/gi, 'you must'), advice: "少し攻撃的で直接的すぎる表現になっています。" }
+    ];
+  }
+
+  function buildScenarioFromLibraryItem(item, idx) {
+    return {
+      stage: idx + 1,
+      ai_name: item.ai_name || "Counterpart (Review)",
+      email_subject: item.email_subject || (item.mode === 'email' ? "Re: Discussion & Follow-up" : ""),
+      ai_en: item.ai_en || "Let's review this saved business situation.",
+      ai_jp: item.ai_jp || "保存したビジネス状況の復習です。",
+      key_pattern: item.key_pattern || "Practice your saved pattern",
+      key_pattern_jp: item.key_pattern_jp || "保存した型を定着させましょう",
+      pattern_rationale: item.pattern_rationale || "ライブラリに保存した重要な実践フレーズです。スラスラ言えるまで復習しましょう。",
+      parts_hint: item.parts_hint || "保存したフレーズの型を意識して組み立てましょう！",
+      guide: item.guide || "保存したフレーズをアウトプットしてください。",
+      target: item.target,
+      counterpart_reaction_en: item.counterpart_reaction_en || "Understood. Thank you for the clear communication.",
+      counterpart_reaction_jp: item.counterpart_reaction_jp || "了解しました。明確なご対応ありがとうございます。",
+      chunks: item.chunks && item.chunks.length > 0 ? item.chunks : splitTargetIntoChunks(item.target),
+      choices: item.choices && item.choices.length > 0 ? item.choices : buildDefaultChoices(item.target)
+    };
+  }
+
+  // ライブラリ一覧描画
   function renderLibrary() {
     const container = document.getElementById('libraryListContainer');
+    const badge = document.getElementById('libraryCountBadge');
+    const filterRow = document.getElementById('libraryFilterRow');
     const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
 
-    const q = (document.getElementById('librarySearch')?.value || '').toLowerCase();
-    const filtered = library.filter(item => `${item.target} ${item.guide} ${item.ai_en}`.toLowerCase().includes(q));
+    if (badge) badge.innerText = `${library.length}件 保存`;
+
+    // 1. トピックフィルターピルの動的生成
+    if (filterRow) {
+      const topicCounts = {};
+      library.forEach(item => {
+        const t = item.topic || 'OTHER';
+        topicCounts[t] = (topicCounts[t] || 0) + 1;
+      });
+
+      let filterHtml = `
+        <button class="lib-filter-pill ${currentLibraryFilterTopic === 'ALL' ? 'active' : ''}" onclick="setLibraryFilterTopic('ALL')">
+          すべて (${library.length})
+        </button>
+      `;
+
+      for (const [topKey, count] of Object.entries(topicCounts)) {
+        const name = TOPIC_NAMES[topKey] || (topKey === 'OTHER' ? 'その他' : topKey);
+        filterHtml += `
+          <button class="lib-filter-pill ${currentLibraryFilterTopic === topKey ? 'active' : ''}" onclick="setLibraryFilterTopic('${topKey}')">
+            ${name} (${count})
+          </button>
+        `;
+      }
+      filterRow.innerHTML = filterHtml;
+    }
+
+    // 2. 検索 & トピック絞り込み
+    const q = (document.getElementById('librarySearch')?.value || '').toLowerCase().trim();
+    let filtered = library;
+
+    if (currentLibraryFilterTopic !== 'ALL') {
+      filtered = filtered.filter(item => (item.topic || 'OTHER') === currentLibraryFilterTopic);
+    }
+
+    if (q) {
+      filtered = filtered.filter(item => 
+        `${item.target} ${item.guide} ${item.ai_en} ${item.key_pattern || ''} ${item.key_pattern_jp || ''}`.toLowerCase().includes(q)
+      );
+    }
+
     if (filtered.length === 0) {
-      container.innerHTML = '<div class="empty-state">該当するフレーズがありません。</div>';
+      if (library.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:32px 16px; color:#64748b; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
+            <div style="font-size:32px; margin-bottom:8px;">📚</div>
+            <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:4px;">保存したフレーズがまだありません</div>
+            <div style="font-size:12px; line-height:1.5;">クイズを解いた後に「⭐ このフレーズを保存」を押すと、ここに武器としてストックされ、いつでも復習特訓ができます！</div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = '<div class="empty-state">該当するフレーズがありません。</div>';
+      }
       return;
     }
 
-    container.innerHTML = filtered.map(item => `
-      <div class="list-item">
-        <div class="list-info">
-          <div class="list-title" style="color:var(--primary);">${item.target}</div>
-          <div class="list-sub">${item.guide}</div>
+    container.innerHTML = filtered.map(item => {
+      const topicName = TOPIC_NAMES[item.topic] || (item.topic ? item.topic : 'ビジネス共通');
+      const patternHtml = item.key_pattern 
+        ? `<div class="lib-item-pattern">🔑 <strong>型:</strong> ${item.key_pattern} <span style="color:#64748b; font-size:10px;">(${item.key_pattern_jp || ''})</span></div>` 
+        : '';
+
+      return `
+        <div class="lib-item-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span class="lib-item-topic">🎯 ${topicName}</span>
+            <span style="font-size:10px; color:#94a3b8;">${item.addedDate || ''}</span>
+          </div>
+          <div class="lib-item-target">${item.target}</div>
+          <div class="lib-item-guide">💬 ${item.guide}</div>
+          ${patternHtml}
+          <div class="lib-item-actions">
+            <button class="btn-action btn-play" onclick="startSinglePhraseQuiz(${item.id})" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700; font-size:11.5px; padding:4px 10px;">
+              🎯 この問を特訓
+            </button>
+            <button class="btn-action btn-play" onclick="speakText('${item.target.replace(/'/g, "\\'")}')" style="font-size:11.5px; padding:4px 8px;" title="ネイティブ音声を再生">
+              🔊
+            </button>
+            <button class="btn-action btn-delete" onclick="deleteLibraryItem(${item.id})" style="font-size:11.5px; padding:4px 8px;" title="ライブラリから削除">
+              🗑
+            </button>
+          </div>
         </div>
-        <div>
-          <button class="btn-action btn-play" onclick="speakText('${item.target.replace(/'/g, "\\'")}')">🔊</button>
-          <button class="btn-action btn-delete" onclick="deleteLibraryItem(${item.id})">削除</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+  }
+
+  function setLibraryFilterTopic(topicKey) {
+    currentLibraryFilterTopic = topicKey;
+    renderLibrary();
   }
 
   function deleteLibraryItem(id) {
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
     const toDelete = library.find(item => item.id === id);
-    library = library.filter(item => item.id !== id);
-    localStorage.setItem('english_phrase_library', JSON.stringify(library));
-    if (window.fbSync && toDelete) window.fbSync.deleteWeapon(toDelete.target);
-    renderLibrary();
+    if (!toDelete) return;
+    
+    if (confirm(`フレーズ「${toDelete.target}」を削除しますか？`)) {
+      library = library.filter(item => item.id !== id);
+      localStorage.setItem('english_phrase_library', JSON.stringify(library));
+      if (window.fbSync) window.fbSync.deleteWeapon(toDelete.target);
+      renderLibrary();
+      toast("🗑 フレーズを削除しました");
+    }
+  }
+
+  // 保存フレーズ群から特訓クイズコースを編成して開始
+  function startLibraryQuiz() {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.length === 0) {
+      toast("⚠️ 保存されたフレーズがありません。まずはクイズからフレーズを保存してください。");
+      return;
+    }
+
+    if (currentLibraryFilterTopic !== 'ALL') {
+      const topicFiltered = library.filter(item => (item.topic || 'OTHER') === currentLibraryFilterTopic);
+      if (topicFiltered.length > 0) library = topicFiltered;
+    }
+
+    saveActiveSession(); // 直前のセッションを保存
+
+    // 最大10問を抽出（多い場合はシャッフルして出題）
+    const selectedItems = library.slice(0, 10);
+    const quizScenarios = selectedItems.map((item, idx) => buildScenarioFromLibraryItem(item, idx));
+
+    const now = new Date();
+    const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const topicLabel = currentLibraryFilterTopic !== 'ALL' ? (TOPIC_NAMES[currentLibraryFilterTopic] || currentLibraryFilterTopic) : '全保存フレーズ';
+
+    const historyId = Date.now();
+    const historyItem = {
+      id: historyId,
+      date: `${dateStr} [📚ライブラリ特訓]`,
+      mode: 'quiz',
+      topic: currentLibraryFilterTopic,
+      lastStageIndex: 0,
+      status: 'unplayed',
+      answered: 0,
+      correct: 0,
+      data: quizScenarios
+    };
+
+    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    history.unshift(historyItem);
+    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+
+    scenarios = quizScenarios;
+    currentHistoryId = historyId;
+    currentStageIndex = 0;
+    sessionCorrect = 0;
+    sessionAnswered = 0;
+
+    switchTab('play');
+    loadStage();
+    toast(`🚀 保存フレーズ特訓コース（全${quizScenarios.length}問）を開始しました！`);
+  }
+
+  // 個別フレーズの1問集中特訓
+  function startSinglePhraseQuiz(itemId) {
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const targetItem = library.find(item => item.id === itemId);
+    if (!targetItem) return;
+
+    saveActiveSession();
+
+    const singleScenario = [buildScenarioFromLibraryItem(targetItem, 0)];
+    const historyId = Date.now();
+    const historyItem = {
+      id: historyId,
+      date: `1問特訓 (${targetItem.target.substring(0, 20)}...)`,
+      mode: targetItem.mode || 'speech',
+      topic: targetItem.topic || '',
+      lastStageIndex: 0,
+      status: 'unplayed',
+      answered: 0,
+      correct: 0,
+      data: singleScenario
+    };
+
+    scenarios = singleScenario;
+    currentHistoryId = historyId;
+    currentStageIndex = 0;
+    sessionCorrect = 0;
+    sessionAnswered = 0;
+
+    switchTab('play');
+    loadStage();
+    toast("🎯 選択したフレーズの集中特訓を開始しました！");
+  }
+
+  // --- フラッシュカード（瞬間想起ドリル）制御 ---
+  function openFlashcardModal() {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.length === 0) {
+      toast("⚠️ 保存されたフレーズがありません。まずはクイズからフレーズを保存してください。");
+      return;
+    }
+
+    if (currentLibraryFilterTopic !== 'ALL') {
+      const topicFiltered = library.filter(item => (item.topic || 'OTHER') === currentLibraryFilterTopic);
+      if (topicFiltered.length > 0) library = topicFiltered;
+    }
+
+    flashcardList = library;
+    flashcardIndex = 0;
+    isFlashcardFlipped = false;
+
+    const modal = document.getElementById('flashcardModal');
+    if (modal) modal.style.display = 'flex';
+    renderFlashcard();
+  }
+
+  function renderFlashcard() {
+    if (!flashcardList || flashcardList.length === 0) return;
+    const item = flashcardList[flashcardIndex];
+    if (!item) return;
+
+    const progressEl = document.getElementById('flashcardProgressBadge');
+    const topicBadgeEl = document.getElementById('flashcardTopicBadge');
+    const guideEl = document.getElementById('flashcardGuide');
+    const patternHintEl = document.getElementById('flashcardPatternHint');
+    const targetEl = document.getElementById('flashcardTarget');
+    const cardEl = document.getElementById('flashcardCard');
+    const frontEl = document.getElementById('flashcardFront');
+    const backEl = document.getElementById('flashcardBack');
+    const promptEl = document.getElementById('flashcardFlipPrompt');
+
+    if (progressEl) progressEl.innerText = `${flashcardIndex + 1} / ${flashcardList.length}`;
+    if (topicBadgeEl) {
+      const name = TOPIC_NAMES[item.topic] || (item.topic ? item.topic : 'ビジネス共通');
+      topicBadgeEl.innerText = `🎯 ${name}`;
+    }
+    if (guideEl) guideEl.innerText = item.guide || '';
+    if (patternHintEl) {
+      patternHintEl.innerText = item.key_pattern ? `🔑 型ヒント: ${item.key_pattern}` : '🔑 中学英語でシンプルに表現';
+    }
+    if (targetEl) targetEl.innerText = item.target || '';
+
+    // 表裏状態の更新
+    isFlashcardFlipped = false;
+    if (cardEl) cardEl.classList.remove('flipped');
+    if (frontEl) frontEl.style.display = 'flex';
+    if (backEl) backEl.style.display = 'none';
+    if (promptEl) promptEl.innerText = '👆 タップして正解英文を確認';
+  }
+
+  function flipFlashcard() {
+    isFlashcardFlipped = !isFlashcardFlipped;
+    const cardEl = document.getElementById('flashcardCard');
+    const frontEl = document.getElementById('flashcardFront');
+    const backEl = document.getElementById('flashcardBack');
+    const promptEl = document.getElementById('flashcardFlipPrompt');
+
+    if (isFlashcardFlipped) {
+      if (cardEl) cardEl.classList.add('flipped');
+      if (frontEl) frontEl.style.display = 'none';
+      if (backEl) backEl.style.display = 'flex';
+      if (promptEl) promptEl.innerText = '👆 もう一度タップで日本語に戻す';
+      // 正解が表示されたら発音を自動再生
+      speakFlashcardTarget();
+    } else {
+      if (cardEl) cardEl.classList.remove('flipped');
+      if (frontEl) frontEl.style.display = 'flex';
+      if (backEl) backEl.style.display = 'none';
+      if (promptEl) promptEl.innerText = '👆 タップして正解英文を確認';
+    }
+  }
+
+  function speakFlashcardTarget() {
+    if (!flashcardList || flashcardList.length === 0) return;
+    const item = flashcardList[flashcardIndex];
+    if (item && item.target) {
+      speakText(item.target);
+    }
+  }
+
+  function nextFlashcard() {
+    if (!flashcardList || flashcardList.length === 0) return;
+    if (flashcardIndex < flashcardList.length - 1) {
+      flashcardIndex++;
+    } else {
+      flashcardIndex = 0;
+      toast("🎉 すべてのカードを一巡しました！");
+    }
+    renderFlashcard();
+  }
+
+  function prevFlashcard() {
+    if (!flashcardList || flashcardList.length === 0) return;
+    if (flashcardIndex > 0) {
+      flashcardIndex--;
+    } else {
+      flashcardIndex = flashcardList.length - 1;
+    }
+    renderFlashcard();
+  }
+
+  function closeFlashcardModal() {
+    const modal = document.getElementById('flashcardModal');
+    if (modal) modal.style.display = 'none';
+    window.speechSynthesis?.cancel();
   }
 
   function toggleAutoPlay() {
@@ -4671,6 +5837,7 @@
       }
       toast(`+XP 🎯 Combo ×${combo}`);
       speakText(current.target);
+      if (typeof advanceSrsItemLevel === 'function') advanceSrsItemLevel(current.target);
     }
     else {
       combo = 0;
@@ -5006,7 +6173,741 @@
     window.speechSynthesis.speak(utterance);
   }
 
+  // ==========================================
+  // 忘却曲線 (Spaced Repetition: 間隔反復) システム
+  // ==========================================
+  // エビングハウスの忘却曲線に基づき、1日後、3日後、7日後、14日後、30日後に復習
+  const SRS_INTERVALS_DAYS = [1, 1, 3, 7, 14, 30];
+
+  function getDueSrsItems() {
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const now = Date.now();
+    const dueItems = [];
+
+    library.forEach(item => {
+      // nextReviewAt が未設定（初回）の場合は作成日から24時間経過、または nextReviewAt <= now
+      const isDue = !item.nextReviewAt || item.nextReviewAt <= now;
+      if (isDue) {
+        dueItems.push(item);
+      }
+    });
+
+    // 過去の履歴で間違えた問題や要復習の履歴も補完
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    history.filter(h => h.status === 'needs_review').forEach(h => {
+      (h.data || []).forEach(stage => {
+        if (stage.target && !dueItems.some(d => d.target === stage.target)) {
+          dueItems.push({
+            id: 'hist_' + (stage.stage || Math.random()),
+            target: stage.target,
+            guide: stage.guide,
+            ai_en: stage.ai_en,
+            key_pattern: stage.key_pattern,
+            key_pattern_jp: stage.key_pattern_jp,
+            chunks: stage.chunks,
+            choices: stage.choices,
+            srsLevel: 1,
+            isFromHistory: true
+          });
+        }
+      });
+    });
+
+    return dueItems;
+  }
+
+  function advanceSrsItemLevel(targetPhrase) {
+    if (!targetPhrase) return;
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    let item = library.find(i => i.target && i.target.trim().toLowerCase() === targetPhrase.trim().toLowerCase());
+    
+    if (item) {
+      const currentLevel = item.srsLevel || 0;
+      const nextLevel = Math.min(5, currentLevel + 1);
+      const intervalDays = SRS_INTERVALS_DAYS[nextLevel] || 1;
+      item.srsLevel = nextLevel;
+      item.lastReviewedAt = Date.now();
+      item.nextReviewAt = Date.now() + (intervalDays * 24 * 60 * 60 * 1000);
+      localStorage.setItem('english_phrase_library', JSON.stringify(library));
+      if (window.fbSync) window.fbSync.saveWeapon(item);
+      toast(`🧠 記憶定着度UP! [Level ${nextLevel}] 次回复習は${intervalDays}日後`);
+    }
+    updateSrsRecommendUI();
+  }
+
+  function updateSrsRecommendUI() {
+    const card = document.getElementById('srsRecommendCard');
+    const pill = document.getElementById('srsDueCountPill');
+    const listEl = document.getElementById('srsPreviewList');
+    const btn = document.getElementById('btnStartSrsReview');
+    if (!card) return;
+
+    const dueItems = getDueSrsItems();
+    if (dueItems.length === 0) {
+      // 復習対象がない場合はすべて完了のメッセージを表示
+      card.style.display = 'block';
+      card.style.background = '#f0fdf4';
+      card.style.borderColor = '#86efac';
+      if (pill) {
+        pill.innerText = '✨ 復習完了';
+        pill.style.color = '#16a34a';
+        pill.style.borderColor = '#bbf7d0';
+      }
+      const title = document.getElementById('srsTitleText');
+      if (title) {
+        title.innerText = '✨ 本日の忘却曲線復習はすべて達成！';
+        title.style.color = '#166534';
+      }
+      const desc = document.getElementById('srsDescText');
+      if (desc) {
+        desc.innerText = '記憶の定着が順調に進んでいます。明日また復習期日に達したフレーズを自動でお知らせします。';
+        desc.style.color = '#15803d';
+      }
+      if (listEl) listEl.style.display = 'none';
+      if (btn) {
+        btn.innerText = '📚 保存フレーズ（武器庫）の一覧を見る';
+        btn.onclick = () => switchTab('library');
+        btn.style.background = '#16a34a';
+      }
+      return;
+    }
+
+    // 復習対象がある場合
+    card.style.display = 'block';
+    card.style.background = 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
+    card.style.borderColor = '#f59e0b';
+    if (pill) {
+      pill.innerText = `${dueItems.length}件 要復習`;
+      pill.style.color = '#d97706';
+      pill.style.borderColor = '#fde68a';
+    }
+    const title = document.getElementById('srsTitleText');
+    if (title) {
+      title.innerText = `エビングハウス忘却曲線：本日の復習 (${dueItems.length}件)`;
+      title.style.color = '#78350f';
+    }
+    const desc = document.getElementById('srsDescText');
+    if (desc) {
+      desc.innerText = '記憶が薄れ始めている重要フレーズをピックアップしました。今復習すると定着率が最大化されます！';
+      desc.style.color = '#92400e';
+    }
+    if (listEl) {
+      listEl.style.display = 'flex';
+      const previewSlice = dueItems.slice(0, 3);
+      listEl.innerHTML = previewSlice.map(item => {
+        const lvl = item.srsLevel || 1;
+        return `
+          <div class="srs-item-preview">
+            <span class="srs-item-guide">🎯 ${escapeHtml(item.guide || item.target || '')}</span>
+            <span class="srs-level-badge lvl-${lvl}">Level ${lvl}</span>
+          </div>
+        `;
+      }).join('') + (dueItems.length > 3 ? `<div style="font-size:10.5px; color:#b45309; text-align:right;">他 ${dueItems.length - 3} 件のフレーズ...</div>` : '');
+    }
+    if (btn) {
+      btn.innerText = `🚀 今すぐ「今日の復習ドリル」を開始 (${dueItems.length}件)`;
+      btn.onclick = startSrsReviewSession;
+      btn.style.background = '#d97706';
+    }
+  }
+
+  function startSrsReviewSession() {
+    const dueItems = getDueSrsItems();
+    if (dueItems.length === 0) {
+      toast('✨ 本日の復習推奨フレーズはすべて完了しています！');
+      return;
+    }
+
+    const reviewScenariosList = dueItems.slice(0, 10).map((item, idx) => {
+      const targetText = item.target || '';
+      let chunks = item.chunks;
+      if (!Array.isArray(chunks) || chunks.length < 2) {
+        chunks = createFallbackChunks(targetText);
+      }
+      let choices = item.choices;
+      if (!Array.isArray(choices) || choices.length < 2) {
+        choices = [
+          { type: 'PERFECT', text: targetText, advice: '完璧です！シンプルで力強い表現です。' },
+          { type: 'TOO_COMPLEX', text: `It is of utmost imperative that ${targetText}`, advice: '同じ意図ですが、無駄に硬く伝わりにくいです。' },
+          { type: 'TOO_DIRECT', text: `You must know: ${targetText}`, advice: '同じ意図ですが、角が立ち信頼関係を損ないます。' }
+        ];
+      }
+
+      return {
+        stage: idx + 1,
+        ai_name: "AI Review Coach",
+        ai_en: item.ai_en || "Let's review this critical plain English weapon.",
+        ai_jp: "エビングハウスの忘却曲線に基づく復習ドリルです。",
+        key_pattern: item.key_pattern || "Plain English Core Weapon",
+        key_pattern_jp: item.key_pattern_jp || "実践必須のビジネス型",
+        pattern_rationale: "間隔反復ドリルで長期記憶に定着させます。",
+        parts_hint: "基本動詞を意識して組み立てましょう。",
+        guide: item.guide || targetText,
+        target: targetText,
+        counterpart_reaction_en: "Understood. That is crystal clear.",
+        counterpart_reaction_jp: "了解です。極めて明快で納得できました。",
+        chunks: chunks,
+        choices: choices
+      };
+    });
+
+    scenarios = reviewScenariosList;
+    currentStageIndex = 0;
+    sessionCorrect = 0;
+    sessionAnswered = 0;
+    reviewMode = true;
+    switchTab('play');
+    toast(`🔔 忘却曲線復習ドリル (全${reviewScenariosList.length}問) を開始しました！`);
+    loadStage();
+  }
+
+  // ==========================================
+  // AI連続ラリー対話（フリースタイル・ロールプレイ）システム
+  // ==========================================
+  const ROLEPLAY_CHARACTERS = {
+    sarah: {
+      name: "Sarah (Global Sponsor Lead)",
+      avatar: "👩‍💼",
+      role: "製薬本社スポンサー代表。厳しい納期管理とエグゼクティブ報告に追われており、曖昧な回答を嫌う。"
+    },
+    rajesh: {
+      name: "Rajesh (Tech Lead)",
+      avatar: "👨‍💻",
+      role: "インド開発拠点のテックリード。リソース制約に厳格で、スコープ追加には強い拒否感を示す。"
+    },
+    david: {
+      name: "David (QA Manager)",
+      avatar: "🛡️",
+      role: "グローバルQAマネージャー。プロトコル遵守と監査対応を最優先し、リスクの初動報告を求める。"
+    },
+    elena: {
+      name: "Elena (Global PM)",
+      avatar: "🤝",
+      role: "多国籍チームをまとめるPM。合意形成と現実的なタイムラインへの着地を望んでいる。"
+    }
+  };
+
+  const ROLEPLAY_TOPICS = {
+    pushback: {
+      title: "納期・スコープの交渉",
+      initialPrompt: "Sarah: 'Our management wants the entire rollout completed by Friday. We cannot slip. Can your team commit to this?'",
+      initialJp: "「経営陣は金曜までに全ロールアウトの完了を求めています。遅延は許されません。そちらのチームはこれを約束できますか？」",
+      goal: "全量コミットせず、コア機能先行などの段階リリースで合意する",
+      starterSuggestions: [
+        "I understand the urgency, but let's release the core module first on Friday.",
+        "To protect quality, what if we deliver phase 1 this week and phase 2 next Tuesday?",
+        "Let me check with my team today and propose a realistic mitigation plan by 4 PM."
+      ]
+    },
+    issue: {
+      title: "トラブル初動報告と期日約束",
+      initialPrompt: "David: 'I heard there was a critical data sync error in site 102. What is the scope of this deviation and why wasn't QA notified immediately?'",
+      initialJp: "「サイト102で重大なデータ同期エラーが発生したと聞きました。この逸脱の範囲はどの程度で、なぜQAに即座に通知されなかったのですか？」",
+      goal: "パニックにならず事実を伝え、調査と報告の明確な期限を約束する",
+      starterSuggestions: [
+        "I am looking into this right now and will send you a full impact report by 3 PM.",
+        "We have already contained the error, and I will share our corrective action plan shortly.",
+        "Thank you for flagging this. Let me verify the exact facts with the site CRA first."
+      ]
+    },
+    clarify: {
+      title: "曖昧な要件の明確化",
+      initialPrompt: "Rajesh: 'We need to revamp the report generation pipeline ASAP because the current output feels confusing.'",
+      initialJp: "「現在の出力が分かりにくいため、レポート生成パイプラインを至急作り直す必要があります。」",
+      goal: "全面改修を避け、具体的にどの指標・カラムが問題なのかを特定する",
+      starterSuggestions: [
+        "Could you clarify which specific columns or metrics are causing confusion?",
+        "To make sure we are aligned, are you looking for a layout change or data recalculation?",
+        "Let's focus on the top two pain points first so we don't delay the milestone."
+      ]
+    },
+    freeze: {
+      title: "仕様凍結と優先順位の合意",
+      initialPrompt: "Elena: 'Marketing just submitted three new change requests for the upcoming pilot. We want all three included.'",
+      initialJp: "「マーケティングチームから今度のパイロット版に向けて3件の追加要望が来ました。3件とも盛り込みたいです。」",
+      goal: "Give & Takeで優先度1位のみ受け入れ、残りは次回へ見送る合意を取り付ける",
+      starterSuggestions: [
+        "If we take item 1 now, we will need to move items 2 and 3 to next sprint.",
+        "What if we focus on the highest-impact request first to protect the pilot date?",
+        "I will make sure we deliver the top priority, provided we freeze all other changes."
+      ]
+    }
+  };
+
+  let roleplayState = {
+    characterKey: 'sarah',
+    topicKey: 'pushback',
+    turn: 1,
+    maxTurns: 4,
+    messages: [],
+    isListening: false,
+    recognition: null,
+    isConcluded: false
+  };
+
+  function initRoleplayIfNeeded() {
+    if (roleplayState.messages.length === 0) {
+      resetRoleplaySession();
+    }
+  }
+
+  function changeRoleplayCharacter(charKey) {
+    roleplayState.characterKey = charKey;
+    resetRoleplaySession();
+  }
+
+  function changeRoleplayTopic(topicKey) {
+    roleplayState.topicKey = topicKey;
+    resetRoleplaySession();
+  }
+
+  function resetRoleplaySession() {
+    const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
+    const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
+
+    roleplayState.turn = 1;
+    roleplayState.isConcluded = false;
+    roleplayState.messages = [
+      {
+        role: 'ai',
+        name: char.name,
+        avatar: char.avatar,
+        text: topic.initialPrompt.replace(/^[A-Za-z]+:\s*['"]?/, '').replace(/['"]?$/, ''),
+        textJp: topic.initialJp,
+        coach: null
+      }
+    ];
+
+    const inputField = document.getElementById('roleplayInputField');
+    if (inputField) inputField.value = '';
+
+    const summaryCard = document.getElementById('roleplaySummaryCard');
+    if (summaryCard) summaryCard.style.display = 'none';
+
+    const inputBar = document.getElementById('roleplayInputBar');
+    if (inputBar) inputBar.style.display = 'flex';
+
+    updateRoleplayHeaderUI();
+    renderRoleplayTimeline();
+    renderRoleplayQuickReplies(topic.starterSuggestions);
+  }
+
+  function updateRoleplayHeaderUI() {
+    const turnText = document.getElementById('roleplayRallyTurnText');
+    if (turnText) turnText.innerText = `ラリー ${Math.min(roleplayState.turn, roleplayState.maxTurns)} / ${roleplayState.maxTurns}`;
+
+    const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
+    const goalBadge = document.getElementById('roleplayGoalBadge');
+    if (goalBadge) goalBadge.innerText = `🎯 目標: ${topic.goal}`;
+
+    const dotsContainer = document.getElementById('roleplayRallyProgress');
+    if (dotsContainer) {
+      dotsContainer.innerHTML = Array.from({ length: roleplayState.maxTurns }, (_, i) => {
+        const dotNum = i + 1;
+        let cls = 'roleplay-step-dot';
+        if (dotNum < roleplayState.turn) cls += ' done';
+        else if (dotNum === roleplayState.turn) cls += ' active';
+        return `<div class="${cls}"></div>`;
+      }).join('');
+    }
+  }
+
+  function renderRoleplayTimeline() {
+    const container = document.getElementById('roleplayTimeline');
+    if (!container) return;
+
+    const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
+
+    container.innerHTML = roleplayState.messages.map((msg, idx) => {
+      if (msg.role === 'ai') {
+        const jpId = `rp_jp_${idx}`;
+        return `
+          <div class="chat-msg-row ai">
+            <div class="chat-msg-avatar">${msg.avatar || char.avatar}</div>
+            <div style="flex: 1;">
+              <div class="chat-bubble">
+                <div style="font-size: 11px; font-weight: 800; color: #475569; margin-bottom: 2px;">${escapeHtml(msg.name || char.name)}</div>
+                <div>${escapeHtml(msg.text)}</div>
+                ${msg.textJp ? `
+                  <div style="margin-top: 4px;">
+                    <button class="micro-btn" style="padding: 1px 6px; font-size: 10px; background: transparent; border: 1px solid #cbd5e1; color: #64748b;" onclick="toggleElementDisplay('${jpId}')">和訳の表示</button>
+                    <div id="${jpId}" class="chat-bubble-jp" style="display: none;">${escapeHtml(msg.textJp)}</div>
+                  </div>
+                ` : ''}
+                <div class="chat-bubble-meta">
+                  <button class="micro-btn" style="padding: 2px 7px; font-size: 10.5px; background: #f8fafc;" onclick="speakText('${escapeHtml(msg.text.replace(/'/g, "\\'"))}')">🔊 音声を聴く</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // User message & Coach feedback
+        return `
+          <div class="chat-msg-row user">
+            <div class="chat-msg-avatar">👤</div>
+            <div style="max-width: 85%;">
+              <div class="chat-bubble">
+                <div style="font-size: 10.5px; opacity: 0.85; margin-bottom: 1px;">You (Plain English)</div>
+                <div>${escapeHtml(msg.text)}</div>
+              </div>
+              ${msg.coach ? `
+                <div class="coach-feedback-box">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span class="coach-badge">💡 Plain English Coach</span>
+                    <button class="micro-btn" style="font-size: 9.5px; padding: 1px 5px;" onclick="savePhraseFromCoach('${escapeHtml(msg.coach.better_plain_english || '').replace(/'/g, "\\'")}', '${escapeHtml(msg.coach.key_pattern_suggested || '').replace(/'/g, "\\'")}')">⭐ 武器庫に保存</button>
+                  </div>
+                  <div style="font-size: 11.5px; color: #166534; line-height: 1.4;">${escapeHtml(msg.coach.coach_feedback_jp || '')}</div>
+                  ${msg.coach.better_plain_english ? `
+                    <div class="coach-plain-tag">
+                      <div style="font-size: 10px; font-weight: 800; color: #047857;">🎯 中学動詞でより簡潔に言うなら:</div>
+                      <div style="font-size: 12px; font-weight: 700; color: #065f46; margin-top: 2px;">"${escapeHtml(msg.coach.better_plain_english)}"</div>
+                    </div>
+                  ` : ''}
+                  ${msg.coach.key_pattern_suggested ? `
+                    <div class="coach-pattern-tag">
+                      📌 おすすめの型: <b>${escapeHtml(msg.coach.key_pattern_suggested)}</b>
+                      <div style="font-size: 10.5px; color: #166534; font-weight: normal;">${escapeHtml(msg.coach.key_pattern_jp || '')}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+
+    // スクロールを最下部に移動
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function renderRoleplayQuickReplies(replies) {
+    const section = document.getElementById('roleplayQuickRepliesSection');
+    const container = document.getElementById('roleplayQuickRepliesContainer');
+    if (!section || !container) return;
+
+    if (!Array.isArray(replies) || replies.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = replies.map(r => `
+      <div class="quick-reply-pill" onclick="selectRoleplayQuickReply('${escapeHtml(r).replace(/'/g, "\\'")}')">
+        <span style="color: #2563eb; font-weight: 800;">💬</span>
+        <span style="flex: 1;">${escapeHtml(r)}</span>
+      </div>
+    `).join('');
+  }
+
+  function selectRoleplayQuickReply(text) {
+    const input = document.getElementById('roleplayInputField');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  }
+
+  function handleRoleplayKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendRoleplayMessage();
+    }
+  }
+
+  async function sendRoleplayMessage() {
+    const input = document.getElementById('roleplayInputField');
+    if (!input) return;
+    const userText = input.value.trim();
+    if (!userText) return;
+
+    // 入力欄をクリア
+    input.value = '';
+
+    // ユーザーメッセージを追加
+    roleplayState.messages.push({
+      role: 'user',
+      text: userText,
+      coach: null
+    });
+    renderRoleplayTimeline();
+
+    // 思考中インジケーター表示
+    const thinking = document.getElementById('roleplayThinking');
+    const sendBtn = document.getElementById('btnRoleplaySend');
+    if (thinking) thinking.style.display = 'block';
+    if (sendBtn) sendBtn.disabled = true;
+
+    // クイック返信を一旦隠す
+    const repliesSec = document.getElementById('roleplayQuickRepliesSection');
+    if (repliesSec) repliesSec.style.display = 'none';
+
+    const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
+    const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: roleplayState.messages,
+          userText: userText,
+          character: char.name,
+          topic: topic.title,
+          turn: roleplayState.turn,
+          maxTurns: roleplayState.maxTurns
+        })
+      });
+
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+      const data = await res.json();
+
+      // 直前のユーザーメッセージにコーチアドバイスを紐付け
+      const lastUserMsg = roleplayState.messages[roleplayState.messages.length - 1];
+      if (lastUserMsg) {
+        lastUserMsg.coach = {
+          coach_feedback_jp: data.coach_feedback_jp,
+          better_plain_english: data.better_plain_english,
+          key_pattern_suggested: data.key_pattern_suggested,
+          key_pattern_jp: data.key_pattern_jp
+        };
+      }
+
+      // AI応答を追加
+      roleplayState.messages.push({
+        role: 'ai',
+        name: char.name,
+        avatar: char.avatar,
+        text: data.ai_reply_en || "Understood.",
+        textJp: data.ai_reply_jp || "",
+        coach: null
+      });
+
+      // ターンを進行
+      roleplayState.turn++;
+      updateRoleplayHeaderUI();
+      renderRoleplayTimeline();
+
+      // AI音声を自動再生
+      speakText(data.ai_reply_en);
+
+      // 終了判定
+      if (data.is_concluded || roleplayState.turn > roleplayState.maxTurns) {
+        showRoleplayConclusion(data);
+      } else {
+        renderRoleplayQuickReplies(data.suggested_quick_replies);
+      }
+
+    } catch (e) {
+      console.warn("Roleplay API error, falling back locally:", e.message);
+      // ローカルフォールバック
+      handleRoleplayFallbackResponse(userText, char, topic);
+    } finally {
+      if (thinking) thinking.style.display = 'none';
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  function handleRoleplayFallbackResponse(userText, char, topic) {
+    const fallbackTurns = [
+      {
+        ai: "I understand, but we have strict commitments. Can you guarantee the core features will be completely bug-free?",
+        ai_jp: "理解しましたが、厳しい約束があります。コア機能にバグが一切ないことを保証できますか？",
+        coach: "要点は伝わっています！次は相手の安心感を引き出すため、『確実に〜する』というコミットメントを中学動詞で伝えましょう。",
+        better: "I will make sure the core release is tested thoroughly by our senior QA lead.",
+        pattern: "I will make sure [clause] by [verb-ing]...",
+        pattern_jp: "〜することで確実に…いたします。",
+        replies: [
+          "I will make sure our team runs all tests before deploying on Friday.",
+          "Yes, we will freeze changes today to focus 100% on stability.",
+          "Let me send you the verified test report by tomorrow afternoon."
+        ]
+      },
+      {
+        ai: "Great, that gives me the confidence we need. Let's document this scope and brief the stakeholders together on Thursday.",
+        ai_jp: "素晴らしい、それなら十分な確信が持てます。このスコープを文書化し、木曜日に一緒にステークホルダーへ報告しましょう。",
+        coach: "完璧です！相手の懸念を払拭し、見事に合意を取り付けました。",
+        better: "Thanks for working together on this; I will share the summary notes by 5 PM.",
+        pattern: "Thanks for working together on this; let's [verb] on [day].",
+        pattern_jp: "調整にご協力いただき感謝します。〜曜日に…しましょう。",
+        replies: [
+          "Thanks for working together on this. I will send the summary shortly.",
+          "Sounds like a solid plan. Looking forward to Thursday.",
+          "Thank you! We are fully committed to this timeline."
+        ],
+        concluded: true
+      }
+    ];
+
+    const fb = fallbackTurns[Math.min(roleplayState.turn - 1, fallbackTurns.length - 1)];
+
+    const lastUserMsg = roleplayState.messages[roleplayState.messages.length - 1];
+    if (lastUserMsg) {
+      lastUserMsg.coach = {
+        coach_feedback_jp: fb.coach,
+        better_plain_english: fb.better,
+        key_pattern_suggested: fb.pattern,
+        key_pattern_jp: fb.pattern_jp
+      };
+    }
+
+    roleplayState.messages.push({
+      role: 'ai',
+      name: char.name,
+      avatar: char.avatar,
+      text: fb.ai,
+      textJp: fb.ai_jp,
+      coach: null
+    });
+
+    roleplayState.turn++;
+    updateRoleplayHeaderUI();
+    renderRoleplayTimeline();
+    speakText(fb.ai);
+
+    if (fb.concluded || roleplayState.turn > roleplayState.maxTurns) {
+      showRoleplayConclusion({
+        final_score: 95,
+        final_summary_jp: "相手の要求に振り回されず、現実的なスコープと確実な期日を提示して見事に合意を着地させました！"
+      });
+    } else {
+      renderRoleplayQuickReplies(fb.replies);
+    }
+  }
+
+  function showRoleplayConclusion(data) {
+    roleplayState.isConcluded = true;
+    const summaryCard = document.getElementById('roleplaySummaryCard');
+    const inputBar = document.getElementById('roleplayInputBar');
+    const repliesSec = document.getElementById('roleplayQuickRepliesSection');
+
+    if (inputBar) inputBar.style.display = 'none';
+    if (repliesSec) repliesSec.style.display = 'none';
+
+    if (summaryCard) {
+      summaryCard.style.display = 'block';
+      const scoreEl = document.getElementById('roleplaySummaryScore');
+      if (scoreEl) scoreEl.innerText = `Plain Englishスコア: ${data.final_score || 92}点`;
+
+      const textEl = document.getElementById('roleplaySummaryText');
+      if (textEl) {
+        textEl.innerText = data.final_summary_jp || "相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました！";
+      }
+    }
+
+    awardXP(50, true);
+    toast("🎉 ラリーセッション完了！ +50 XP獲得！");
+  }
+
+  function toggleRoleplayMic() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast("⚠️ お使いのブラウザは音声認識APIに対応していません。キーボードでご入力ください。");
+      return;
+    }
+
+    const micBtn = document.getElementById('btnRoleplayMic');
+    const inputField = document.getElementById('roleplayInputField');
+
+    if (roleplayState.isListening) {
+      if (roleplayState.recognition) roleplayState.recognition.stop();
+      roleplayState.isListening = false;
+      if (micBtn) micBtn.classList.remove('listening');
+      toast("🎙️ 音声入力を停止しました");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        roleplayState.isListening = true;
+        if (micBtn) micBtn.classList.add('listening');
+        toast("🎙️ 英語で話してください (認識中...)");
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        if (inputField) inputField.value = transcript;
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Speech recognition error:", event.error);
+        roleplayState.isListening = false;
+        if (micBtn) micBtn.classList.remove('listening');
+        if (event.error !== 'no-speech') {
+          toast(`⚠️ 音声認識エラー: ${event.error}`);
+        }
+      };
+
+      recognition.onend = () => {
+        roleplayState.isListening = false;
+        if (micBtn) micBtn.classList.remove('listening');
+      };
+
+      roleplayState.recognition = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn("SpeechRecognition start error:", err);
+      toast("⚠️ マイクアクセスの起動に失敗しました。");
+    }
+  }
+
+  function savePhraseFromCoach(betterEn, pattern) {
+    if (!betterEn) return;
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.some(i => i.target === betterEn)) {
+      toast("📚 既にライブラリに保存されています！");
+      return;
+    }
+
+    const newWeapon = {
+      id: Date.now() + Math.random(),
+      target: betterEn,
+      guide: `AI Coach推奨表現 (${pattern || ''})`,
+      ai_en: "AI Roleplay Session",
+      key_pattern: pattern || "Plain English Core",
+      key_pattern_jp: "AIコーチ推奨の洗練パターン",
+      topic: roleplayState.topicKey || 'negotiation',
+      srsLevel: 1,
+      lastReviewedAt: Date.now(),
+      nextReviewAt: Date.now() + 86400000
+    };
+
+    library.push(newWeapon);
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
+    toast("⭐ コーチ推奨フレーズを武器庫に保存しました！");
+    updateSrsRecommendUI();
+  }
+
+  function toggleElementDisplay(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // グローバル露出
+  window.changeRoleplayCharacter = changeRoleplayCharacter;
+  window.changeRoleplayTopic = changeRoleplayTopic;
+  window.resetRoleplaySession = resetRoleplaySession;
+  window.toggleRoleplayMic = toggleRoleplayMic;
+  window.handleRoleplayKeyDown = handleRoleplayKeyDown;
+  window.sendRoleplayMessage = sendRoleplayMessage;
+  window.selectRoleplayQuickReply = selectRoleplayQuickReply;
+  window.savePhraseFromCoach = savePhraseFromCoach;
+  window.toggleElementDisplay = toggleElementDisplay;
+  window.startSrsReviewSession = startSrsReviewSession;
+  window.updateSrsRecommendUI = updateSrsRecommendUI;
+
   initApp();
+  if (typeof updateSrsRecommendUI === 'function') updateSrsRecommendUI();
 </script>
 
 </body>
