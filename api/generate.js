@@ -36,6 +36,98 @@ function createSentenceChunks(sentence) {
   return chunks;
 }
 
+function getPatternStem(pattern) {
+  if (!pattern) return "";
+  const clean = pattern.replace(/\[.*?\]/g, " ").replace(/[^a-zA-Z\s]/g, " ").trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  return words.slice(0, 3).join(" ").toLowerCase();
+}
+
+function synthesizePatternVariations(pattern, patternJp, target) {
+  if (!pattern) pattern = "I see your point, but we need to [verb] first.";
+  const cleanPat = pattern.replace(/\.\.\.$/, "").trim();
+
+  const config1 = {
+    verbs: ["share the updated data", "review it today", "start the work"],
+    slots: {
+      "\\[verb\\s+A\\]": "commit to this deadline",
+      "\\[verb\\s+B\\]": "send a progress report by tomorrow",
+      "\\[noun\\]": "the project schedule",
+      "\\[noun/phrase\\]": "the priority",
+      "\\[noun/gerund\\]": "delaying the submission",
+      "\\[person\\]": "our team lead",
+      "\\[person/team\\]": "our technical team",
+      "\\[team\\]": "our operations team",
+      "\\[time\\]": "tomorrow afternoon",
+      "\\[statement\\]": "we need more time to verify this",
+      "\\[clause\\]": "we get the final sign-off",
+      "\\[task\\]": "the data audit",
+      "\\[topic\\]": "the revised milestone",
+      "\\[plan\\]": "the initial timeline",
+      "\\[document\\]": "the draft proposal"
+    }
+  };
+
+  const config2 = {
+    verbs: ["confirm the exact scope", "prepare our team", "proceed smoothly"],
+    slots: {
+      "\\[verb\\s+A\\]": "change the plan right now",
+      "\\[verb\\s+B\\]": "discuss this in our next sync",
+      "\\[noun\\]": "the core requirements",
+      "\\[noun/phrase\\]": "the action item",
+      "\\[noun/gerund\\]": "missing the deadline",
+      "\\[person\\]": "our project director",
+      "\\[person/team\\]": "our QA manager",
+      "\\[team\\]": "the local site coordinator",
+      "\\[time\\]": "Friday morning",
+      "\\[statement\\]": "we should keep the current priority",
+      "\\[clause\\]": "there is any further delay",
+      "\\[task\\]": "the system handover",
+      "\\[topic\\]": "the budget adjustment",
+      "\\[plan\\]": "the agreed scope",
+      "\\[document\\]": "the CAPA report"
+    }
+  };
+
+  function applySlot(pat, config) {
+    let res = pat;
+    let vIdx = 0;
+    res = res.replace(/\[verb(?:\s+[A-Z0-9])?\]/gi, () => {
+      const v = config.verbs[vIdx % config.verbs.length];
+      vIdx++;
+      return v;
+    });
+    if (config.slots) {
+      for (const [key, val] of Object.entries(config.slots)) {
+        res = res.replace(new RegExp(key, "gi"), val);
+      }
+    }
+    res = res.replace(/\[.*?\]/g, "this").trim();
+    if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
+    return res;
+  }
+
+  const vTarget1 = applySlot(cleanPat, config1);
+  const vTarget2 = applySlot(cleanPat, config2);
+
+  const cleanJp = (patternJp || "この型").replace(/\[.*?\]/g, "〜");
+
+  return [
+    {
+      variation_prompt_jp: `「${cleanJp}」を使って、別の状況を伝える時は？`,
+      variation_target: vTarget1,
+      variation_hint_parts: "中学レベルの基本パーツを型に当てはめるだけ！",
+      variation_chunks: createSentenceChunks(vTarget1)
+    },
+    {
+      variation_prompt_jp: `「${cleanJp}」を応用して、別の条件を伝える時は？`,
+      variation_target: vTarget2,
+      variation_hint_parts: "型をそのまま固定し、パーツを入れ替えてみよう！",
+      variation_chunks: createSentenceChunks(vTarget2)
+    }
+  ];
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -394,10 +486,11 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 12. "counterpart_reaction_jp": Natural Japanese translation of the counterpart's follow-up reaction.
 13. "email_subject": Realistic corporate subject line (e.g., "Re: Urgent protocol deviation review", "Timeline adjustment request for Site 102").
 14. "variations": Exactly 2 fast slot-swap drill variations for this SAME key pattern so the user immediately learns how to adapt the pattern to other practical situations.
-    - variation_prompt_jp: Japanese situation (e.g. "「チームと相談して明日までに折り返します」と言いたい時は？")
-    - variation_target: Target English using the SAME pattern with simple junior-high parts (e.g. "I will check with my team and get back to you by tomorrow.")
-    - variation_hint_parts: Junior-high English parts hint (e.g. '"my team" と "by tomorrow"')
-    - variation_chunks: 3-4 word/phrase chunks for sentence assembly.
+    - CRITICAL ABSOLUTE MANDATE: Both variations MUST strictly practice and start with the EXACT SAME "key_pattern" of this stage! (Never use a different pattern or formula).
+    - variation_prompt_jp: Japanese situation requesting this same pattern (e.g. "「〜と言いたい時は？」")
+    - variation_target: Target English sentence strictly using the SAME pattern with simple junior-high parts inserted.
+    - variation_hint_parts: Junior-high English parts hint showing what was combined.
+    - variation_chunks: 3-4 word/phrase chunks for variation sentence assembly.
 15. "choices": Exactly 3 distinct choices:
    **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
    - type: "PERFECT"
@@ -471,7 +564,7 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
           }
         }
       },
-      required: ["stage", "ai_name", "ai_en", "ai_jp", "key_pattern", "key_pattern_jp", "parts_hint", "guide", "target", "choices"]
+      required: ["stage", "ai_name", "ai_en", "ai_jp", "key_pattern", "key_pattern_jp", "parts_hint", "guide", "target", "variations", "choices"]
     }
   };
 
@@ -520,19 +613,34 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
             chunks = createSentenceChunks(target);
           }
 
-          // Process variations for slot-swap drilling
-          let variations = Array.isArray(sc.variations) && sc.variations.length > 0 ? sc.variations : [];
-          variations = variations.map(v => {
-            let vChunks = Array.isArray(v.variation_chunks) && v.variation_chunks.length >= 2 
-              ? v.variation_chunks.map(c => c.trim()).filter(Boolean) 
-              : createSentenceChunks(v.variation_target || "");
-            return {
-              variation_prompt_jp: v.variation_prompt_jp || "同じ型を使って表現してみましょう：",
-              variation_target: v.variation_target || "",
-              variation_hint_parts: v.variation_hint_parts || "中学英語パーツを入れ替えるだけ！",
-              variation_chunks: vChunks
-            };
-          }).filter(v => v.variation_target);
+          // Process and strictly validate variations for slot-swap drilling
+          const patternStem = getPatternStem(sc.key_pattern);
+          let rawVariations = Array.isArray(sc.variations) && sc.variations.length > 0 ? sc.variations : [];
+          
+          // Only keep variations that actually contain the key pattern stem
+          let validVariations = rawVariations.filter(v => {
+            if (!v || !v.variation_target) return false;
+            if (!patternStem) return true;
+            return v.variation_target.toLowerCase().includes(patternStem);
+          });
+
+          // If valid variations are insufficient, synthesize matching variations directly from key_pattern
+          let finalVariations;
+          if (validVariations.length >= 2) {
+            finalVariations = validVariations.slice(0, 2).map(v => {
+              let vChunks = Array.isArray(v.variation_chunks) && v.variation_chunks.length >= 2 
+                ? v.variation_chunks.map(c => c.trim()).filter(Boolean) 
+                : createSentenceChunks(v.variation_target || "");
+              return {
+                variation_prompt_jp: v.variation_prompt_jp || "同じ型を使って表現してみましょう：",
+                variation_target: v.variation_target || "",
+                variation_hint_parts: v.variation_hint_parts || "中学英語パーツを入れ替えるだけ！",
+                variation_chunks: vChunks
+              };
+            });
+          } else {
+            finalVariations = synthesizePatternVariations(sc.key_pattern, sc.key_pattern_jp, target);
+          }
 
           return {
             stage: idx + 1,
@@ -546,7 +654,7 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
             guide: sc.guide || "状況に応じて的確なPlain Englishで返答してください。",
             target: target,
             chunks: chunks,
-            variations: variations,
+            variations: finalVariations,
             counterpart_reaction_en: sc.counterpart_reaction_en || "Understood. That sounds like a reasonable next step. Let's keep each other posted.",
             counterpart_reaction_jp: sc.counterpart_reaction_jp || "承知しました。妥当な進め方ですね。引き続き進捗を共有し合いましょう。",
             email_subject: sc.email_subject || (sc.ai_en?.startsWith("Subject:") ? sc.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update and next steps"),

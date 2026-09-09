@@ -398,9 +398,6 @@
     .deadline{font-size:11px;color:#fecaca}
     .scenario-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
     .scenario-tag{font-size:9px;background:#334155;padding:4px 6px;border-radius:6px}
-    .boss-card{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;margin-top:12px}
-    .boss-title{font-weight:900;color:#9a3412;font-size:13px}
-    .boss-sub{font-size:11px;color:#7c2d12;margin-top:3px}
     .voice-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
     .record-btn{background:#fef2f2;border-color:#fecaca}
     .record-btn.recording{background:#fee2e2;animation:pulse 1s infinite}
@@ -1909,12 +1906,6 @@
       <button class="micro-btn" onclick="startSpacedReview()">📅 忘却曲線復習</button>
       <button class="micro-btn" onclick="showStats()">📊 学習データ</button>
     </div>
-
-    <div class="boss-card">
-      <div class="boss-title">🔥 CTM Boss Challenge</div>
-      <div class="boss-sub">1問だけ。Sponsorへの報告を、最もプロフェッショナルに返せるか？</div>
-      <button class="btn-next" style="margin-top:8px;background:#9a3412" onclick="launchBoss()">⚡ Boss問題に挑戦</button>
-    </div>
     </div>
   </div>
 
@@ -1950,7 +1941,12 @@
         <!-- 3択ボタンが動的に生成されます -->
       </div>
 
-      <div id="survivalFeedbackBox" style="display:none; padding:8px 10px; border-radius:8px; font-size:12px; font-weight:700; margin-top:8px;"></div>
+      <div id="survivalFeedbackBox" style="display:none; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700; margin-top:8px;"></div>
+      
+      <!-- 回答後に自分のペースで次へ進むためのボタン (自動切替は廃止) -->
+      <button class="btn-next" id="survivalNextBtn" style="display:none; margin-top:12px; background:#2563eb;" onclick="advanceSurvivalQuestion()">
+        次の問題へ ➔
+      </button>
     </div>
   </div>
 
@@ -1975,6 +1971,22 @@
       </button>
       <button class="btn-next" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;" onclick="closeSessionModalAndGoHome()">
         🏠 ホームに戻って新しいトピックを選ぶ
+      </button>
+    </div>
+  </div>
+
+  <!-- 3.5 学習データ詳細モーダル -->
+  <div class="session-modal-backdrop" id="statsModal" style="display:none;" onclick="if(event.target===this) closeStatsModal()">
+    <div class="session-modal-content" style="max-width:440px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="font-size:16px; font-weight:800; color:#0f172a;">📊 学習統計データ</div>
+        <button onclick="closeStatsModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b;">✕</button>
+      </div>
+      <div id="statsModalBody">
+        <!-- 動的表示 -->
+      </div>
+      <button class="btn-next" style="margin-top:14px; background:#2563eb;" onclick="closeStatsModal()">
+        閉じる
       </button>
     </div>
   </div>
@@ -2343,9 +2355,39 @@
   }
 
   function getStats() {
-    return JSON.parse(localStorage.getItem(STATS_KEY) || JSON.stringify({
-      xp: 0, total: 0, correct: 0, streak: 0, lastDate: '', mistakes: []
-    }));
+    const raw = localStorage.getItem(STATS_KEY);
+    const today = new Date().toISOString().slice(0, 10);
+    let s = raw ? JSON.parse(raw) : {
+      xp: 0, total: 0, correct: 0, streak: 0, lastDate: '', mistakes: [],
+      todayAnswered: 0, todayCorrect: 0
+    };
+    if (s.lastDate !== today) {
+      s.todayAnswered = 0;
+      s.todayCorrect = 0;
+    }
+    return s;
+  }
+
+  function getTodayAnsweredCount(s) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (s && s.lastDate === today && typeof s.todayAnswered === 'number' && s.todayAnswered > 0) {
+      return s.todayAnswered;
+    }
+    // 今日の日付で記録された学習履歴から回答数を集計（初回やリセット時のフォールバック）
+    try {
+      const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      const now = new Date();
+      const todayPrefix = `${now.getMonth() + 1}/${now.getDate()}`;
+      let count = 0;
+      for (const h of history) {
+        if (h.date && h.date.startsWith(todayPrefix)) {
+          count += (h.answered || 0);
+        }
+      }
+      return Math.max(count, (s && s.todayAnswered) || 0);
+    } catch (e) {
+      return (s && s.todayAnswered) || 0;
+    }
   }
 
   function saveStats(stats) {
@@ -2356,15 +2398,41 @@
 
   function updateDashboard() {
     const s = getStats();
+    const todayAnswered = getTodayAnsweredCount(s);
     const accuracy = s.total ? Math.round(s.correct / s.total * 100) + '%' : '--';
-    document.getElementById('xpValue').innerText = s.xp;
-    document.getElementById('streakValue').innerText = `${s.streak}🔥`;
-    document.getElementById('accuracyValue').innerText = accuracy;
-    const total = scenarios.length || 1;
-    const pct = Math.min(100, Math.round((currentStageIndex / total) * 100));
-    document.getElementById('progressText').innerText = `今日の進捗 ${pct}%`;
-    document.getElementById('progressBar').style.width = pct + '%';
-    document.getElementById('comboText').innerText = `Combo ×${combo}`;
+    
+    const xpEl = document.getElementById('xpValue');
+    const streakEl = document.getElementById('streakValue');
+    const accEl = document.getElementById('accuracyValue');
+    const progTextEl = document.getElementById('progressText');
+    const progBarEl = document.getElementById('progressBar');
+    const comboEl = document.getElementById('comboText');
+
+    if (xpEl) xpEl.innerText = s.xp;
+    if (streakEl) streakEl.innerText = `${s.streak || 0}🔥`;
+    if (accEl) accEl.innerText = accuracy;
+    if (comboEl) comboEl.innerText = `Combo ×${combo}`;
+
+    const dailyTarget = 5;
+    const dailyPct = Math.min(100, Math.round((todayAnswered / dailyTarget) * 100));
+
+    if (currentTab === 'play' && scenarios && scenarios.length > 0) {
+      // プレイ中（コース受講中）：現在のステージ進行度を正しく表示 (Stage 1 は 20%、5 は 100%)
+      const totalStages = scenarios.length;
+      const currentStageNum = Math.min(totalStages, currentStageIndex + 1);
+      const stagePct = Math.round((currentStageNum / totalStages) * 100);
+      if (progTextEl) {
+        progTextEl.innerHTML = `コース進捗: <b>STAGE ${currentStageNum} / ${totalStages}</b> (${stagePct}%) <span style="font-size:11px; color:#64748b; font-weight:normal; margin-left:4px;">(本日累計: ${todayAnswered}/${dailyTarget}問)</span>`;
+      }
+      if (progBarEl) progBarEl.style.width = stagePct + '%';
+    } else {
+      // ホームまたは他タブ：1日の目標達成度を永続表示 (0%か100%の二極化を解消)
+      const statusSuffix = dailyPct >= 100 ? ' 🎉 目標達成！' : '';
+      if (progTextEl) {
+        progTextEl.innerHTML = `本日の学習目標: <b>${todayAnswered} / ${dailyTarget} 問</b> (${dailyPct}%)${statusSuffix}`;
+      }
+      if (progBarEl) progBarEl.style.width = dailyPct + '%';
+    }
   }
 
   function toast(msg) {
@@ -2384,9 +2452,13 @@
     if (s.lastDate !== today) {
       const y = new Date(); y.setDate(y.getDate()-1);
       const yesterday = y.toISOString().slice(0,10);
-      s.streak = s.lastDate === yesterday ? s.streak + 1 : 1;
+      s.streak = s.lastDate === yesterday ? ((s.streak || 0) + 1) : 1;
       s.lastDate = today;
+      s.todayAnswered = 0;
+      s.todayCorrect = 0;
     }
+    s.todayAnswered = (s.todayAnswered || 0) + 1;
+    if (correct) s.todayCorrect = (s.todayCorrect || 0) + 1;
     saveStats(s);
   }
 
@@ -2402,8 +2474,48 @@
 
   function showStats() {
     const s = getStats();
-    const acc = s.total ? Math.round(s.correct/s.total*100) : 0;
-    alert(`📊 学習データ\n\nXP: ${s.xp}\n回答数: ${s.total}\n正解: ${s.correct}\n正答率: ${acc}%\n連続学習: ${s.streak}日\n苦手問題: ${s.mistakes.length}件`);
+    const todayAnswered = getTodayAnsweredCount(s);
+    const dailyTarget = 5;
+    const dailyPct = Math.min(100, Math.round((todayAnswered / dailyTarget) * 100));
+    const acc = s.total ? Math.round(s.correct / s.total * 100) : 0;
+    
+    const body = document.getElementById('statsModalBody');
+    if (body) {
+      body.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:11px; color:#64748b; font-weight:bold;">本日の学習</div>
+            <div style="font-size:18px; font-weight:900; color:#2563eb; margin-top:2px;">${todayAnswered} / ${dailyTarget}問</div>
+            <div style="font-size:10px; color:#10b981; font-weight:bold;">${dailyPct}% 達成</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:11px; color:#64748b; font-weight:bold;">連続学習</div>
+            <div style="font-size:18px; font-weight:900; color:#ea580c; margin-top:2px;">${s.streak || 0}日🔥</div>
+            <div style="font-size:10px; color:#64748b;">デイリーストリーク</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:11px; color:#64748b; font-weight:bold;">累計回答数</div>
+            <div style="font-size:18px; font-weight:900; color:#0f172a; margin-top:2px;">${s.total}問</div>
+            <div style="font-size:10px; color:#64748b;">正解: ${s.correct}問</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:11px; color:#64748b; font-weight:bold;">総合正答率</div>
+            <div style="font-size:18px; font-weight:900; color:#059669; margin-top:2px;">${acc}%</div>
+            <div style="font-size:10px; color:#64748b;">XP: ${s.xp}</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:#475569; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:8px 10px;">
+          💡 1日1コース（5ステージ）完走を目標に、毎日少しずつPlain Englishの武器（型）をストックしていきましょう！
+        </div>
+      `;
+    }
+    const modal = document.getElementById('statsModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeStatsModal() {
+    const modal = document.getElementById('statsModal');
+    if (modal) modal.style.display = 'none';
   }
 
   function startReview() {
@@ -2454,7 +2566,10 @@
     loadStage();
   }
 
+  let currentTab = 'home';
+
   function switchTab(tabName) {
+    currentTab = tabName;
     document.getElementById('navHome').classList.toggle('active', tabName === 'home');
     document.getElementById('navPlay').classList.toggle('active', tabName === 'play');
     document.getElementById('navScript').classList.toggle('active', tabName === 'script');
@@ -2473,6 +2588,7 @@
     
     if (tabName !== 'play') stopSimTimer();
     if (tabName !== 'script' && isHandsFree) toggleHandsFree();
+    updateDashboard();
   }
 
   function generateAndStart(selectedMode) {
@@ -3169,30 +3285,123 @@
     }
   }
 
+  function getClientPatternStem(pattern) {
+    if (!pattern) return "";
+    const clean = pattern.replace(/\[.*?\]/g, " ").replace(/[^a-zA-Z\s]/g, " ").trim();
+    const words = clean.split(/\s+/).filter(Boolean);
+    return words.slice(0, 3).join(" ").toLowerCase();
+  }
+
+  function synthesizeClientPatternVariations(pattern, patternJp, target) {
+    if (!pattern) pattern = "I see your point, but we need to [verb] first.";
+    const cleanPat = pattern.replace(/\.\.\.$/, "").trim();
+
+    const config1 = {
+      verbs: ["share the updated data", "review it today", "start the work"],
+      slots: {
+        "\\[verb\\s+A\\]": "commit to this deadline",
+        "\\[verb\\s+B\\]": "send a progress report by tomorrow",
+        "\\[noun\\]": "the project schedule",
+        "\\[noun/phrase\\]": "the priority",
+        "\\[noun/gerund\\]": "delaying the submission",
+        "\\[person\\]": "our team lead",
+        "\\[person/team\\]": "our technical team",
+        "\\[team\\]": "our operations team",
+        "\\[time\\]": "tomorrow afternoon",
+        "\\[statement\\]": "we need more time to verify this",
+        "\\[clause\\]": "we get the final sign-off",
+        "\\[task\\]": "the data audit",
+        "\\[topic\\]": "the revised milestone",
+        "\\[plan\\]": "the initial timeline",
+        "\\[document\\]": "the draft proposal"
+      }
+    };
+
+    const config2 = {
+      verbs: ["confirm the exact scope", "prepare our team", "proceed smoothly"],
+      slots: {
+        "\\[verb\\s+A\\]": "change the plan right now",
+        "\\[verb\\s+B\\]": "discuss this in our next sync",
+        "\\[noun\\]": "the core requirements",
+        "\\[noun/phrase\\]": "the action item",
+        "\\[noun/gerund\\]": "missing the deadline",
+        "\\[person\\]": "our project director",
+        "\\[person/team\\]": "our QA manager",
+        "\\[team\\]": "the local site coordinator",
+        "\\[time\\]": "Friday morning",
+        "\\[statement\\]": "we should keep the current priority",
+        "\\[clause\\]": "there is any further delay",
+        "\\[task\\]": "the system handover",
+        "\\[topic\\]": "the budget adjustment",
+        "\\[plan\\]": "the agreed scope",
+        "\\[document\\]": "the CAPA report"
+      }
+    };
+
+    function applySlot(pat, config) {
+      let res = pat;
+      let vIdx = 0;
+      res = res.replace(/\[verb(?:\s+[A-Z0-9])?\]/gi, () => {
+        const v = config.verbs[vIdx % config.verbs.length];
+        vIdx++;
+        return v;
+      });
+      if (config.slots) {
+        for (const [key, val] of Object.entries(config.slots)) {
+          res = res.replace(new RegExp(key, "gi"), val);
+        }
+      }
+      res = res.replace(/\[.*?\]/g, "this").trim();
+      if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
+      return res;
+    }
+
+    const vTarget1 = applySlot(cleanPat, config1);
+    const vTarget2 = applySlot(cleanPat, config2);
+
+    const cleanJp = (patternJp || "この型").replace(/\[.*?\]/g, "〜");
+
+    return [
+      {
+        variation_prompt_jp: `「${cleanJp}」を使って、別の状況を伝える時は？`,
+        variation_target: vTarget1,
+        variation_hint_parts: "中学レベルの基本パーツを型に当てはめるだけ！",
+        variation_chunks: createClientSentenceChunks(vTarget1)
+      },
+      {
+        variation_prompt_jp: `「${cleanJp}」を応用して、別の条件を伝える時は？`,
+        variation_target: vTarget2,
+        variation_hint_parts: "型をそのまま固定し、パーツを入れ替えてみよう！",
+        variation_chunks: createClientSentenceChunks(vTarget2)
+      }
+    ];
+  }
+
   function initDrillForCurrentStage(stageData) {
     const fixedPatternEl = document.getElementById('drillFixedPattern');
     if (fixedPatternEl) {
       fixedPatternEl.innerText = stageData?.key_pattern || "I see your point, but...";
     }
 
-    let variations = stageData?.variations || [];
-    if (!variations || variations.length === 0) {
-      // フォールバック用の即興バリエーション生成
-      const pattern = stageData?.key_pattern || "I see your point, but...";
-      variations = [
-        {
-          variation_prompt_jp: "「おっしゃることは分かりますが、まずチームに確認する必要があります」と言いたい時は？",
-          variation_target: "I see your point, but we need to check with the team first.",
-          variation_hint_parts: '"check with the team" (チームに確認する) を組み合わせる！',
-          variation_chunks: ["I see your point,", "but we need to", "check with the team", "first."]
-        },
-        {
-          variation_prompt_jp: "「おっしゃることは分かりますが、金曜日まで待っていただけますか？」と言いたい時は？",
-          variation_target: "I see your point, but could you wait until Friday?",
-          variation_hint_parts: '"could you wait until Friday" を組み合わせる！',
-          variation_chunks: ["I see your point,", "but could you", "wait until Friday?"]
-        }
-      ];
+    const patternStem = getClientPatternStem(stageData?.key_pattern);
+    let rawVariations = Array.isArray(stageData?.variations) && stageData.variations.length > 0 ? stageData.variations : [];
+    
+    // Validate that variations strictly match this stage's key pattern stem
+    let validVariations = rawVariations.filter(v => {
+      if (!v || !v.variation_target) return false;
+      if (!patternStem) return true;
+      return v.variation_target.toLowerCase().includes(patternStem);
+    });
+
+    let variations;
+    if (validVariations.length >= 2) {
+      variations = validVariations.slice(0, 2);
+    } else {
+      variations = synthesizeClientPatternVariations(
+        stageData?.key_pattern,
+        stageData?.key_pattern_jp,
+        stageData?.target
+      );
     }
 
     drillState = variations.map((v, vIdx) => {
@@ -4216,24 +4425,6 @@
     updateDashboard();
   }
 
-  function launchBoss() {
-    scenarios = [{
-      ai_name:'Sponsor / Project Director',
-      ai_en:'We are concerned about the site activation delay. Can you give us an update and your proposed next steps?',
-      ai_jp:'Site立ち上げの遅延を懸念しています。アップデートと次の対応策を教えてください。',
-      guide:'遅延を認識し、原因・影響・次のアクションを簡潔に報告してください。',
-      target:'We are currently assessing the impact and will provide an updated timeline by Friday.',
-      choices:[
-        {text:'We are currently assessing the impact and will provide an updated timeline by Friday.',type:'PERFECT',advice:'状況・影響・期限を簡潔に示していて、Sponsor向け報告として自然です。'},
-        {text:'The site is slow, so please wait.',type:'TOO_DIRECT',advice:'相手に待つよう求めるだけで、次のアクションがありません。'},
-        {text:'There are many complicated issues regarding the site activation process and various stakeholders are involved.',type:'TOO_COMPLEX',advice:'情報が多く、結論と次のアクションが見えにくいです。'}
-      ]
-    }];
-    currentStageIndex=0; reviewMode=false; combo=0;
-    switchTab('play'); setTrainingMode('sim'); loadStage();
-    toast('🔥 Boss Challenge開始！');
-  }
-
   // ----------------------------------------------------
   // 最終関門: サバイバルテスト (5フレーズ一気通貫・想起タイムアタック)
   // ----------------------------------------------------
@@ -4279,6 +4470,7 @@
     const feedbackEl = document.getElementById('survivalFeedbackBox');
     const timerLabel = document.getElementById('survivalTimerLabel');
     const timerFill = document.getElementById('survivalTimerFill');
+    const nextBtn = document.getElementById('survivalNextBtn');
 
     if (progressEl) progressEl.innerText = `${currentSurvivalIndex + 1} / ${survivalQuestions.length} 問`;
     if (promptEl) promptEl.innerText = `ミッション: ${q.guide || '状況に応じた最適なPlain Englishで即答してください'}`;
@@ -4286,6 +4478,10 @@
     if (feedbackEl) {
       feedbackEl.style.display = 'none';
       feedbackEl.innerText = '';
+    }
+    if (nextBtn) {
+      nextBtn.style.display = 'none';
+      nextBtn.innerText = '次の問題へ ➔';
     }
 
     if (timerFill) timerFill.style.width = '100%';
@@ -4322,19 +4518,33 @@
   }
 
   function handleSurvivalTimeout() {
+    clearInterval(survivalTimerInterval);
     const feedbackEl = document.getElementById('survivalFeedbackBox');
     const q = survivalQuestions[currentSurvivalIndex];
+    const perfectAdvice = q.choices?.find(c => c.type === 'PERFECT')?.advice || '型を使って簡潔に伝える表現です。';
+
+    // 正解のボタンを緑色で強調表示
+    const allBtns = document.querySelectorAll('.survival-choice-btn');
+    allBtns.forEach(b => {
+      const txt = b.innerText.trim();
+      if (txt === (q.target || '').trim() || (q.choices && q.choices.some(c => c.type === 'PERFECT' && c.text.trim() === txt))) {
+        b.classList.add('correct');
+      }
+    });
+
     if (feedbackEl) {
       feedbackEl.style.display = 'block';
       feedbackEl.className = 'drill-feedback-msg wrong';
-      feedbackEl.innerHTML = `⏰ <b>時間切れ！</b> 正解: "${escapeHtml(q.target)}"`;
+      feedbackEl.innerHTML = `
+        <div style="font-size:13px; font-weight:800; color:#b91c1c; margin-bottom:3px;">⏰ 時間切れ！</div>
+        <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:3px;">模範解答: "${escapeHtml(q.target)}"</div>
+        <div style="font-size:11.5px; font-weight:normal; color:#475569;">${escapeHtml(perfectAdvice)}</div>
+      `;
     }
 
     disableSurvivalButtons();
-    setTimeout(() => {
-      currentSurvivalIndex++;
-      loadSurvivalQuestion();
-    }, 1800);
+    // 自動切替を廃止し、ユーザーが振り返ってから自ら進めるボタンを表示
+    showSurvivalNextButton();
   }
 
   function disableSurvivalButtons() {
@@ -4355,31 +4565,59 @@
     const feedbackEl = document.getElementById('survivalFeedbackBox');
     disableSurvivalButtons();
 
+    // 正解のボタンを緑色で明示
+    const allBtns = document.querySelectorAll('.survival-choice-btn');
+    allBtns.forEach(b => {
+      const txt = b.innerText.trim();
+      if (txt === (q.target || '').trim() || choices.some(c => c.type === 'PERFECT' && c.text.trim() === txt)) {
+        b.classList.add('correct');
+      }
+    });
+
     if (isPerfect) {
       survivalCorrectCount++;
       awardXP(20, true);
-      if (btn) btn.classList.add('correct');
       if (feedbackEl) {
         feedbackEl.style.display = 'block';
         feedbackEl.className = 'drill-feedback-msg correct';
-        feedbackEl.innerHTML = `🎉 <b>即答クリア！</b> 記憶に定着しています！`;
+        feedbackEl.innerHTML = `
+          <div style="font-size:13px; font-weight:800; color:#15803d; margin-bottom:3px;">🎉 即答クリア！ 記憶に定着しています！</div>
+          <div style="font-size:11.5px; font-weight:normal; color:#166534;">相手の発言に対し、Plain Englishの型を使って最も的確・簡潔に返答できました。</div>
+        `;
       }
       toast("🎯 サバイバル正解！");
     } else {
       awardXP(2, false);
       if (btn) btn.classList.add('wrong');
+      const perfectAdvice = choices.find(c => c.type === 'PERFECT')?.advice || '型を使って簡潔に伝える表現です。';
       if (feedbackEl) {
         feedbackEl.style.display = 'block';
         feedbackEl.className = 'drill-feedback-msg wrong';
-        feedbackEl.innerHTML = `❌ 惜しい！ 模範: "${escapeHtml(q.target)}"`;
+        feedbackEl.innerHTML = `
+          <div style="font-size:13px; font-weight:800; color:#b91c1c; margin-bottom:3px;">❌ 惜しい！</div>
+          <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:3px;">模範解答: "${escapeHtml(q.target)}"</div>
+          <div style="font-size:11.5px; font-weight:normal; color:#475569;">${escapeHtml(perfectAdvice)}</div>
+        `;
       }
       toast("💡 模範表現を確認しましょう");
     }
 
-    setTimeout(() => {
-      currentSurvivalIndex++;
-      loadSurvivalQuestion();
-    }, 1600);
+    // 自動切替を廃止し、自分のペースで次へ進むボタンを表示
+    showSurvivalNextButton();
+  }
+
+  function showSurvivalNextButton() {
+    const nextBtn = document.getElementById('survivalNextBtn');
+    if (!nextBtn) return;
+    const isLast = currentSurvivalIndex >= survivalQuestions.length - 1;
+    nextBtn.innerText = isLast ? 'サバイバル結果を見る 🏆 ➔' : '次の問題へ ➔';
+    nextBtn.style.background = isLast ? '#059669' : '#2563eb';
+    nextBtn.style.display = 'block';
+  }
+
+  function advanceSurvivalQuestion() {
+    currentSurvivalIndex++;
+    loadSurvivalQuestion();
   }
 
   function endSurvivalTest() {
