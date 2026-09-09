@@ -4169,7 +4169,8 @@
       }).catch(() => {});
     }
 
-    // 2. 進行中セッションまたは直近履歴からステージ進捗を復元
+    // 2. 既存保存データの自動修復マイグレーション & 進行中セッションまたは直近履歴からステージ進捗を復元
+    if (typeof migrateAndRepairStoredData === 'function') migrateAndRepairStoredData();
     const activeSession = JSON.parse(localStorage.getItem('english_active_session') || 'null');
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
 
@@ -5018,6 +5019,25 @@
     updateModeUI();
 
     const data = scenarios[currentStageIndex];
+    if (!data) return;
+
+    // 不足・ダミー翻訳や不十分な解説の自動救済・ハイドレーション
+    if (!data.ai_jp || data.ai_jp === '保存したビジネス状況の復習です。' || data.ai_jp.includes('保存したビジネス状況')) {
+      const orig = findOriginalStageData(data.target, data.ai_en);
+      data.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
+        ? orig.ai_jp
+        : resolveCounterpartTranslation(data.ai_en, data.guide);
+    }
+    const pInfo = deriveKeyPatternInfo(data.target, data.key_pattern, data.key_pattern_jp, data.pattern_rationale, data.guide);
+    if (!data.pattern_rationale || data.pattern_rationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して')) {
+      data.pattern_rationale = pInfo.pattern_rationale;
+    }
+    if (!data.key_pattern || data.key_pattern.includes('action / details') || data.key_pattern.includes('Practice your saved pattern')) {
+      data.key_pattern = pInfo.key_pattern;
+      data.key_pattern_jp = pInfo.key_pattern_jp;
+      data.parts_hint = pInfo.parts_hint;
+    }
+
     if (trainingMode === 'sim') {
       const mission = data.guide || 'Handle the situation professionally.';
       document.getElementById('simMission').innerText = mission;
@@ -5344,6 +5364,7 @@
 
   function loadHistoryItem(id) {
     saveActiveSession(); // 直前の進捗を保存
+    if (typeof migrateAndRepairStoredData === 'function') migrateAndRepairStoredData();
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const target = history.find(item => item.id === id);
     if (target && target.data) {
@@ -5411,6 +5432,7 @@
       parts_hint: patternInfo.parts_hint,
       counterpart_reaction_en: current.counterpart_reaction_en || '',
       counterpart_reaction_jp: current.counterpart_reaction_jp || '',
+      variations: current.variations || [],
       chunks: current.chunks || splitTargetIntoChunks(current.target),
       choices: current.choices || buildDefaultChoices(current.target),
       topic: selectedTopic || current.topic || '',
@@ -5430,6 +5452,113 @@
   }
 
   // ==========================================
+  // 過去履歴・バックアップからの完全ステージデータ検索エンジン
+  // ==========================================
+  function findOriginalStageData(target, aiEn) {
+    const cleanTarget = (target || '').trim().toLowerCase();
+    const cleanAiEn = (aiEn || '').trim().toLowerCase();
+    if (!cleanTarget && !cleanAiEn) return null;
+
+    // 1. 履歴データの走査
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    for (const h of history) {
+      for (const s of (h.data || [])) {
+        const sTarget = (s.target || '').trim().toLowerCase();
+        const sAiEn = (s.ai_en || '').trim().toLowerCase();
+        if ((cleanTarget && sTarget === cleanTarget) || (cleanAiEn && sAiEn === cleanAiEn)) {
+          if (s.ai_jp && s.ai_jp !== '保存したビジネス状況の復習です。') {
+            return s;
+          }
+        }
+      }
+    }
+
+    // 2. バックアップ（フォールバック）コースの走査
+    const fallbackList = [...getFallbackScenarios('speech'), ...getFallbackScenarios('email')];
+    for (const s of fallbackList) {
+      const sTarget = (s.target || '').trim().toLowerCase();
+      const sAiEn = (s.ai_en || '').trim().toLowerCase();
+      if ((cleanTarget && sTarget === cleanTarget) || (cleanAiEn && sAiEn === cleanAiEn)) {
+        return s;
+      }
+    }
+
+    return null;
+  }
+
+  // ==========================================
+  // 相手の発言（ai_en）のインテリジェント自然日本語翻訳エンジン
+  // ==========================================
+  function resolveCounterpartTranslation(aiEn, fallbackGuide) {
+    const text = (aiEn || '').trim();
+    if (!text || text === "Let's review this saved business situation.") {
+      return fallbackGuide ? `（相手からの連絡: ${fallbackGuide}）` : '相手からのビジネス連絡・状況です。';
+    }
+
+    // 代表的な実務ビジネス発言の高品質対訳辞書
+    const phraseDict = [
+      {
+        match: /three extra features to the current release without moving the launch date/i,
+        trans: "リリース期日を変更せずに、現在のリリースにこれら3つの追加機能を追加していただく必要があります。対応可能でしょうか？"
+      },
+      {
+        match: /Site 101 Protocol Deviation/i,
+        trans: "Site 101での直近のプロトコル逸脱に関する是正措置計画を明確にしていただけますでしょうか？"
+      },
+      {
+        match: /status update on the revised timeline/i,
+        trans: "明朝までに修正スケジュールの進捗状況を共有していただけますでしょうか？"
+      },
+      {
+        match: /delay in the submission.*recover the schedule/i,
+        trans: "提出の遅延を確認しました。スケジュールを挽回するための計画はどうなっていますか？"
+      },
+      {
+        match: /budget overrun.*when are you free/i,
+        trans: "予算超過に関して至急ミーティングが必要です。いつお時間取れますでしょうか？"
+      },
+      {
+        match: /hop on a quick call to discuss the outstanding action items/i,
+        trans: "未解決のアクションアイテムについて、簡単なコールですり合わせることはできますか？"
+      },
+      {
+        match: /confirm if this timeline works for your team/i,
+        trans: "このスケジュールで貴チームが進められるかご確認をお願いできますでしょうか。"
+      }
+    ];
+
+    for (const item of phraseDict) {
+      if (item.match.test(text)) return item.trans;
+    }
+
+    // 構文パターンからの自然な日本語意訳ルール
+    if (/^we really need you to/i.test(text) || /^we need you to/i.test(text)) {
+      if (/can you get that done/i.test(text) || /\?$/.test(text)) {
+        return "急ぎ対応をお願いしたい重要事項があります。対応可能でしょうか？";
+      }
+      return "至急こちらの対応を進めていただく必要があります。";
+    }
+    if (/^could you please (clarify|confirm|send|provide)/i.test(text)) {
+      return "恐れ入りますが、こちらの詳細や進捗についてご確認・ご共有をお願いできますでしょうか？";
+    }
+    if (/^could you (please )?/i.test(text) || /^can you (please )?/i.test(text)) {
+      return "恐れ入りますが、ご確認のうえご対応をお願いできますでしょうか？";
+    }
+    if (/^what is the plan/i.test(text) || /^what are the next steps/i.test(text)) {
+      return "現状の進捗状況および今後の挽回・対応計画はどうなっていますでしょうか？";
+    }
+    if (/^i('m| am) not sure if/i.test(text) || /^we are concerned/i.test(text)) {
+      return "現行の計画に関して懸念事項があります。影響について確認させてください。";
+    }
+
+    if (fallbackGuide) {
+      return `相手からの相談・依頼（${fallbackGuide}）`;
+    }
+
+    return '相手からのビジネス確認・ご相談です。';
+  }
+
+  // ==========================================
   // インテリジェントな「型（構文パターン）」自動導出・抽出エンジン
   // ==========================================
   function deriveKeyPatternInfo(target, existingPattern, existingPatternJp, existingRationale, existingGuide) {
@@ -5437,120 +5566,156 @@
     const isDummyPattern = !rawPattern || 
       rawPattern.toLowerCase().includes('practice your saved pattern') ||
       rawPattern.toLowerCase().includes('plain english core weapon') ||
+      rawPattern.toLowerCase().includes('action / details') ||
       rawPattern === 'Plain English Core' ||
       rawPattern === 'Core Weapon' ||
       rawPattern.length < 5;
 
-    // 既に有意義な型が保存されている場合はそれを活用
-    if (!isDummyPattern) {
-      const validJp = (existingPatternJp && !existingPatternJp.includes('保存した型') && !existingPatternJp.includes('Practice'))
-        ? existingPatternJp
-        : '実務必須のビジネス型';
-      return {
-        key_pattern: rawPattern,
-        key_pattern_jp: validJp,
-        pattern_rationale: existingRationale && existingRationale.length > 10
-          ? existingRationale
-          : '相手の不安を取り除き、主語＋基本動詞で迷わず言い切る実践的なPlain English構文です。スラスラ言えるまで反復しましょう。',
-        parts_hint: '基本パーツ（動詞句・目的語・期限）を意識して組み立てましょう！',
-        guide: existingGuide || '保存した重要フレーズをアウトプットしてください。'
-      };
-    }
+    const isDummyRationale = !existingRationale ||
+      existingRationale.length < 15 ||
+      existingRationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して') ||
+      existingRationale.includes('ライブラリに保存した重要な実践フレーズです') ||
+      existingRationale.includes('相手の不安を取り除き、主語＋基本動詞で迷わず言い切る');
 
     const text = (target || '').trim();
-    if (!text) {
+
+    // --- 代表的なビジネス構文パターンの精緻な判定と厚い実務レクチャー ---
+
+    // 1. Would it be possible to [verb]...? / Would it be okay if ...?
+    if (/^would it be (possible|okay|helpful|better|feasible)/i.test(text) || /^would it be/i.test(rawPattern) || /^would it be/i.test(text)) {
       return {
-        key_pattern: 'I will [verb] and [verb] by [time]...',
-        key_pattern_jp: '〜を行い、[時間]までに〜します',
-        pattern_rationale: '相手の不安を取り除くため、具体的なアクションと期限を明確にする型です。',
-        parts_hint: '動詞句と期限の組み合わせを意識しましょう。',
-        guide: '状況に合わせた適切な回答を述べてください。'
+        key_pattern: 'Would it be possible to [verb / negotiate]...?',
+        key_pattern_jp: '〜することは可能でしょうか？ / 〜のご相談は可能でしょうか？',
+        pattern_rationale: '相手の急な追加要求やタイトな納期に対して「No」と突っぱねず、仮定法「Would it be possible to...」で相手にボールを投げ返すことで、角を立てずに代替案や優先順位の調整テーブルに着かせることができます。',
+        parts_hint: '"discuss the priorities" や "adjust the scope" などの平易な動詞句をスロットに当てはめるだけ！',
+        guide: existingGuide || '相手の要求を尊重しつつ、優先順位の協議を丁寧に持ちかけてください。'
       };
     }
 
-    // 1. I am looking into ... and will ... by ...
-    if (/^i am looking into/i.test(text)) {
+    // 2. I see your point, but we need to [verb]... / I understand your concern, but ...
+    if (/^(i see your point|i understand|i hear you)/i.test(text) || (/^i see your point/i.test(rawPattern))) {
       return {
-        key_pattern: 'I am looking into [matter] and will [verb] by [time]...',
+        key_pattern: 'I see your point, but we need to [verb] first...',
+        key_pattern_jp: 'おっしゃることは分かりますが、まずは〜する必要があります…',
+        pattern_rationale: '相手の意図や焦りをまず受け止めた（I see your point）上で、逆接（but）と必要性（need to）を組み合わせて制約を伝えます。相手を否定せず共同で現実的な解決策を導くための必須の型です。',
+        parts_hint: '"review the timeline" や "confirm with the team" などの基本動詞',
+        guide: existingGuide || '相手の状況を受け止めつつ、必要なアクションと制約を伝えてください。'
+      };
+    }
+
+    // 3. I am looking into ... and will ... by ...
+    if (/^i am looking into/i.test(text) || /^i'm looking into/i.test(text)) {
+      return {
+        key_pattern: 'I am looking into [matter] and will [action] by [time]...',
         key_pattern_jp: '〜を調査中であり、[時間]までに[対応]いたします…',
-        pattern_rationale: '受領と調査中である事実を即座に伝え、具体的な期限を明示することで相手の不安を解消する基本型です。',
+        pattern_rationale: '受領と調査中である事実を即座に伝え、具体的な期限（by EOD today / by tomorrow）を中学単語で区切ることで、相手の「放置されているのでは」という不安をゼロにします。',
         parts_hint: '"this matter" と "send an update" などの組み合わせ',
         guide: existingGuide || '調査中であることと、期日までに連絡する旨を伝えてください。'
       };
     }
-    // 2. Let me check with ... and get back to you by ...
+
+    // 4. Let me check with ... and get back to you by ...
     if (/^let me check with/i.test(text) || /^let me check/i.test(text)) {
       return {
         key_pattern: 'Let me check with [team] and get back to you by [time]...',
         key_pattern_jp: '[関係者]に確認の上、[時間]までにご連絡いたします…',
-        pattern_rationale: '独断を避けつつ迅速なボールの打ち返しを行う、チーム連携時の必須型です。',
-        parts_hint: '"my team" や "get back to you" のパーツを活用',
+        pattern_rationale: 'その場での安請け合いや独断を避けつつ、ボールを確実に持ったまま迅速に折り返すチーム連携時の必須型です。',
+        parts_hint: '"my team" や "get back to you by 3 PM" のパーツを活用',
         guide: existingGuide || '確認の上、期日までに折り返す旨を伝えてください。'
       };
     }
-    // 3. We need to ... in order to / by ...
+
+    // 5. We need to ... in order to / by ...
     if (/^we need to/i.test(text) || /^i need to/i.test(text)) {
       return {
-        key_pattern: 'We need to [verb] in order to [verb / goal]...',
+        key_pattern: 'We need to [verb] in order to [goal]...',
         key_pattern_jp: '〜するために、〜する必要があります…',
-        pattern_rationale: '「必要性（need）」と「その目的」を明快に結びつけ、優先順位を共有する型です。',
-        parts_hint: '必要とするアクションをストレートに配置',
+        pattern_rationale: '単なる要求ではなく「何のために必要なのか（in order to）」という目的や品質維持の理由をセットにすることで、相手の納得感を高めて協力を引き出す型です。',
+        parts_hint: '必要とするアクションと目的をストレートに配置',
         guide: existingGuide || '必要なアクションと期限・目的を明確に伝えてください。'
       };
     }
-    // 4. Could you please ... by ...?
+
+    // 6. Could you please ... by ...?
     if (/^could you (please )?/i.test(text)) {
       return {
         key_pattern: 'Could you please [verb] by [time / condition]?',
         key_pattern_jp: '[期日]までに〜を[提出/確認]していただけますでしょうか？',
-        pattern_rationale: '丁寧さとビジネス上の期限設定を両立させ、確実なアクションを促す依頼の型です。',
-        parts_hint: '"Could you please" ＋ 基本動詞',
+        pattern_rationale: '丁寧な依頼表現（Could you please）に明確な期限（by Friday / by tomorrow）を添えることで、相手に気持ちよく迅速なアクションを起こさせる依頼の型です。',
+        parts_hint: '"Could you please" ＋ 基本動詞句',
         guide: existingGuide || '丁寧かつ期限を明確にして依頼を伝えてください。'
       };
     }
-    // 5. I will check/send/update/confirm ...
+
+    // 7. Could we ... so that we can ...? / Can we ...
+    if (/^could we/i.test(text) || /^can we/i.test(text)) {
+      return {
+        key_pattern: 'Could we [verb] so that we can [goal]?',
+        key_pattern_jp: '〜を進めるために、〜することはできますでしょうか？',
+        pattern_rationale: '「私」対「相手」の対立構造にせず、「we」を主語にして一緒に前進する建設的な提案の型です。',
+        parts_hint: 'Could we + 基本動詞 + so that we can...',
+        guide: existingGuide || '建設的な代替案や協力の依頼を伝えてください。'
+      };
+    }
+
+    // 8. I will check/send/update/confirm ...
     if (/^i will /i.test(text)) {
       const match = text.match(/^i will (\w+)/i);
       const v = match ? match[1] : 'handle';
       return {
-        key_pattern: `I will ${v} [item] and will [action] by [time]...`,
-        key_pattern_jp: `〜を${v}し、[時間]までに[対応]いたします…`,
-        pattern_rationale: '意志動詞（will）を用いて確実なコミットメントを相手に示す型です。',
+        key_pattern: `I will ${v} [item] and keep you posted by [time]...`,
+        key_pattern_jp: `〜を${v}し、[時間]までに進捗をご連絡いたします…`,
+        pattern_rationale: '意志動詞（will）を用いて自分のコミットメントを相手に示し、中間報告を約束して信頼を獲得する型です。',
         parts_hint: '主語 + will + 基本動詞の明快な骨組み',
-        guide: existingGuide || '迅速な対応アクションを明確に伝えてください。'
+        guide: existingGuide || '迅速な対応アクションと期限を明確に伝えてください。'
       };
     }
-    // 6. To avoid / To ensure / To finalize ...
+
+    // 9. To avoid / To ensure / To meet ...
     if (/^to (avoid|ensure|meet|finalize|clarify)/i.test(text)) {
       return {
-        key_pattern: 'To [goal], we should [action] by [time]...',
+        key_pattern: 'To [goal / risk], we should [action] by [time]...',
         key_pattern_jp: '[目標・リスク回避]のために、〜までに〜すべきです…',
-        pattern_rationale: '冒頭に目的（To + 動詞）を置くことで、提案の正当性を一瞬で納得させる型です。',
+        pattern_rationale: '冒頭に目的（To + 動詞）を置くことで、提案の正当性を一瞬で相手に納得させるプロフェッショナルの型です。',
         parts_hint: 'To + 目的, 主語 + should + 動詞',
         guide: existingGuide || '目的を明確にして提案を述べてください。'
       };
     }
-    // 7. Thank you for ...
-    if (/^thank you for/i.test(text)) {
+
+    // 10. Thank you for ...
+    if (/^thank you for/i.test(text) || /^thanks for/i.test(text)) {
       return {
         key_pattern: 'Thank you for [noun], and we will [action]...',
         key_pattern_jp: '〜ありがとうございます。[対応]を進めます…',
-        pattern_rationale: '感謝から始めてスムーズに次のアクションに繋げるプロフェッショナルな型です。',
+        pattern_rationale: '感謝で会話をポジティブにスタートし、スムーズに当方の次のアクションへと繋げるスマートな型です。',
         parts_hint: 'Thank you for ... ＋ will + 動詞',
         guide: existingGuide || '感謝を述べた上で対応方針を伝えてください。'
       };
     }
-    // 8. Please note that ...
+
+    // 11. I am afraid that ... but we can ...
+    if (/^i('m| am) afraid/i.test(text)) {
+      return {
+        key_pattern: 'I am afraid that [issue], but we can [alternative]...',
+        key_pattern_jp: '恐れ入りますが〜という状況です。ただし〜であれば可能です…',
+        pattern_rationale: 'ネガティブな事実をクッション言葉（I am afraid）で和らげ、即座に代替案（but we can）を提示することで、相手の落胆を防ぎ前向きな協議に繋げる型です。',
+        parts_hint: 'I am afraid that + 懸念, but we can + 代替案',
+        guide: existingGuide || 'クッション言葉を挟みつつ代替案を提示してください。'
+      };
+    }
+
+    // 12. Please note that ...
     if (/^please note that/i.test(text) || /^please make sure/i.test(text)) {
       return {
         key_pattern: 'Please note that [clause] so that we can [verb]...',
         key_pattern_jp: '〜にご留意ください（〜を進めるため）…',
-        pattern_rationale: '重要な前提条件や注意点を相手に過不足なく共有する型です。',
+        pattern_rationale: '重要な前提条件や注意点を前もって共有し、後々の手戻りや「聞いていない」という事態を防ぐ型です。',
         parts_hint: 'Please note that + 文',
         guide: existingGuide || '注意点と目的を明確に伝えてください。'
       };
     }
-    // 9. I suggest / We recommend ...
+
+    // 13. I suggest / We recommend ...
     if (/^(i suggest|we recommend)/i.test(text)) {
       return {
         key_pattern: 'I suggest we [verb] in order to [goal]...',
@@ -5561,14 +5726,28 @@
       };
     }
 
-    // 10. 一般的な文から先頭語句を抽出して実践型を構築
-    const words = text.split(/\s+/);
+    // 既に有意義な型と解説が保存されている場合はそれを活用
+    if (!isDummyPattern && !isDummyRationale) {
+      const validJp = (existingPatternJp && !existingPatternJp.includes('保存した型') && !existingPatternJp.includes('Practice'))
+        ? existingPatternJp
+        : '実務必須のビジネス型';
+      return {
+        key_pattern: rawPattern,
+        key_pattern_jp: validJp,
+        pattern_rationale: existingRationale,
+        parts_hint: '基本パーツ（動詞句・目的語・期限）を意識して組み立てましょう！',
+        guide: existingGuide || '保存した重要フレーズをアウトプットしてください。'
+      };
+    }
+
+    // 一般的な文から文頭フレーズを抽出
+    const words = text ? text.split(/\s+/) : ['I', 'will'];
     let lead = words.slice(0, Math.min(3, words.length)).join(' ');
     lead = lead.replace(/[.,?!]$/, '');
     return {
       key_pattern: `${lead} [action / details]...`,
       key_pattern_jp: '実務必須のコア構文パターン',
-      pattern_rationale: '実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して、スラスラ言えるまで反復しましょう。',
+      pattern_rationale: '相手の懸念に迅速にボールを返し、主語＋基本動詞のリズムで明確にアクションを伝える基本構文です。スラスラ言えるまで反復しましょう。',
       parts_hint: '中学英単語のパーツを組み合わせて声に出してみましょう！',
       guide: existingGuide || '保存した重要フレーズをアウトプットしてください。'
     };
@@ -5602,34 +5781,66 @@
   }
 
   function buildScenarioFromLibraryItem(item, idx) {
+    // 過去履歴やフォールバックから元の完全データを検索
+    const original = findOriginalStageData(item.target, item.ai_en);
+
+    const targetText = item.target || (original && original.target) || '';
+    const aiEn = item.ai_en || (original && original.ai_en) || "Let's review this saved business situation.";
+
+    // ai_jpの決定:
+    // 1) original に本物の ai_jp があれば最優先
+    // 2) item.ai_jp があり、ダミーでなければ採用
+    // 3) resolveCounterpartTranslation で自然翻訳
+    let resolvedAiJp = '';
+    if (original && original.ai_jp && original.ai_jp !== '保存したビジネス状況の復習です。') {
+      resolvedAiJp = original.ai_jp;
+    } else if (item.ai_jp && item.ai_jp !== '保存したビジネス状況の復習です。') {
+      resolvedAiJp = item.ai_jp;
+    } else {
+      resolvedAiJp = resolveCounterpartTranslation(aiEn, item.guide || (original && original.guide));
+    }
+
     const patternInfo = deriveKeyPatternInfo(
-      item.target,
-      item.key_pattern,
-      item.key_pattern_jp,
-      item.pattern_rationale,
-      item.guide
+      targetText,
+      (original && original.key_pattern) || item.key_pattern,
+      (original && original.key_pattern_jp) || item.key_pattern_jp,
+      (original && original.pattern_rationale) || item.pattern_rationale,
+      item.guide || (original && original.guide)
     );
 
-    const targetText = item.target || '';
-    const chunks = item.chunks && item.chunks.length > 0 ? item.chunks : splitTargetIntoChunks(targetText);
-    const choices = item.choices && item.choices.length > 0 ? item.choices : buildDefaultChoices(targetText);
+    const chunks = (original && original.chunks && original.chunks.length > 0)
+      ? original.chunks
+      : (item.chunks && item.chunks.length > 0 ? item.chunks : splitTargetIntoChunks(targetText));
+
+    const choices = (original && original.choices && original.choices.length > 0)
+      ? original.choices
+      : (item.choices && item.choices.length > 0 ? item.choices : buildDefaultChoices(targetText));
+
+    // スロット変形ドリル（variations）も確実に復元または合成
+    let variations = (original && original.variations && original.variations.length > 0)
+      ? original.variations
+      : (item.variations && item.variations.length > 0 ? item.variations : null);
+    if (!variations || variations.length < 2) {
+      variations = synthesizePatternVariations(patternInfo.key_pattern, patternInfo.key_pattern_jp, targetText);
+    }
 
     return {
       stage: idx + 1,
-      ai_name: item.ai_name || "Counterpart (Review)",
-      email_subject: item.email_subject || (item.mode === 'email' ? "Re: Discussion & Follow-up" : ""),
-      ai_en: item.ai_en || "Let's review this saved business situation.",
-      ai_jp: item.ai_jp || "保存したビジネス状況の復習です。",
+      ai_name: item.ai_name || (original && original.ai_name) || "Counterpart (Review)",
+      email_subject: item.email_subject || (original && original.email_subject) || (item.mode === 'email' ? "Re: Discussion & Follow-up" : ""),
+      ai_en: aiEn,
+      ai_jp: resolvedAiJp,
       key_pattern: patternInfo.key_pattern,
       key_pattern_jp: patternInfo.key_pattern_jp,
       pattern_rationale: patternInfo.pattern_rationale,
       parts_hint: patternInfo.parts_hint,
-      guide: item.guide || patternInfo.guide,
+      guide: item.guide || (original && original.guide) || patternInfo.guide,
       target: targetText,
-      counterpart_reaction_en: item.counterpart_reaction_en || "Understood. Thank you for the clear communication.",
-      counterpart_reaction_jp: item.counterpart_reaction_jp || "了解しました。明確なご対応ありがとうございます。",
+      counterpart_reaction_en: item.counterpart_reaction_en || (original && original.counterpart_reaction_en) || "Understood. Thank you for the clear communication.",
+      counterpart_reaction_jp: item.counterpart_reaction_jp || (original && original.counterpart_reaction_jp) || "了解しました。明確なご対応ありがとうございます。",
       chunks: chunks,
-      choices: choices
+      choices: choices,
+      variations: variations
     };
   }
 
@@ -6431,6 +6642,7 @@
           parts_hint: patternInfo.parts_hint,
           counterpart_reaction_en: s.counterpart_reaction_en || '',
           counterpart_reaction_jp: s.counterpart_reaction_jp || '',
+          variations: s.variations || [],
           chunks: s.chunks || splitTargetIntoChunks(s.target),
           choices: s.choices || buildDefaultChoices(s.target),
           topic: selectedTopic || s.topic || '',
@@ -6479,6 +6691,98 @@
   }
 
   // ==========================================
+  // 既存データ（履歴・ライブラリ）のインテリジェント自動修復マイグレーション
+  // ==========================================
+  function migrateAndRepairStoredData() {
+    try {
+      // 1. 履歴データの修復（「保存したビジネス状況の復習です。」や欠落の修復）
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      let historyModified = false;
+      history.forEach(h => {
+        (h.data || []).forEach(stage => {
+          if (!stage.ai_jp || stage.ai_jp === '保存したビジネス状況の復習です。') {
+            const orig = findOriginalStageData(stage.target, stage.ai_en);
+            stage.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
+              ? orig.ai_jp
+              : resolveCounterpartTranslation(stage.ai_en, stage.guide);
+            historyModified = true;
+          }
+          const pInfo = deriveKeyPatternInfo(stage.target, stage.key_pattern, stage.key_pattern_jp, stage.pattern_rationale, stage.guide);
+          if (!stage.pattern_rationale || stage.pattern_rationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して')) {
+            stage.pattern_rationale = pInfo.pattern_rationale;
+            historyModified = true;
+          }
+          if (!stage.key_pattern || stage.key_pattern.includes('action / details') || stage.key_pattern.includes('Practice your saved pattern')) {
+            stage.key_pattern = pInfo.key_pattern;
+            stage.key_pattern_jp = pInfo.key_pattern_jp;
+            stage.parts_hint = pInfo.parts_hint;
+            historyModified = true;
+          }
+        });
+      });
+      if (historyModified) {
+        localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+      }
+
+      // 2. ライブラリデータの修復
+      let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+      let libModified = false;
+      library.forEach(item => {
+        const orig = findOriginalStageData(item.target, item.ai_en);
+        if (!item.ai_jp || item.ai_jp === '保存したビジネス状況の復習です。') {
+          item.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
+            ? orig.ai_jp
+            : resolveCounterpartTranslation(item.ai_en, item.guide);
+          libModified = true;
+        }
+        const pInfo = deriveKeyPatternInfo(
+          item.target,
+          (orig && orig.key_pattern) || item.key_pattern,
+          (orig && orig.key_pattern_jp) || item.key_pattern_jp,
+          (orig && orig.pattern_rationale) || item.pattern_rationale,
+          item.guide
+        );
+        if (!item.pattern_rationale || item.pattern_rationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して')) {
+          item.pattern_rationale = pInfo.pattern_rationale;
+          libModified = true;
+        }
+        if (!item.key_pattern || item.key_pattern.includes('action / details') || item.key_pattern.includes('Practice your saved pattern')) {
+          item.key_pattern = pInfo.key_pattern;
+          item.key_pattern_jp = pInfo.key_pattern_jp;
+          item.parts_hint = pInfo.parts_hint;
+          libModified = true;
+        }
+      });
+      if (libModified) {
+        localStorage.setItem('english_phrase_library', JSON.stringify(library));
+      }
+
+      // 3. 現在アクティブなセッション（scenarios）の即時修復
+      if (scenarios && scenarios.length > 0) {
+        scenarios.forEach(stage => {
+          if (!stage.ai_jp || stage.ai_jp === '保存したビジネス状況の復習です。') {
+            const orig = findOriginalStageData(stage.target, stage.ai_en);
+            stage.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
+              ? orig.ai_jp
+              : resolveCounterpartTranslation(stage.ai_en, stage.guide);
+          }
+          const pInfo = deriveKeyPatternInfo(stage.target, stage.key_pattern, stage.key_pattern_jp, stage.pattern_rationale, stage.guide);
+          if (!stage.pattern_rationale || stage.pattern_rationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して')) {
+            stage.pattern_rationale = pInfo.pattern_rationale;
+          }
+          if (!stage.key_pattern || stage.key_pattern.includes('action / details') || stage.key_pattern.includes('Practice your saved pattern')) {
+            stage.key_pattern = pInfo.key_pattern;
+            stage.key_pattern_jp = pInfo.key_pattern_jp;
+            stage.parts_hint = pInfo.parts_hint;
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("Auto-migration error:", e);
+    }
+  }
+
+  // ==========================================
   // 忘却曲線 (Spaced Repetition: 間隔反復) システム
   // ==========================================
   // エビングハウスの忘却曲線に基づき、1日後、3日後、7日後、14日後、30日後に復習
@@ -6497,7 +6801,7 @@
       }
     });
 
-    // 過去の履歴で間違えた問題や要復習の履歴も補完
+    // 過去の履歴で間違えた問題や要復習の履歴も補完（全ステージプロパティを完全継承）
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     history.filter(h => h.status === 'needs_review').forEach(h => {
       (h.data || []).forEach(stage => {
@@ -6506,11 +6810,21 @@
             id: 'hist_' + (stage.stage || Math.random()),
             target: stage.target,
             guide: stage.guide,
+            ai_name: stage.ai_name,
             ai_en: stage.ai_en,
+            ai_jp: stage.ai_jp,
+            email_subject: stage.email_subject,
             key_pattern: stage.key_pattern,
             key_pattern_jp: stage.key_pattern_jp,
+            pattern_rationale: stage.pattern_rationale,
+            parts_hint: stage.parts_hint,
+            counterpart_reaction_en: stage.counterpart_reaction_en,
+            counterpart_reaction_jp: stage.counterpart_reaction_jp,
+            variations: stage.variations,
             chunks: stage.chunks,
             choices: stage.choices,
+            topic: h.topic || '',
+            mode: h.mode || 'speech',
             srsLevel: 1,
             isFromHistory: true
           });
