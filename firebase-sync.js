@@ -24,6 +24,14 @@ function encodeDocId(str) {
   return encodeURIComponent(str.trim().slice(0, 100)).replace(/%/g, '_');
 }
 
+// Sanitize object for Firestore to avoid "unsupported field value: undefined"
+function sanitizeForFirestore(obj) {
+  if (obj === undefined) return null;
+  return JSON.parse(JSON.stringify(obj, (key, value) => {
+    return value === undefined ? null : value;
+  }));
+}
+
 // Generate an 8-character human-friendly sync code (e.g., PE-7K9A-4M2X)
 function generateSyncCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -94,39 +102,36 @@ class FirebaseSyncService {
       this.db = getFirestore(this.app, dbId);
 
       this.isInitialized = true;
-      this.notifyStatus({ state: 'init', message: 'Firebase初期化完了' });
+      this.notifyStatus({ 
+        state: 'synced', 
+        syncCode: this.syncCode,
+        message: `☁️ クラウド同期中 (コード: ${this.syncCode})` 
+      });
 
       // Run health test
       this.testConnection();
 
-      // Listen to auth state
+      // Immediately pull/push full sync data for this device code!
+      await this.pullAllData();
+
+      // Optionally observe auth state (without blocking syncCode operations)
       onAuthStateChanged(this.auth, async (user) => {
         if (user) {
           this.currentUser = user;
-          const userLabel = user.isAnonymous ? `コード: ${this.syncCode}` : (user.displayName || user.email);
           this.notifyStatus({ 
             state: 'authenticated', 
             isAnonymous: user.isAnonymous, 
             displayName: user.displayName || user.email || 'クラウドユーザー',
             syncCode: this.syncCode,
-            message: `☁️ 同期中 (${userLabel})` 
+            message: `☁️ 同期中 (${user.displayName || user.email})` 
           });
           await this.pullAllData();
-        } else {
-          // Auto sign-in anonymously for frictionless access
-          try {
-            this.notifyStatus({ state: 'signing-in', message: '☁️ 認証中...' });
-            await signInAnonymously(this.auth);
-          } catch (authErr) {
-            console.warn("[FirebaseSync] Anonymous sign-in error:", authErr);
-            this.notifyStatus({ state: 'offline', message: '📴 ローカル保存モード' });
-          }
         }
       });
 
     } catch (err) {
       console.error("[FirebaseSync] Init error:", err);
-      this.notifyStatus({ state: 'error', message: '同期エラー（ローカル保持中）' });
+      this.notifyStatus({ state: 'error', syncCode: this.syncCode, message: '同期エラー（ローカル保持中）' });
     }
   }
 
@@ -167,13 +172,17 @@ class FirebaseSyncService {
     this.notifyStatus({ state: 'syncing', message: `🔄 コード [${cleanCode}] と同期中...`, syncCode: cleanCode });
 
     try {
-      await this.pullAllData();
+      const syncResult = await this.pullAllData();
       this.notifyStatus({ 
         state: 'synced', 
         syncCode: cleanCode,
-        message: `☁️ 同期完了 (コード: ${cleanCode})` 
+        message: `☁️ 同期中 (コード: ${cleanCode})` 
       });
-      return { success: true, message: `端末同期コード [${cleanCode}] に接続し、全データを取得しました！` };
+      return { 
+        success: true, 
+        message: `端末連携コード [${cleanCode}] に接続しました！(クイズ履歴: ${syncResult?.quizzesCount || 0}件, 保存フレーズ: ${syncResult?.weaponsCount || 0}件)`,
+        stats: syncResult
+      };
     } catch (e) {
       console.error("[FirebaseSync] connectSyncCode error:", e);
       return { success: false, message: '同期に失敗しました: ' + (e.message || '通信エラー') };
@@ -192,12 +201,6 @@ class FirebaseSyncService {
       
       if (result && result.user) {
         this.currentUser = result.user;
-        // Optionally bind sync code with Google user email for permanent recovery
-        if (result.user.email) {
-          const emailCode = 'G-' + result.user.email.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30).toUpperCase();
-          this.syncCode = emailCode;
-          localStorage.setItem('english_sync_code', emailCode);
-        }
         await this.pullAllData();
         return { success: true, user: result.user };
       }
@@ -206,12 +209,12 @@ class FirebaseSyncService {
       console.warn("[FirebaseSync] Google Auth Error:", err);
       let errorMsg = 'Googleログインに失敗しました。';
 
-      if (err.code === 'auth/popup-blocked') {
+      if (err.code === 'auth/unauthorized-domain') {
+        errorMsg = '現在表示中のプレビュー環境ドメインはFirebaseのGoogleログイン許可リスト外です。Googleログインではなく、上部の「端末連携コード」をご利用いただくことで、PCとスマホの記録が100%確実に同期されます。';
+      } else if (err.code === 'auth/popup-blocked') {
         errorMsg = inIframe 
-          ? 'ブラウザによりポップアップがブロックされました。プレビュー画面内(iframe)ではGoogleポップアップが制限されるため、右上の「別タブで開く」アイコンから開くか、下記の「端末同期コード」をご利用ください。'
+          ? 'ブラウザによりポップアップがブロックされました。上部の「端末連携コード」をご利用いただくか、画面右上の「別タブで開く」アイコンから開いてお試しください。'
           : 'ブラウザのポップアップブロックが作動しました。アドレスバーのブロック解除を許可してください。';
-      } else if (err.code === 'auth/unauthorized-domain') {
-        errorMsg = '現在表示中のプレビュー環境ドメインはGoogle OAuth許可リスト外です。Googleログインの代わりに、下記の「端末同期コード」を使用することで、PCとスマホを100%確実に同期できます！';
       } else if (err.code === 'auth/popup-closed-by-user') {
         errorMsg = 'ログインウィンドウが閉じられました。';
       } else if (err.message) {
@@ -219,8 +222,7 @@ class FirebaseSyncService {
       }
 
       this.notifyStatus({ 
-        state: 'authenticated', 
-        isAnonymous: this.currentUser?.isAnonymous ?? true, 
+        state: 'synced', 
         syncCode: this.syncCode,
         message: `☁️ 同期中 (コード: ${this.syncCode})` 
       });
@@ -233,10 +235,9 @@ class FirebaseSyncService {
     if (!this.auth) return;
     try {
       await signOut(this.auth);
-      await signInAnonymously(this.auth);
+      this.currentUser = null;
       this.notifyStatus({ 
-        state: 'authenticated', 
-        isAnonymous: true, 
+        state: 'synced', 
         syncCode: this.syncCode,
         message: `☁️ 同期中 (コード: ${this.syncCode})` 
       });
@@ -247,9 +248,9 @@ class FirebaseSyncService {
 
   // --- Pull All Data from Cloud (Stats, Weapons, Spaced Items, and Quiz History) ---
   async pullAllData() {
-    if (!this.db) return;
+    if (!this.db) return null;
     this.isSyncing = true;
-    this.notifyStatus({ state: 'syncing', message: `🔄 クラウドデータを同期中... (${this.syncCode})` });
+    this.notifyStatus({ state: 'syncing', message: `🔄 クラウドデータを同期中... (${this.syncCode})`, syncCode: this.syncCode });
 
     try {
       // 1. Sync Profile & Stats (XP, Streak, Accuracy)
@@ -266,19 +267,18 @@ class FirebaseSyncService {
         if (!localStats.lastDate && cloud.lastDate) localStats.lastDate = cloud.lastDate;
 
         localStorage.setItem('english_learning_stats_v3', JSON.stringify(localStats));
-      } else {
-        // Initial push of existing local stats to cloud profile
-        await setDoc(profileRef, {
-          syncCode: this.syncCode,
-          userId: this.currentUser ? this.currentUser.uid : 'anon',
-          xp: localStats.xp || 0,
-          streak: localStats.streak || 0,
-          totalAnswered: localStats.total || 0,
-          correctCount: localStats.correct || 0,
-          lastDate: localStats.lastDate || '',
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
       }
+
+      // Update cloud with latest merged stats
+      await setDoc(profileRef, sanitizeForFirestore({
+        syncCode: this.syncCode,
+        xp: localStats.xp || 0,
+        streak: localStats.streak || 0,
+        totalAnswered: localStats.total || 0,
+        correctCount: localStats.correct || 0,
+        lastDate: localStats.lastDate || '',
+        updatedAt: new Date().toISOString()
+      }), { merge: true });
 
       // 2. Sync Saved Weapons / Phrases Library
       const weaponsRef = this.getCollectionRef('weapons');
@@ -301,11 +301,11 @@ class FirebaseSyncService {
       });
       localStorage.setItem('english_phrase_library', JSON.stringify(localLib));
 
-      // Push local phrases to cloud if missing
+      // Push local phrases to cloud
       for (const phrase of localLib) {
         if (!phrase.target) continue;
         const docId = encodeDocId(phrase.target);
-        await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId), {
+        await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId), sanitizeForFirestore({
           syncCode: this.syncCode,
           target: phrase.target,
           guide: phrase.guide || '',
@@ -313,7 +313,7 @@ class FirebaseSyncService {
           key_pattern_jp: phrase.key_pattern_jp || '',
           topic: phrase.topic || '',
           savedAt: new Date().toISOString()
-        }, { merge: true });
+        }), { merge: true });
       }
 
       // 3. Sync Spaced Repetition Items
@@ -338,7 +338,7 @@ class FirebaseSyncService {
       for (const sp of localSpaced) {
         if (!sp.target) continue;
         const docId = encodeDocId(sp.target);
-        await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'spaced_items', docId), {
+        await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'spaced_items', docId), sanitizeForFirestore({
           syncCode: this.syncCode,
           target: sp.target,
           guide: sp.guide || '',
@@ -346,7 +346,7 @@ class FirebaseSyncService {
           level: sp.level || 1,
           dueDate: sp.dueDate || Date.now(),
           updatedAt: new Date().toISOString()
-        }, { merge: true });
+        }), { merge: true });
       }
 
       // 4. Sync Past Quiz Scenarios & History Logs (重要: 過去のクイズリスト)
@@ -356,7 +356,7 @@ class FirebaseSyncService {
 
       historySnap.forEach(docSnap => {
         const cloudItem = docSnap.data();
-        const existingIdx = localHistory.findIndex(h => h.id === cloudItem.id);
+        const existingIdx = localHistory.findIndex(h => String(h.id) === String(cloudItem.id));
         if (existingIdx === -1) {
           localHistory.push(cloudItem);
         } else {
@@ -368,20 +368,20 @@ class FirebaseSyncService {
       });
 
       // Sort newest first
-      localHistory.sort((a, b) => (b.id || 0) - (a.id || 0));
+      localHistory.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
       localStorage.setItem('english_scenarios_history', JSON.stringify(localHistory));
 
-      // Push local history items to cloud (up to 30 recent)
-      for (const item of localHistory.slice(0, 30)) {
+      // Push local history items to cloud (up to 40 recent quizzes)
+      for (const item of localHistory.slice(0, 40)) {
         if (!item.id) continue;
-        await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'quiz_history', String(item.id)), {
+        await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'quiz_history', String(item.id)), sanitizeForFirestore({
           ...item,
           syncCode: this.syncCode,
           updatedAt: new Date().toISOString()
-        }, { merge: true });
+        }), { merge: true });
       }
 
-      // Refresh all app UI components
+      // Refresh all application views
       if (typeof window.updateDashboard === 'function') window.updateDashboard();
       if (typeof window.renderLibrary === 'function') window.renderLibrary();
       if (typeof window.renderHistory === 'function') window.renderHistory();
@@ -391,13 +391,20 @@ class FirebaseSyncService {
       this.notifyStatus({ 
         state: 'synced', 
         syncCode: this.syncCode,
-        isAnonymous: this.currentUser?.isAnonymous ?? true, 
-        message: `☁️ 同期完了 (${this.syncCode})` 
+        message: `☁️ 同期中 (コード: ${this.syncCode})` 
       });
 
+      return {
+        quizzesCount: localHistory.length,
+        weaponsCount: localLib.length,
+        spacedCount: localSpaced.length,
+        xp: localStats.xp || 0
+      };
+
     } catch (e) {
-      console.warn("[FirebaseSync] Sync error:", e);
-      this.notifyStatus({ state: 'synced', syncCode: this.syncCode, message: `☁️ 同期完了 (${this.syncCode})` });
+      console.error("[FirebaseSync] Sync error:", e);
+      this.notifyStatus({ state: 'error', syncCode: this.syncCode, message: `同期警告: ${e.message || '通信エラー'}` });
+      return null;
     } finally {
       this.isSyncing = false;
     }
@@ -409,7 +416,7 @@ class FirebaseSyncService {
     if (!this.db) return;
     try {
       const profileRef = this.getProfileDocRef();
-      await setDoc(profileRef, {
+      await setDoc(profileRef, sanitizeForFirestore({
         syncCode: this.syncCode,
         xp: stats.xp || 0,
         streak: stats.streak || 0,
@@ -417,7 +424,7 @@ class FirebaseSyncService {
         correctCount: stats.correct || 0,
         lastDate: stats.lastDate || '',
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
     } catch (e) {
       console.warn("[FirebaseSync] saveStats error:", e);
     }
@@ -428,7 +435,7 @@ class FirebaseSyncService {
     try {
       const docId = encodeDocId(weapon.target);
       const weaponRef = doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId);
-      await setDoc(weaponRef, {
+      await setDoc(weaponRef, sanitizeForFirestore({
         syncCode: this.syncCode,
         target: weapon.target,
         guide: weapon.guide || '',
@@ -436,7 +443,7 @@ class FirebaseSyncService {
         key_pattern_jp: weapon.key_pattern_jp || '',
         topic: weapon.topic || '',
         savedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
     } catch (e) {
       console.warn("[FirebaseSync] saveWeapon error:", e);
     }
@@ -458,7 +465,7 @@ class FirebaseSyncService {
     try {
       const docId = encodeDocId(item.target);
       const spacedRef = doc(this.db, 'sync_profiles', this.syncCode, 'spaced_items', docId);
-      await setDoc(spacedRef, {
+      await setDoc(spacedRef, sanitizeForFirestore({
         syncCode: this.syncCode,
         target: item.target,
         guide: item.guide || '',
@@ -466,7 +473,7 @@ class FirebaseSyncService {
         level: item.level || 1,
         dueDate: item.dueDate || Date.now(),
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
     } catch (e) {
       console.warn("[FirebaseSync] saveSpacedItem error:", e);
     }
@@ -476,11 +483,11 @@ class FirebaseSyncService {
     if (!this.db || !historyItem || !historyItem.id) return;
     try {
       const historyRef = doc(this.db, 'sync_profiles', this.syncCode, 'quiz_history', String(historyItem.id));
-      await setDoc(historyRef, {
+      await setDoc(historyRef, sanitizeForFirestore({
         ...historyItem,
         syncCode: this.syncCode,
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
     } catch (e) {
       console.warn("[FirebaseSync] saveQuizHistory error:", e);
     }

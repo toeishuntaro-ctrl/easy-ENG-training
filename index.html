@@ -1474,25 +1474,25 @@
         <!-- 1. 端末連携コード (おすすめ・最速・Google不要) -->
         <div class="sync-section-box">
           <div class="sync-section-title">
-            <span>🔑</span> 端末連携コード（Google不要・スマホと1秒同期）
+            <span>🔑</span> 端末連携コード（Google不要・スマホとPCを1秒同期）
           </div>
           <p class="sync-section-desc">
-            PCとスマホで同じコードを使うだけで、<strong>過去問履歴・武器ライブラリ・XP・連続記録</strong>のすべてが一致します。
+            PCとスマホで同じコードを使うことで、<strong>過去の出題履歴・武器（単語帳）・XP・連続記録</strong>のすべてが一致します。
           </p>
 
           <div style="margin-top: 10px;">
-            <div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px;">この端末の連携コード:</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px;">現在の端末連携コード:</div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input id="mySyncCodeDisplay" readonly value="PE-...." style="font-family: monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 170px; text-align: center; color: #0f172a;">
+              <input id="mySyncCodeDisplay" readonly value="PE-..." style="font-family: monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; width: 180px; text-align: center; color: #0f172a;">
               <button class="btn-action" style="padding: 6px 12px; font-size: 12px;" onclick="copySyncCode()">📋 コピー</button>
             </div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-              ※スマホ側でこのアプリを開き、下の欄にこのコードを入力してください。
+            <div style="font-size: 11px; color: #059669; font-weight: 600; margin-top: 6px; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 8px; border-radius: 6px; line-height: 1.4;">
+              💡 <strong>PCとスマホで同じコードが表示されていれば、連携成功（同じクラウドルームを共有中）です！</strong>
             </div>
           </div>
 
           <div style="margin-top: 14px; border-top: 1px dashed #e2e8f0; padding-top: 12px;">
-            <div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px;">別の端末（PCなど）のコードでこの端末を同期:</div>
+            <div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px;">もう一方の端末（PCなど）のコードでこの端末を接続:</div>
             <div style="display: flex; gap: 8px; align-items: center;">
               <input id="targetSyncCodeInput" placeholder="例: PE-XXXX-XXXX" style="font-family: monospace; text-transform: uppercase; font-size: 13px; padding: 6px 10px; border: 1.5px solid #cbd5e1; border-radius: 6px; flex: 1; color: #0f172a;">
               <button class="btn-action" style="background: #2563eb; color: #ffffff; border: none; padding: 6px 14px; font-size: 12px; font-weight: 600;" onclick="applySyncCode()">同期を実行</button>
@@ -1501,30 +1501,40 @@
           </div>
         </div>
 
-        <!-- 2. Googleアカウント連携 -->
-        <div class="sync-section-box">
+        <!-- 2. 今すぐ全データを再取得 -->
+        <div class="sync-section-box" style="background: #f8fafc;">
           <div class="sync-section-title">
-            <span>🌐</span> Googleアカウントでログイン
+            <span>🔄</span> クラウド即時再同期
           </div>
           <p class="sync-section-desc">
-            Googleアカウントにサインインしてデータを永続バックアップします。
+            PCまたはスマホで新しく解いたクイズや追加したフレーズを即座に最新状態に更新します。
           </p>
           <div style="margin-top: 8px;">
-            <button id="btnGoogleLoginAction" class="btn-google-login" onclick="doGoogleSignIn()">
-              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-              <span id="googleLoginBtnText">Googleでサインイン</span>
+            <button id="btnForcePullAction" class="btn-action" style="width: 100%; padding: 8px; font-size: 12.5px; font-weight: 600; background: #0284c7; color: #fff; border: none;" onclick="forcePullData()">
+              🔄 今すぐクラウドから最新データを手動取得
             </button>
-            <div id="googleAuthErrorBox" style="font-size: 11.5px; color: #dc2626; margin-top: 6px; display: none; background: #fef2f2; border: 1px solid #fee2e2; padding: 6px 10px; border-radius: 6px; line-height: 1.4;"></div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.4;">
-              ※AI Studioのプレビュー画面(iframe)内ではブラウザの仕様によりポップアップがブロックされることがあります。出ない場合は「別タブで開く」か、上記「端末連携コード」をお使いください。
-            </div>
+            <div id="manualSyncResultMsg" style="font-size: 11.5px; margin-top: 6px; display: none; padding: 6px 8px; border-radius: 6px;"></div>
           </div>
         </div>
 
-        <!-- 3. 今すぐ全データを再取得 -->
-        <button class="btn-action" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 600;" onclick="forcePullData()">
-          🔄 今すぐクラウドから最新データを手動取得
-        </button>
+        <!-- 3. Googleアカウント連携についての案内 -->
+        <div class="sync-section-box">
+          <div class="sync-section-title">
+            <span>🌐</span> Googleアカウント連携について
+          </div>
+          <div style="font-size: 11.5px; color: #475569; line-height: 1.5; background: #eff6ff; border: 1px solid #bfdbfe; padding: 8px 10px; border-radius: 6px;">
+            ⚠️ <strong>プレビュー環境の制限事項:</strong><br>
+            現在表示中の開発プレビューURLはGoogle OAuthのドメイン許可外のため、Googleサインインを試みるとエラーが表示されます。<br>
+            <strong>上記1の「端末連携コード」をお使いいただければ、Googleログイン不要でPCとスマホの全記録（過去問履歴・武器・XP）が100%確実に同期されます。</strong>
+          </div>
+          <div style="margin-top: 8px;">
+            <button id="btnGoogleLoginAction" class="btn-google-login" onclick="doGoogleSignIn()" style="opacity: 0.85;">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+              <span id="googleLoginBtnText">Googleでサインイン (本番用)</span>
+            </button>
+            <div id="googleAuthErrorBox" style="font-size: 11.5px; color: #dc2626; margin-top: 6px; display: none; background: #fef2f2; border: 1px solid #fee2e2; padding: 6px 10px; border-radius: 6px; line-height: 1.4;"></div>
+          </div>
+        </div>
       </div>
 
       <div class="sync-modal-footer">
@@ -2933,23 +2943,16 @@
       if (!modal) return;
       modal.style.display = 'flex';
       
+      const currentCode = window.fbSync?.syncCode || localStorage.getItem('english_sync_code') || '';
       const codeDisplay = document.getElementById('mySyncCodeDisplay');
-      if (codeDisplay && window.fbSync?.syncCode) {
-        codeDisplay.value = window.fbSync.syncCode;
+      if (codeDisplay && currentCode) {
+        codeDisplay.value = currentCode;
       }
       
       const statusText = document.getElementById('modalSyncStatusText');
       const dot = document.getElementById('modalSyncDot');
-      const btnText = document.getElementById('googleLoginBtnText');
-      if (statusText && window.fbSync) {
-        const user = window.fbSync.currentUser;
-        if (user && !user.isAnonymous) {
-          statusText.innerText = `Googleログイン連携済 (${user.displayName || user.email || '完了'})`;
-          if (btnText) btnText.innerText = '✅ ログイン中 (クリックで切替)';
-        } else {
-          statusText.innerText = `同期コード運用中 (${window.fbSync.syncCode})`;
-          if (btnText) btnText.innerText = 'Googleでサインイン';
-        }
+      if (statusText && currentCode) {
+        statusText.innerText = `クラウド連携中 (コード: ${currentCode})`;
       }
       if (dot) dot.style.background = '#10b981';
 
@@ -2958,6 +2961,9 @@
 
       const codeMsg = document.getElementById('syncCodeMsg');
       if (codeMsg) codeMsg.style.display = 'none';
+
+      const syncResultMsg = document.getElementById('manualSyncResultMsg');
+      if (syncResultMsg) syncResultMsg.style.display = 'none';
     };
 
     window.closeSyncModal = function() {
@@ -2993,7 +2999,7 @@
 
       msg.style.display = 'block';
       msg.style.color = '#2563eb';
-      msg.innerText = '🔄 クラウドに接続してデータを取得中...';
+      msg.innerText = '🔄 クラウドに接続してデータを同期中...';
 
       if (window.fbSync) {
         const res = await window.fbSync.connectSyncCode(val);
@@ -3002,6 +3008,8 @@
           msg.innerText = `✅ ${res.message}`;
           const codeDisplay = document.getElementById('mySyncCodeDisplay');
           if (codeDisplay) codeDisplay.value = window.fbSync.syncCode;
+          const statusText = document.getElementById('modalSyncStatusText');
+          if (statusText) statusText.innerText = `クラウド連携中 (コード: ${window.fbSync.syncCode})`;
           toast('✅ 端末同期が完了しました！過去問・単語帳・XPが更新されました');
         } else {
           msg.style.color = '#dc2626';
@@ -3022,20 +3030,6 @@
         return;
       }
 
-      const user = window.fbSync.currentUser;
-      if (user && !user.isAnonymous) {
-        const ok = confirm(`現在「${user.displayName || user.email}」でログイン中です。\nログアウトしますか？`);
-        if (ok) {
-          await window.fbSync.handleSignOut();
-          const btnText = document.getElementById('googleLoginBtnText');
-          if (btnText) btnText.innerText = 'Googleでサインイン';
-          const statusText = document.getElementById('modalSyncStatusText');
-          if (statusText) statusText.innerText = `同期コード運用中 (${window.fbSync.syncCode})`;
-          toast('ログアウトしました');
-        }
-        return;
-      }
-
       const res = await window.fbSync.signInWithGoogle();
       if (res.success) {
         const btnText = document.getElementById('googleLoginBtnText');
@@ -3052,9 +3046,21 @@
     };
 
     window.forcePullData = async function() {
+      const resultBox = document.getElementById('manualSyncResultMsg');
+      const btn = document.getElementById('btnForcePullAction');
+      if (btn) btn.innerText = '🔄 同期中...';
+
       if (window.fbSync) {
-        toast('🔄 クラウドから最新データを再同期中...');
-        await window.fbSync.pullAllData();
+        toast('🔄 クラウドから最新データを同期中...');
+        const stats = await window.fbSync.pullAllData();
+        if (btn) btn.innerText = '🔄 今すぐクラウドから最新データを手動取得';
+        if (resultBox) {
+          resultBox.style.display = 'block';
+          resultBox.style.background = '#f0fdf4';
+          resultBox.style.border = '1px solid #bbf7d0';
+          resultBox.style.color = '#15803d';
+          resultBox.innerHTML = `✅ <strong>最新同期完了:</strong> クイズ履歴 ${stats?.quizzesCount || 0}件、武器 ${stats?.weaponsCount || 0}件、XP ${stats?.xp || 0} を同期しました。`;
+        }
         toast('✅ 全データの最新同期が完了しました');
       }
     };

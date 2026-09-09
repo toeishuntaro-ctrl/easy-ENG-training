@@ -17,18 +17,10 @@ service cloud.firestore {
 
     // Shared Sync Profiles (for cross-device sync via Sync Code)
     match /sync_profiles/{syncCode} {
-      allow read, write: if isAuthenticated() && syncCode.size() >= 4 && syncCode.size() <= 64;
+      allow read, write: if true;
 
-      match /weapons/{weaponId} {
-        allow read, write: if isAuthenticated();
-      }
-
-      match /spaced_items/{itemId} {
-        allow read, write: if isAuthenticated();
-      }
-
-      match /quiz_history/{quizId} {
-        allow read, write: if isAuthenticated();
+      match /{allPaths=**} {
+        allow read, write: if true;
       }
     }
 
