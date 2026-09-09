@@ -1979,26 +1979,65 @@
     .roleplay-quick-replies {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 10px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
     .quick-reply-pill {
       background: #ffffff;
       border: 1.5px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 12px;
-      color: #1e293b;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #0f172a;
       cursor: pointer;
       text-align: left;
       transition: all 0.15s ease;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
-    .quick-reply-pill:hover {
+    .quick-reply-pill:hover, .quick-reply-pill:active {
       border-color: #2563eb;
       background: #eff6ff;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+      transform: translateY(-1px);
+    }
+    .quick-reply-pill-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      flex: 1;
+    }
+    .quick-reply-send-badge {
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .quick-reply-edit-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .quick-reply-edit-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
     }
 
     /* 入力エリア */
@@ -2765,7 +2804,107 @@
     <!-- フレーズ一覧コンテナ -->
     <div id="libraryListContainer"></div>
   </div>
-</div>
+
+  <!-- 6. AI連続ラリー対話（フリースタイル・ロールプレイ）ビュー -->
+  <div id="viewRoleplay" style="display: none; padding-bottom: 90px;">
+    <div class="roleplay-header-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+          <span>💬</span> AI連続ラリー対話 (フリースタイル)
+        </div>
+        <button class="ctrl-btn" onclick="resetRoleplaySession()" style="font-size: 11px; padding: 4px 8px;">↺ リセット</button>
+      </div>
+      <div style="font-size: 11.5px; color: #64748b; margin-top: 3px; line-height: 1.45;">
+        相手の発言に対し、自分の言葉で返答して合意を着地させます。AIがリアルタイムに相手の反応とPlain Englishアドバイス（中学生動詞での洗練表現）を提示します。
+      </div>
+
+      <!-- キャラクター＆シナリオ選択 -->
+      <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">対話相手:</div>
+          <select class="mode-select" id="roleplayCharSelect" onchange="changeRoleplayCharacter(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
+            <option value="sarah">👩‍💼 Sarah (グローバルスポンサー)</option>
+            <option value="rajesh">👨‍💻 Rajesh (テックリード)</option>
+            <option value="david">🛡️ David (QAマネージャー)</option>
+            <option value="elena">🤝 Elena (グローバルPM)</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">シチュエーション:</div>
+          <select class="mode-select" id="roleplayTopicSelect" onchange="changeRoleplayTopic(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
+            <option value="pushback">🚀 納期・スコープの交渉</option>
+            <option value="issue">🛡️ トラブル初動報告と期日約束</option>
+            <option value="clarify">🔍 曖昧な要件の明確化</option>
+            <option value="freeze">⚖️ 仕様凍結と優先順位の合意</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ラリー進行バー -->
+      <div style="margin-top: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <span id="roleplayRallyTurnText" style="font-size: 12px; font-weight: 800; color: #1e40af; white-space: nowrap;">ラリー 1 / 4</span>
+          <span id="roleplayGoalBadge" style="font-size: 11px; font-weight: 700; color: #2563eb; text-align: right; line-height: 1.3;">🎯 目標: 建設的な合意形成</span>
+        </div>
+        <div class="roleplay-rally-progress" id="roleplayRallyProgress" style="margin-top: 6px;">
+          <div class="roleplay-step-dot active"></div>
+          <div class="roleplay-step-dot"></div>
+          <div class="roleplay-step-dot"></div>
+          <div class="roleplay-step-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- チャットログタイムライン -->
+    <div class="roleplay-chat-timeline" id="roleplayTimeline">
+      <!-- メッセージが動的に挿入される -->
+    </div>
+
+    <!-- AI応答待機中スピナー -->
+    <div id="roleplayThinking" style="display: none; text-align: center; padding: 12px; font-size: 12px; color: #2563eb; background: #eff6ff; border-radius: 8px; margin-bottom: 10px;">
+      <span style="display: inline-block; animation: genPulse 1.2s infinite;">🤖</span> AIパートナーが返答＆アドバイスを検討中...
+    </div>
+
+    <!-- おすすめクイック返答ピル（迷ったとき用） -->
+    <div id="roleplayQuickRepliesSection" style="display: none;">
+      <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+        <span>💡 おすすめの返信候補（タップして即送信）:</span>
+        <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">ワンタップでラリー進行</span>
+      </div>
+      <div class="roleplay-quick-replies" id="roleplayQuickRepliesContainer"></div>
+    </div>
+
+    <!-- 入力バー -->
+    <div class="roleplay-input-bar" id="roleplayInputBar">
+      <button class="btn-mic-input" id="btnRoleplayMic" onclick="toggleRoleplayMic()" title="英語を話して音声入力">
+        🎤
+      </button>
+      <input type="text" class="roleplay-input-field" id="roleplayInputField" placeholder="Type your response in English..." onkeydown="handleRoleplayKeyDown(event)">
+      <button class="btn-roleplay-send" id="btnRoleplaySend" onclick="sendRoleplayMessage()">
+        送信
+      </button>
+    </div>
+
+    <!-- セッション完了サマリーカード -->
+    <div id="roleplaySummaryCard" class="roleplay-summary-card" style="display: none;">
+      <div style="font-size: 24px;">🎉</div>
+      <div style="font-size: 16px; font-weight: 800; color: #065f46; margin-top: 4px;" id="roleplaySummaryTitle">合意形成に成功しました！</div>
+      <div style="font-size: 13px; color: #047857; margin-top: 4px;" id="roleplaySummaryScore">Plain Englishスコア: 95点</div>
+      <div style="font-size: 12px; color: #1f2937; margin-top: 8px; line-height: 1.5; background: #f0fdf4; border-radius: 8px; padding: 10px;" id="roleplaySummaryText">
+        相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました。
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-action" style="flex: 1; padding: 10px; background: #2563eb; color: #fff; border: none; font-weight: 700;" onclick="resetRoleplaySession()">
+          🔄 次のシチュエーションで練習
+        </button>
+        <button class="btn-action" style="padding: 10px 14px;" onclick="switchTab('home')">
+          🏠 ホームへ
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div> <!-- /.container -->
 
 <!-- フラッシュカード（瞬間想起トレーニング）モーダル -->
 <div id="flashcardModal" class="flashcard-overlay" style="display: none;" onclick="if(event.target===this) closeFlashcardModal()">
@@ -2815,104 +2954,6 @@
     </button>
   </div>
 </div>
-
-  <!-- 6. AI連続ラリー対話（フリースタイル・ロールプレイ）ビュー -->
-  <div id="viewRoleplay" style="display: none; padding-bottom: 30px;">
-    <div class="roleplay-header-box">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
-          <span>💬</span> AI連続ラリー対話 (フリースタイル)
-        </div>
-        <button class="ctrl-btn" onclick="resetRoleplaySession()" style="font-size: 11px; padding: 4px 8px;">↺ リセット</button>
-      </div>
-      <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
-        相手の発言に対し、自分の言葉で返答して合意を着地させます。AIがリアルタイムに相手の反応とPlain Englishアドバイス（中学生動詞での洗練表現）を提示します。
-      </div>
-
-      <!-- キャラクター＆シナリオ選択 -->
-      <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">対話相手:</div>
-          <select class="mode-select" id="roleplayCharSelect" onchange="changeRoleplayCharacter(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
-            <option value="sarah">👩‍💼 Sarah (グローバルスポンサー)</option>
-            <option value="rajesh">👨‍💻 Rajesh (テックリード)</option>
-            <option value="david">🛡️ David (QAマネージャー)</option>
-            <option value="elena">🤝 Elena (グローバルPM)</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 2px;">シチュエーション:</div>
-          <select class="mode-select" id="roleplayTopicSelect" onchange="changeRoleplayTopic(this.value)" style="padding: 6px 8px; font-size: 12px; width: 100%;">
-            <option value="pushback">🚀 納期・スコープの交渉</option>
-            <option value="issue">🛡️ トラブル初動報告と期日約束</option>
-            <option value="clarify">🔍 曖昧な要件の明確化</option>
-            <option value="freeze">⚖️ 仕様凍結と優先順位の合意</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- ラリー進行バー -->
-      <div style="margin-top: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: #475569;">
-          <span id="roleplayRallyTurnText">ラリー 1 / 4</span>
-          <span id="roleplayGoalBadge" style="color: #2563eb;">🎯 目標: 建設的な合意形成</span>
-        </div>
-        <div class="roleplay-rally-progress" id="roleplayRallyProgress">
-          <div class="roleplay-step-dot active"></div>
-          <div class="roleplay-step-dot"></div>
-          <div class="roleplay-step-dot"></div>
-          <div class="roleplay-step-dot"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- チャットログタイムライン -->
-    <div class="roleplay-chat-timeline" id="roleplayTimeline">
-      <!-- メッセージが動的に挿入される -->
-    </div>
-
-    <!-- AI応答待機中スピナー -->
-    <div id="roleplayThinking" style="display: none; text-align: center; padding: 12px; font-size: 12px; color: #2563eb; background: #eff6ff; border-radius: 8px; margin-bottom: 10px;">
-      <span style="display: inline-block; animation: genPulse 1.2s infinite;">🤖</span> AIパートナーが返答＆アドバイスを検討中...
-    </div>
-
-    <!-- おすすめクイック返答ピル（迷ったとき用） -->
-    <div id="roleplayQuickRepliesSection" style="display: none;">
-      <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-        <span>💡 おすすめの返信候補（タップして入力欄にセット）:</span>
-      </div>
-      <div class="roleplay-quick-replies" id="roleplayQuickRepliesContainer"></div>
-    </div>
-
-    <!-- 入力バー -->
-    <div class="roleplay-input-bar" id="roleplayInputBar">
-      <button class="btn-mic-input" id="btnRoleplayMic" onclick="toggleRoleplayMic()" title="英語を話して音声入力">
-        🎤
-      </button>
-      <input type="text" class="roleplay-input-field" id="roleplayInputField" placeholder="Type your response in English..." onkeydown="handleRoleplayKeyDown(event)">
-      <button class="btn-roleplay-send" id="btnRoleplaySend" onclick="sendRoleplayMessage()">
-        送信
-      </button>
-    </div>
-
-    <!-- セッション完了サマリーカード -->
-    <div id="roleplaySummaryCard" class="roleplay-summary-card" style="display: none;">
-      <div style="font-size: 24px;">🎉</div>
-      <div style="font-size: 16px; font-weight: 800; color: #065f46; margin-top: 4px;" id="roleplaySummaryTitle">合意形成に成功しました！</div>
-      <div style="font-size: 13px; color: #047857; margin-top: 4px;" id="roleplaySummaryScore">Plain Englishスコア: 95点</div>
-      <div style="font-size: 12px; color: #1f2937; margin-top: 8px; line-height: 1.5; background: #f0fdf4; border-radius: 8px; padding: 10px;" id="roleplaySummaryText">
-        相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました。
-      </div>
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <button class="btn-action" style="flex: 1; padding: 10px; background: #2563eb; color: #fff; border: none; font-weight: 700;" onclick="resetRoleplaySession()">
-          🔄 次のシチュエーションで練習
-        </button>
-        <button class="btn-action" style="padding: 10px 14px;" onclick="switchTab('home')">
-          🏠 ホームへ
-        </button>
-      </div>
-    </div>
-  </div>
 
 <!-- 固定ボトムナビゲーションバー -->
 <div class="bottom-nav">
@@ -6582,6 +6623,8 @@
     container.scrollTop = container.scrollHeight;
   }
 
+  let currentQuickRepliesList = [];
+
   function renderRoleplayQuickReplies(replies) {
     const section = document.getElementById('roleplayQuickRepliesSection');
     const container = document.getElementById('roleplayQuickRepliesContainer');
@@ -6589,16 +6632,43 @@
 
     if (!Array.isArray(replies) || replies.length === 0) {
       section.style.display = 'none';
+      currentQuickRepliesList = [];
       return;
     }
 
+    currentQuickRepliesList = replies;
     section.style.display = 'block';
-    container.innerHTML = replies.map(r => `
-      <div class="quick-reply-pill" onclick="selectRoleplayQuickReply('${escapeHtml(r).replace(/'/g, "\\'")}')">
-        <span style="color: #2563eb; font-weight: 800;">💬</span>
-        <span style="flex: 1;">${escapeHtml(r)}</span>
+    container.innerHTML = replies.map((r, idx) => `
+      <div class="quick-reply-pill" onclick="selectAndSendQuickReply(${idx})">
+        <div class="quick-reply-pill-main">
+          <span style="color: #2563eb; font-weight: 800; font-size: 14px;">💬</span>
+          <span style="font-weight: 600; line-height: 1.4;">${escapeHtml(r)}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="quick-reply-send-badge">🚀 送信</span>
+          <button class="quick-reply-edit-btn" onclick="event.stopPropagation(); fillQuickReplyForEdit(${idx})" title="入力欄にコピーして編集">📝 編集</button>
+        </div>
       </div>
     `).join('');
+  }
+
+  function selectAndSendQuickReply(idx) {
+    const text = currentQuickRepliesList[idx];
+    if (!text) return;
+    const input = document.getElementById('roleplayInputField');
+    if (input) input.value = text;
+    sendRoleplayMessage(text);
+  }
+
+  function fillQuickReplyForEdit(idx) {
+    const text = currentQuickRepliesList[idx];
+    if (!text) return;
+    const input = document.getElementById('roleplayInputField');
+    if (input) {
+      input.value = text;
+      input.focus();
+      toast("📝 入力欄にセットしました。編集して送信してください。");
+    }
   }
 
   function selectRoleplayQuickReply(text) {
@@ -6607,6 +6677,7 @@
       input.value = text;
       input.focus();
     }
+    sendRoleplayMessage(text);
   }
 
   function handleRoleplayKeyDown(event) {
@@ -6616,14 +6687,13 @@
     }
   }
 
-  async function sendRoleplayMessage() {
+  async function sendRoleplayMessage(overrideText = null) {
     const input = document.getElementById('roleplayInputField');
-    if (!input) return;
-    const userText = input.value.trim();
+    let userText = typeof overrideText === 'string' && overrideText.trim() ? overrideText.trim() : (input ? input.value.trim() : '');
     if (!userText) return;
 
     // 入力欄をクリア
-    input.value = '';
+    if (input) input.value = '';
 
     // ユーザーメッセージを追加
     roleplayState.messages.push({
@@ -6901,6 +6971,8 @@
   window.handleRoleplayKeyDown = handleRoleplayKeyDown;
   window.sendRoleplayMessage = sendRoleplayMessage;
   window.selectRoleplayQuickReply = selectRoleplayQuickReply;
+  window.selectAndSendQuickReply = selectAndSendQuickReply;
+  window.fillQuickReplyForEdit = fillQuickReplyForEdit;
   window.savePhraseFromCoach = savePhraseFromCoach;
   window.toggleElementDisplay = toggleElementDisplay;
   window.startSrsReviewSession = startSrsReviewSession;
