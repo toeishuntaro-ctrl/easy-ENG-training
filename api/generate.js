@@ -46,83 +46,282 @@ function getPatternStem(pattern) {
 function synthesizePatternVariations(pattern, patternJp, target) {
   if (!pattern) pattern = "I see your point, but we need to [verb] first.";
   const cleanPat = pattern.replace(/\.\.\.$/, "").trim();
+  const patLower = cleanPat.toLowerCase();
+
+  // 1. 頻出コア構文パターンごとの実務特化・完全差別化バリエーション辞書
+  // 応用ドリル1と2で全く異なるビジネス状況（期日相談 vs スコープ分割など）を提示
+  if (patLower.startsWith("would it be")) {
+    return [
+      {
+        variation_prompt_jp: "【期日延期の相談】「期日を来週月曜まで延期することは可能でしょうか？」",
+        variation_target: "Would it be possible to extend the deadline to next Monday?",
+        variation_hint_parts: '"extend the deadline"（期日を延ばす）と "to next Monday"（来週月曜まで）を型に当てはめるだけ！',
+        variation_chunks: ["Would it be possible", "to extend the deadline", "to next Monday?"]
+      },
+      {
+        variation_prompt_jp: "【スコープ分割の提案】「作業範囲を2つのフェーズに分けることは可能でしょうか？」",
+        variation_target: "Would it be possible to split the scope into two phases?",
+        variation_hint_parts: '"split the scope"（範囲を分割）と "into two phases"（2段階に）を型に当てはめるだけ！',
+        variation_chunks: ["Would it be possible", "to split the scope", "into two phases?"]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("i see your point") || patLower.startsWith("i understand")) {
+    return [
+      {
+        variation_prompt_jp: "【品質確認の優先】「おっしゃることは分かりますが、まずはテスト結果を確認する必要があります」",
+        variation_target: "I see your point, but we need to check the test results first.",
+        variation_hint_parts: '"check the test results"（テスト結果を確認する）を当てはめるだけ！',
+        variation_chunks: ["I see your point,", "but we need to check", "the test results first."]
+      },
+      {
+        variation_prompt_jp: "【チーム方針のすり合わせ】「おっしゃることは分かりますが、まずはチームと合意を取る必要があります」",
+        variation_target: "I see your point, but we need to align with our team first.",
+        variation_hint_parts: '"align with our team"（チームと足並みを揃える）を当てはめるだけ！',
+        variation_chunks: ["I see your point,", "but we need to align", "with our team first."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("i am looking into") || patLower.startsWith("i'm looking into")) {
+    return [
+      {
+        variation_prompt_jp: "【不具合調査の報告】「システムエラーの原因を調査中であり、本日夕方5時までに状況をご連絡します」",
+        variation_target: "I am looking into the system error and will send an update by 5 PM.",
+        variation_hint_parts: '"the system error"（システムエラー）と "send an update by 5 PM" を組み合わせるだけ！',
+        variation_chunks: ["I am looking into", "the system error", "and will send an update", "by 5 PM."]
+      },
+      {
+        variation_prompt_jp: "【契約条件の確認】「契約条件を調査中であり、明日朝一番にご連絡いたします」",
+        variation_target: "I am looking into the contract terms and will get back to you by tomorrow morning.",
+        variation_hint_parts: '"the contract terms"（契約条件）と "get back to you by tomorrow morning" を組み合わせるだけ！',
+        variation_chunks: ["I am looking into", "the contract terms", "and will get back to you", "by tomorrow morning."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("let me check with") || patLower.startsWith("let me check")) {
+    return [
+      {
+        variation_prompt_jp: "【法務チームへの確認】「法務チームに確認の上、明日までに折り返しご連絡いたします」",
+        variation_target: "Let me check with our legal team and get back to you by tomorrow.",
+        variation_hint_parts: '"our legal team"（法務チーム）と "by tomorrow"（明日までに）を当てはめるだけ！',
+        variation_chunks: ["Let me check with", "our legal team", "and get back to you", "by tomorrow."]
+      },
+      {
+        variation_prompt_jp: "【技術リードへの確認】「テックリードに確認の上、本日15時までにご連絡いたします」",
+        variation_target: "Let me check with the tech lead and get back to you by 3 PM.",
+        variation_hint_parts: '"the tech lead"（技術責任者）と "by 3 PM"（午後3時まで）を当てはめるだけ！',
+        variation_chunks: ["Let me check with", "the tech lead", "and get back to you", "by 3 PM."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("we need to") || patLower.startsWith("i need to")) {
+    return [
+      {
+        variation_prompt_jp: "【リリース遅延の防止】「リリース遅延を防ぐために、仕様を本日中に確定する必要があります」",
+        variation_target: "We need to finalize the specification today in order to avoid release delays.",
+        variation_hint_parts: '"finalize the specification today" と "in order to avoid release delays" を組み合わせるだけ！',
+        variation_chunks: ["We need to finalize", "the specification today", "in order to avoid", "release delays."]
+      },
+      {
+        variation_prompt_jp: "【監査基準の達成】「コンプライアンス基準を満たすために、全監査ログを保存する必要があります」",
+        variation_target: "We need to save all audit logs in order to meet compliance standards.",
+        variation_hint_parts: '"save all audit logs" と "in order to meet compliance standards" を組み合わせるだけ！',
+        variation_chunks: ["We need to save", "all audit logs", "in order to meet", "compliance standards."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("could you please") || patLower.startsWith("could you")) {
+    return [
+      {
+        variation_prompt_jp: "【修正議事録の確認依頼】「金曜日の正午までに、修正した議事録をご確認いただけますでしょうか？」",
+        variation_target: "Could you please review the revised minutes by Friday noon?",
+        variation_hint_parts: '"review the revised minutes"（修正議事録の確認）と "by Friday noon"（金曜正午まで）',
+        variation_chunks: ["Could you please review", "the revised minutes", "by Friday noon?"]
+      },
+      {
+        variation_prompt_jp: "【最新見積書の送付依頼】「明日のミーティング前までに、最新の見積書をお送りいただけますでしょうか？」",
+        variation_target: "Could you please send the updated estimate before tomorrow's meeting?",
+        variation_hint_parts: '"send the updated estimate"（更新版見積もり）と "before tomorrow\'s meeting"',
+        variation_chunks: ["Could you please send", "the updated estimate", "before tomorrow's meeting?"]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("could we") || patLower.startsWith("can we")) {
+    return [
+      {
+        variation_prompt_jp: "【重要機能の絞り込み打診】「納期に間に合わせるため、優先機能を絞り込むことはできますか？」",
+        variation_target: "Could we prioritize key features so that we can launch on time?",
+        variation_hint_parts: '"prioritize key features" と "so that we can launch on time" を組み合わせるだけ！',
+        variation_chunks: ["Could we prioritize key features", "so that we can launch", "on time?"]
+      },
+      {
+        variation_prompt_jp: "【短時間ミーティングの打診】「認識を統一するために、15分の同期コールを開くことはできますか？」",
+        variation_target: "Could we schedule a 15-minute call so that we can align on expectations?",
+        variation_hint_parts: '"schedule a 15-minute call" と "so that we can align on expectations" を組み合わせるだけ！',
+        variation_chunks: ["Could we schedule a 15-minute call", "so that we can align", "on expectations?"]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("i will")) {
+    return [
+      {
+        variation_prompt_jp: "【データ再集計の約束】「数字を再集計し、本日中に進捗をご報告いたします」",
+        variation_target: "I will recount the figures and keep you posted by end of day.",
+        variation_hint_parts: '"recount the figures"（数値を再集計）と "by end of day"（本日中）',
+        variation_chunks: ["I will recount the figures", "and keep you posted", "by end of day."]
+      },
+      {
+        variation_prompt_jp: "【修正パッチ配布の約束】「修正パッチを適用し、明日正午までに結果をお知らせします」",
+        variation_target: "I will apply the hotfix and keep you posted by tomorrow noon.",
+        variation_hint_parts: '"apply the hotfix"（パッチを適用）と "by tomorrow noon"（明日正午まで）',
+        variation_chunks: ["I will apply the hotfix", "and keep you posted", "by tomorrow noon."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("to prevent") || patLower.startsWith("to avoid") || patLower.startsWith("to ensure") || patLower.startsWith("to stay")) {
+    return [
+      {
+        variation_prompt_jp: "【データ不整合の防止】「データの不整合を防ぐため、金曜日までに同期スクリプトを実行すべきです」",
+        variation_target: "To prevent data mismatch, we should run the sync script by Friday.",
+        variation_hint_parts: '"To prevent data mismatch" と "we should run the sync script"',
+        variation_chunks: ["To prevent data mismatch,", "we should run the sync script", "by Friday."]
+      },
+      {
+        variation_prompt_jp: "【予算内での達成】「予算内に抑えるため、外部委託スコープを縮小すべきです」",
+        variation_target: "To stay within budget, we should reduce external consulting hours.",
+        variation_hint_parts: '"To stay within budget" と "we should reduce external consulting hours"',
+        variation_chunks: ["To stay within budget,", "we should reduce", "external consulting hours."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("thank you for") || patLower.startsWith("thanks for")) {
+    return [
+      {
+        variation_prompt_jp: "【迅速なフィードバックへの対応】「迅速なフィードバックありがとうございます。直ちにドラフトを修正します」",
+        variation_target: "Thank you for the prompt feedback, and we will update the draft right away.",
+        variation_hint_parts: '"the prompt feedback" と "update the draft right away"',
+        variation_chunks: ["Thank you for the prompt feedback,", "and we will update the draft", "right away."]
+      },
+      {
+        variation_prompt_jp: "【明確な情報共有への感謝】「詳細な情報共有ありがとうございます。本日チーム内に周知いたします」",
+        variation_target: "Thank you for the clear heads-up, and we will brief the core team today.",
+        variation_hint_parts: '"the clear heads-up" と "brief the core team today"',
+        variation_chunks: ["Thank you for the clear heads-up,", "and we will brief the core team", "today."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("i am afraid") || patLower.startsWith("i'm afraid")) {
+    return [
+      {
+        variation_prompt_jp: "【即日対応困難時の代替案】「恐れ入りますが本日中の対応は難しいですが、明朝一番に対応可能です」",
+        variation_target: "I am afraid that today is difficult, but we can deliver it first thing tomorrow.",
+        variation_hint_parts: '"today is difficult" と "we can deliver it first thing tomorrow"',
+        variation_chunks: ["I am afraid that today is difficult,", "but we can deliver it", "first thing tomorrow."]
+      },
+      {
+        variation_prompt_jp: "【追加要件見送り時の代替案】「恐れ入りますが追加要件の実装は間に合いませんが、第2フェーズでの対応は可能です」",
+        variation_target: "I am afraid that extra features cannot fit now, but we can plan them for Phase 2.",
+        variation_hint_parts: '"extra features cannot fit now" と "we can plan them for Phase 2"',
+        variation_chunks: ["I am afraid that extra features cannot fit now,", "but we can plan them", "for Phase 2."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("please note that")) {
+    return [
+      {
+        variation_prompt_jp: "【承認期限の伝達】「今週中の発注手続きを進めるため、承認が本日17時までに必須となる点にご留意ください」",
+        variation_target: "Please note that approval is required by 5 PM so that we can place the order this week.",
+        variation_hint_parts: '"approval is required by 5 PM" と "so that we can place the order"',
+        variation_chunks: ["Please note that approval is required by 5 PM", "so that we can place the order", "this week."]
+      },
+      {
+        variation_prompt_jp: "【メンテ停止の周知】「パッチを安全に適用するため、深夜にサーバー再起動が発生する点にご留意ください」",
+        variation_target: "Please note that servers will restart at midnight so that we can deploy the patch.",
+        variation_hint_parts: '"servers will restart at midnight" と "so that we can deploy the patch"',
+        variation_chunks: ["Please note that servers will restart at midnight", "so that we can deploy the patch."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("i suggest") || patLower.startsWith("we recommend")) {
+    return [
+      {
+        variation_prompt_jp: "【誤解防止の事前提案】「認識の食い違いを防ぐため、ドラフト仕様書を事前に共有することを提案します」",
+        variation_target: "I suggest we share the draft specs in order to prevent misunderstandings.",
+        variation_hint_parts: '"share the draft specs" と "in order to prevent misunderstandings"',
+        variation_chunks: ["I suggest we share the draft specs", "in order to prevent", "misunderstandings."]
+      },
+      {
+        variation_prompt_jp: "【負荷分散の提案】「チームの負荷を平準化するため、バックログを2分割することを提案します」",
+        variation_target: "I suggest we divide the backlog in order to balance team workload.",
+        variation_hint_parts: '"divide the backlog" と "in order to balance team workload"',
+        variation_chunks: ["I suggest we divide the backlog", "in order to balance", "team workload."]
+      }
+    ];
+  }
+
+  // 2. 上記辞書にない未知の型に対する、高精度な文脈別スロット置換エンジン
+  const replaceSlots = (pat, config) => {
+    let res = pat;
+    let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
+    res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
+    res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
+    res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
+    res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
+    res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
+    res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
+    res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+    res = res.trim();
+    if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
+    return res;
+  };
 
   const config1 = {
-    verbs: ["share the updated data", "review it today", "start the work"],
-    slots: {
-      "\\[verb\\s+A\\]": "commit to this deadline",
-      "\\[verb\\s+B\\]": "send a progress report by tomorrow",
-      "\\[noun\\]": "the project schedule",
-      "\\[noun/phrase\\]": "the priority",
-      "\\[noun/gerund\\]": "delaying the submission",
-      "\\[person\\]": "our team lead",
-      "\\[person/team\\]": "our technical team",
-      "\\[team\\]": "our operations team",
-      "\\[time\\]": "tomorrow afternoon",
-      "\\[statement\\]": "we need more time to verify this",
-      "\\[clause\\]": "we get the final sign-off",
-      "\\[task\\]": "the data audit",
-      "\\[topic\\]": "the revised milestone",
-      "\\[plan\\]": "the initial timeline",
-      "\\[document\\]": "the draft proposal"
-    }
+    verbs: ["review the updated data", "verify the requirements", "schedule a sync"],
+    nouns: ["the revised milestone", "the draft proposal", "the initial timeline"],
+    teams: ["our project manager", "the operations lead", "our QA team"],
+    times: ["by tomorrow afternoon", "by the end of this week", "before 5 PM"],
+    goals: ["keep the current schedule", "avoid unexpected delays", "maintain output quality"],
+    clauses: ["we receive the final sign-off", "the technical review is complete"],
+    fallbacks: ["the next step", "the action item"]
   };
 
   const config2 = {
-    verbs: ["confirm the exact scope", "prepare our team", "proceed smoothly"],
-    slots: {
-      "\\[verb\\s+A\\]": "change the plan right now",
-      "\\[verb\\s+B\\]": "discuss this in our next sync",
-      "\\[noun\\]": "the core requirements",
-      "\\[noun/phrase\\]": "the action item",
-      "\\[noun/gerund\\]": "missing the deadline",
-      "\\[person\\]": "our project director",
-      "\\[person/team\\]": "our QA manager",
-      "\\[team\\]": "the local site coordinator",
-      "\\[time\\]": "Friday morning",
-      "\\[statement\\]": "we should keep the current priority",
-      "\\[clause\\]": "there is any further delay",
-      "\\[task\\]": "the system handover",
-      "\\[topic\\]": "the budget adjustment",
-      "\\[plan\\]": "the agreed scope",
-      "\\[document\\]": "the CAPA report"
-    }
+    verbs: ["confirm the project scope", "align on priorities", "proceed with testing"],
+    nouns: ["the priority list", "the core requirements", "the agreed deliverables"],
+    teams: ["the technical team", "the client coordinator", "our tech director"],
+    times: ["before Friday noon", "by tomorrow morning", "early next week"],
+    goals: ["ensure deliverable quality", "meet compliance standards", "stay within budget"],
+    clauses: ["the client approves the budget", "we get all necessary inputs"],
+    fallbacks: ["the alternative plan", "the contingency option"]
   };
 
-  function applySlot(pat, config) {
-    let res = pat;
-    let vIdx = 0;
-    res = res.replace(/\[verb(?:\s+[A-Z0-9])?\]/gi, () => {
-      const v = config.verbs[vIdx % config.verbs.length];
-      vIdx++;
-      return v;
-    });
-    if (config.slots) {
-      for (const [key, val] of Object.entries(config.slots)) {
-        res = res.replace(new RegExp(key, "gi"), val);
-      }
-    }
-    res = res.replace(/\[.*?\]/g, "this").trim();
-    if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
-    return res;
-  }
-
-  const vTarget1 = applySlot(cleanPat, config1);
-  const vTarget2 = applySlot(cleanPat, config2);
-
+  const vTarget1 = replaceSlots(cleanPat, config1);
+  const vTarget2 = replaceSlots(cleanPat, config2);
   const cleanJp = (patternJp || "この型").replace(/\[.*?\]/g, "〜");
 
   return [
     {
-      variation_prompt_jp: `「${cleanJp}」を使って、別の状況を伝える時は？`,
+      variation_prompt_jp: `【実務応用 1/2: スケジュール調整】「${cleanJp}」の型で進捗や日程を伝える時：`,
       variation_target: vTarget1,
-      variation_hint_parts: "中学レベルの基本パーツを型に当てはめるだけ！",
+      variation_hint_parts: "型をそのまま固定し、日程やレビューのパーツを当てはめるだけ！",
       variation_chunks: createSentenceChunks(vTarget1)
     },
     {
-      variation_prompt_jp: `「${cleanJp}」を応用して、別の条件を伝える時は？`,
+      variation_prompt_jp: `【実務応用 2/2: スコープ・優先度調整】「${cleanJp}」の型で別条件を提示する時：`,
       variation_target: vTarget2,
-      variation_hint_parts: "型をそのまま固定し、パーツを入れ替えてみよう！",
+      variation_hint_parts: "型を固定したまま、スコープや優先度のパーツに入れ替えてみよう！",
       variation_chunks: createSentenceChunks(vTarget2)
     }
   ];
