@@ -2281,6 +2281,11 @@
       <button class="btn-srs-start" id="btnStartSrsReview" onclick="startSrsReviewSession()">
         🚀 今すぐ「今日の復習ドリル」を開始する
       </button>
+      <div style="margin-top: 8px; text-align: center;">
+        <a href="javascript:void(0)" onclick="switchTab('library')" style="font-size: 11px; color: #b45309; text-decoration: underline; font-weight: 600;">
+          📚 保存元：「フレーズ（武器庫）」の確認・一括削除はこちら ➔
+        </a>
+      </div>
     </div>
 
     <!-- AI連続ラリー会話 (フリースタイル・ロールプレイ) クイック起動バナー -->
@@ -2795,7 +2800,12 @@
 
   <!-- 4. 過去ログ（履歴）管理ビュー -->
   <div id="viewHistory" style="display: none;">
-    <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #334155;">📁 過去生成分の履歴</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div style="font-size: 14px; font-weight: bold; color: #334155;">📁 過去生成分の履歴</div>
+      <button class="btn-action" id="btnClearAllHistory" onclick="clearAllHistory()" style="font-size: 11px; padding: 4px 8px; color: #ef4444; border-color: #fca5a5; display: none;">
+        🗑 全履歴を削除
+      </button>
+    </div>
     <div id="historyListContainer"></div>
   </div>
 
@@ -2805,7 +2815,12 @@
       <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
         <span>📚</span> 保存した重要フレーズ (武器庫)
       </div>
-      <span class="library-count-badge" id="libraryCountBadge">0件 保存</span>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <span class="library-count-badge" id="libraryCountBadge">0件 保存</span>
+        <button class="btn-action" id="btnClearAllLibrary" onclick="clearAllLibraryPhrases()" style="font-size: 11px; padding: 4px 8px; color: #ef4444; border-color: #fca5a5; display: none;">
+          🗑 全削除
+        </button>
+      </div>
     </div>
 
     <!-- 復習アクションカード（特訓クイズ & 瞬間想起フラッシュカード） -->
@@ -5527,7 +5542,12 @@
 
   function renderHistory() {
     const container = document.getElementById('historyListContainer');
+    const clearBtn = document.getElementById('btnClearAllHistory');
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+
+    if (clearBtn) {
+      clearBtn.style.display = history.length > 0 ? 'inline-block' : 'none';
+    }
 
     if (history.length === 0) {
       container.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:20px;">過去の履歴はありません。</div>';
@@ -5598,6 +5618,25 @@
     renderHistory();
     populateQuickModeSelect();
     if (window.fbSync) window.fbSync.deleteQuizHistory(id);
+    updateSrsRecommendUI();
+  }
+
+  function clearAllHistory() {
+    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    if (history.length === 0) return;
+    if (confirm(`過去の受講履歴（全${history.length}件）をすべて削除しますか？\n※ 保存した重要フレーズ（武器庫）は保持されます。`)) {
+      localStorage.removeItem('english_scenarios_history');
+      currentHistoryId = null;
+      localStorage.removeItem('english_active_session');
+      updateResumeCardUI();
+      if (window.fbSync && window.fbSync.clearAllQuizHistory) {
+        window.fbSync.clearAllQuizHistory();
+      }
+      renderHistory();
+      populateQuickModeSelect();
+      updateSrsRecommendUI();
+      toast("🗑 すべての受講履歴を削除しました");
+    }
   }
 
   // --- 重要フレーズ（武器庫）ライブラリ & 復習システム ---
@@ -6070,10 +6109,14 @@
   function renderLibrary() {
     const container = document.getElementById('libraryListContainer');
     const badge = document.getElementById('libraryCountBadge');
+    const clearBtn = document.getElementById('btnClearAllLibrary');
     const filterRow = document.getElementById('libraryFilterRow');
     const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
 
     if (badge) badge.innerText = `${library.length}件 保存`;
+    if (clearBtn) {
+      clearBtn.style.display = library.length > 0 ? 'inline-block' : 'none';
+    }
 
     // 1. トピックフィルターピルの動的生成
     if (filterRow) {
@@ -6169,12 +6212,41 @@
     const toDelete = library.find(item => item.id === id);
     if (!toDelete) return;
     
-    if (confirm(`フレーズ「${toDelete.target}」を削除しますか？`)) {
+    if (confirm(`フレーズ「${toDelete.target}」を削除しますか？\n※ ホーム画面の「忘却曲線の本日の復習」からも削除されます。`)) {
       library = library.filter(item => item.id !== id);
       localStorage.setItem('english_phrase_library', JSON.stringify(library));
       if (window.fbSync) window.fbSync.deleteWeapon(toDelete.target);
       renderLibrary();
+      updateSrsRecommendUI();
       toast("🗑 フレーズを削除しました");
+    }
+  }
+
+  function deleteLibraryItemDirect(id) {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const toDelete = library.find(item => item.id === id);
+    if (!toDelete) return;
+    if (confirm(`フレーズ「${toDelete.target}」を復習リストから削除しますか？`)) {
+      library = library.filter(item => item.id !== id);
+      localStorage.setItem('english_phrase_library', JSON.stringify(library));
+      if (window.fbSync) window.fbSync.deleteWeapon(toDelete.target);
+      renderLibrary();
+      updateSrsRecommendUI();
+      toast("🗑 復習リストから削除しました");
+    }
+  }
+
+  function clearAllLibraryPhrases() {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.length === 0) return;
+    if (confirm(`保存された重要フレーズ（全${library.length}件）をすべて削除しますか？\n※ ホーム画面の「忘却曲線の本日の復習」からもすべて削除されます。`)) {
+      localStorage.removeItem('english_phrase_library');
+      if (window.fbSync && window.fbSync.clearAllWeapons) {
+        window.fbSync.clearAllWeapons();
+      }
+      renderLibrary();
+      updateSrsRecommendUI();
+      toast("🗑 保存したフレーズをすべて削除しました");
     }
   }
 
@@ -7098,9 +7170,17 @@
     const btn = document.getElementById('btnStartSrsReview');
     if (!card) return;
 
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const dueItems = getDueSrsItems();
+
     if (dueItems.length === 0) {
-      // 復習対象がない場合はすべて完了のメッセージを表示
+      if (library.length === 0 && history.length === 0) {
+        // 保存フレーズも履歴も空の場合は非表示
+        card.style.display = 'none';
+        return;
+      }
+      // 保存フレーズがあるが本日の復習分はすべて完了している場合
       card.style.display = 'block';
       card.style.background = '#f0fdf4';
       card.style.borderColor = '#86efac';
@@ -7152,13 +7232,17 @@
       const previewSlice = dueItems.slice(0, 3);
       listEl.innerHTML = previewSlice.map(item => {
         const lvl = item.srsLevel || 1;
+        const canDelete = item.id && !item.isFromHistory;
         return `
-          <div class="srs-item-preview">
-            <span class="srs-item-guide">🎯 ${escapeHtml(item.guide || item.target || '')}</span>
-            <span class="srs-level-badge lvl-${lvl}">Level ${lvl}</span>
+          <div class="srs-item-preview" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="srs-item-guide" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:6px;">🎯 ${escapeHtml(item.guide || item.target || '')}</span>
+            <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+              <span class="srs-level-badge lvl-${lvl}">Level ${lvl}</span>
+              ${canDelete ? `<button onclick="event.stopPropagation(); deleteLibraryItemDirect(${item.id})" style="border:none; background:transparent; cursor:pointer; font-size:12px; color:#94a3b8; padding:0 3px;" title="復習リストから削除">✕</button>` : ''}
+            </div>
           </div>
         `;
-      }).join('') + (dueItems.length > 3 ? `<div style="font-size:10.5px; color:#b45309; text-align:right;">他 ${dueItems.length - 3} 件のフレーズ...</div>` : '');
+      }).join('') + (dueItems.length > 3 ? `<div style="font-size:10.5px; color:#b45309; text-align:right; margin-top:2px;"><a href="javascript:void(0)" onclick="switchTab('library')" style="color:#b45309; text-decoration:underline;">他 ${dueItems.length - 3} 件のフレーズ（フレーズタブで確認）➔</a></div>` : '');
     }
     if (btn) {
       btn.innerText = `🚀 今すぐ「今日の復習ドリル」を開始 (${dueItems.length}件)`;

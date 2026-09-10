@@ -460,6 +460,19 @@ class FirebaseSyncService {
     }
   }
 
+  async clearAllWeapons() {
+    if (!this.db) return;
+    try {
+      const weaponsRef = this.getCollectionRef('weapons');
+      const snap = await getDocs(weaponsRef);
+      const promises = [];
+      snap.forEach(d => promises.push(deleteDoc(d.ref)));
+      await Promise.all(promises);
+    } catch (e) {
+      console.warn("[FirebaseSync] clearAllWeapons error:", e);
+    }
+  }
+
   async saveSpacedItem(item) {
     if (!this.db || !item || !item.target) return;
     try {
@@ -500,6 +513,19 @@ class FirebaseSyncService {
       await deleteDoc(historyRef);
     } catch (e) {
       console.warn("[FirebaseSync] deleteQuizHistory error:", e);
+    }
+  }
+
+  async clearAllQuizHistory() {
+    if (!this.db) return;
+    try {
+      const histRef = this.getCollectionRef('quiz_history');
+      const snap = await getDocs(histRef);
+      const promises = [];
+      snap.forEach(d => promises.push(deleteDoc(d.ref)));
+      await Promise.all(promises);
+    } catch (e) {
+      console.warn("[FirebaseSync] clearAllQuizHistory error:", e);
     }
   }
 }
