@@ -845,6 +845,108 @@
       line-height: 1.3;
     }
 
+    /* 2nd Turn Closing Choice (Rally 2 締めの一言 2択クイズ) */
+    .closing-quiz-wrap {
+      margin-top: 9px;
+      padding-top: 8px;
+      border-top: 1px dashed #86efac;
+    }
+    .closing-quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .closing-quiz-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #14532d;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .closing-quiz-sub {
+      font-size: 10px;
+      color: #15803d;
+      font-weight: 600;
+      background: #ffffff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid #bbf7d0;
+    }
+    .closing-options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .closing-option-btn {
+      width: 100%;
+      text-align: left;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      position: relative;
+    }
+    .closing-option-btn:hover:not(:disabled) {
+      border-color: #10b981;
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+    .closing-option-btn.correct {
+      border-color: #10b981 !important;
+      background: #dcfce7 !important;
+      box-shadow: 0 0 0 1px #10b981;
+    }
+    .closing-option-btn.wrong {
+      border-color: #fca5a5 !important;
+      background: #fef2f2 !important;
+      animation: shake 0.3s ease;
+    }
+    .closing-option-btn.faded {
+      opacity: 0.55;
+    }
+    .closing-option-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .closing-option-en {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.35;
+    }
+    .closing-option-jp {
+      font-size: 10.5px;
+      color: #64748b;
+      margin-top: 2px;
+      line-height: 1.25;
+    }
+    .closing-feedback-box {
+      margin-top: 6px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.4;
+      animation: fadeIn .2s ease;
+    }
+    .closing-feedback-box.correct {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #15803d;
+      font-weight: 700;
+    }
+    .closing-feedback-box.wrong {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
     /* Enhanced Step 1: Lecture Card */
     .lecture-card {
       background: #f0fdf4;
@@ -2671,10 +2773,17 @@
         </div>
         <div class="reaction-speech-en" id="reactionSpeechEn">"Understood. That sounds reasonable."</div>
         <div class="reaction-speech-jp" id="reactionSpeechJp">（承知しました。妥当な進め方ですね。）</div>
-      </div>
 
-      <!-- 表現のニュアンス比較コーナー -->
-      <div class="comparison-box" id="comparisonBox"></div>
+        <!-- 案A: 1秒クロージング・チョイス (超軽量2択タップ) -->
+        <div class="closing-quiz-wrap" id="closingQuizWrap">
+          <div class="closing-quiz-header">
+            <span class="closing-quiz-label">💬 あなたならどう会話を締める？</span>
+            <span class="closing-quiz-sub">1秒クロージング選択</span>
+          </div>
+          <div class="closing-options-grid" id="closingOptionsGrid"></div>
+          <div class="closing-feedback-box" id="closingFeedbackBox" style="display:none;"></div>
+        </div>
+      </div>
 
       <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
     </div>
@@ -5334,6 +5443,12 @@
     if (resultCard) resultCard.style.display = 'none';
     if (confidenceBox) confidenceBox.style.display = 'none';
 
+    const nextBtn = document.querySelector('.btn-next');
+    if (nextBtn) {
+      nextBtn.style.boxShadow = '';
+      nextBtn.innerText = '次の問題へ ➔';
+    }
+
     const wordFeedbackBox = document.getElementById('wordFeedbackBox');
     if (wordFeedbackBox) wordFeedbackBox.style.display = 'none';
     confidenceScore = 0;
@@ -6490,7 +6605,6 @@
     const statusBadge = document.getElementById('statusBadge');
     const resultFullSentence = document.getElementById('resultFullSentence');
     const adviceText = document.getElementById('adviceText');
-    const comparisonBox = document.getElementById('comparisonBox');
     const reactionCard = document.getElementById('counterpartReactionCard');
     const reactionSenderName = document.getElementById('reactionSenderName');
     const reactionSpeechEn = document.getElementById('reactionSpeechEn');
@@ -6526,41 +6640,176 @@
       if (reactionSenderName) reactionSenderName.innerText = scenario.ai_name || "Counterpart";
       if (reactionSpeechEn) reactionSpeechEn.innerText = `"${rxEn}"`;
       if (reactionSpeechJp) reactionSpeechJp.innerText = `（${rxJp}）`;
-    }
 
-    // ニュアンス比較コーナー
-    if (comparisonBox && scenario.choices && scenario.choices.length > 0) {
-      const complexChoice = scenario.choices.find(c => c.type === 'TOO_COMPLEX');
-      const directChoice = scenario.choices.find(c => c.type === 'TOO_DIRECT');
-
-      let compHtml = '<div style="font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px;">📊 表現のニュアンス比較（なぜこれが正解？）:</div>';
-      
-      if (perfectChoice) {
-        compHtml += `
-          <div class="comparison-item perfect">
-            <b>✅ 推奨 (Plain English):</b> "${escapeHtml(perfectChoice.text)}"<br>
-            <span style="opacity:0.9;">${escapeHtml(perfectChoice.advice)}</span>
-          </div>`;
-      }
-      if (complexChoice) {
-        compHtml += `
-          <div class="comparison-item complex">
-            <b>🐢 硬すぎる例 (Too Stiff):</b> "${escapeHtml(complexChoice.text)}"<br>
-            <span style="opacity:0.9;">${escapeHtml(complexChoice.advice)}</span>
-          </div>`;
-      }
-      if (directChoice) {
-        compHtml += `
-          <div class="comparison-item direct">
-            <b>💥 角が立つ例 (Too Direct):</b> "${escapeHtml(directChoice.text)}"<br>
-            <span style="opacity:0.9;">${escapeHtml(directChoice.advice)}</span>
-          </div>`;
-      }
-      comparisonBox.innerHTML = compHtml;
+      // 案A: 1秒クロージング・チョイス (超軽量2択タップ) の描画
+      renderClosingQuiz(scenario);
     }
 
     const checkBtn = document.getElementById('btnCheckBuilder');
     if (checkBtn) checkBtn.disabled = true;
+  }
+
+  // --- 2往復目: 1秒クロージング・チョイス (超軽量2択タップクイズ) ---
+  let currentClosingChoices = [];
+  let currentClosingAnswered = false;
+
+  function generateClosingChoices(scenario) {
+    if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length >= 2) {
+      return JSON.parse(JSON.stringify(scenario.closing_choices));
+    }
+
+    const rxEn = (scenario?.counterpart_reaction_en || "").toLowerCase();
+    const target = (scenario?.target || "").toLowerCase();
+
+    // 文脈に応じたクロージングペアのプリセット
+    const presets = [
+      {
+        correct: {
+          text: "Sounds great, thank you! I'll send you an email recap shortly.",
+          jp: "了解です、ありがとうございます！すぐに要点をメールで共有します。",
+          feedback: "相手の合意に感謝し、次のアクション（要約メール）を明確にすることで確実にボールを拾えています。"
+        },
+        wrong: {
+          text: "Okay, bye.",
+          jp: "了解、じゃあ。",
+          feedback: "少しぶっきらぼうです！ビジネスでは「合意への感謝」や「次の一歩（メール連絡など）」を一言添えると信頼が深まります。"
+        }
+      },
+      {
+        correct: {
+          text: "Appreciate your flexibility. Let's keep each other updated as we make progress.",
+          jp: "柔軟なご対応に感謝します。進捗があり次第、お互いに共有し合いましょう。",
+          feedback: "柔軟な調整に感謝しつつ、引き続き密に連携する姿勢を示すプロの締め方です。"
+        },
+        wrong: {
+          text: "Fine. I have no more questions.",
+          jp: "わかりました。もう質問はありません。",
+          feedback: "受け身で少し冷たく聞こえます！「引き続き共有しましょう」と前向きな姿勢を短く示すのがベストです。"
+        }
+      },
+      {
+        correct: {
+          text: "Perfect, thank you! I'll align with my team right away and follow up.",
+          jp: "承知しました、ありがとうございます！早速チームとすり合わせてフォローします。",
+          feedback: "社内調整を迅速に進める頼もしさが伝わるスマートなクロージングです。"
+        },
+        wrong: {
+          text: "Okay, I guess that works for now.",
+          jp: "まあ、とりあえずそれでいいと思います。",
+          feedback: "自信がなさそう・消極的に聞こえてしまいます！相手の合意を前向きに「ありがとうございます」と受け止めましょう。"
+        }
+      },
+      {
+        correct: {
+          text: "Thank you for your understanding. I'll make sure to prioritize this deliverable.",
+          jp: "ご理解いただきありがとうございます。この成果物を最優先で進めるようにいたします。",
+          feedback: "相手への感謝とコミットメントを力強く伝えることで、相手も安心して任せられます。"
+        },
+        wrong: {
+          text: "Yeah, whatever you say.",
+          jp: "はいはい、おっしゃる通りにします。",
+          feedback: "投げやりに聞こえてしまいます！「ご理解感謝します」「最優先で進めます」と誠実に締めましょう。"
+        }
+      }
+    ];
+
+    let selectedPreset = presets[0];
+    if (rxEn.includes('date') || rxEn.includes('schedule') || rxEn.includes('timeline') || target.includes('deadline')) {
+      selectedPreset = presets[1];
+    } else if (rxEn.includes('team') || rxEn.includes('align') || rxEn.includes('discuss')) {
+      selectedPreset = presets[2];
+    } else if (rxEn.includes('understand') || rxEn.includes('reasonable') || rxEn.includes('agree')) {
+      selectedPreset = presets[0];
+    } else {
+      const idx = (scenario?.stage || currentStageIndex || 0) % presets.length;
+      selectedPreset = presets[idx];
+    }
+
+    return [
+      { text: selectedPreset.correct.text, jp: selectedPreset.correct.jp, is_correct: true, feedback: selectedPreset.correct.feedback },
+      { text: selectedPreset.wrong.text, jp: selectedPreset.wrong.jp, is_correct: false, feedback: selectedPreset.wrong.feedback }
+    ];
+  }
+
+  function renderClosingQuiz(scenario) {
+    const container = document.getElementById('closingOptionsGrid');
+    const feedbackBox = document.getElementById('closingFeedbackBox');
+    if (!container) return;
+
+    currentClosingAnswered = false;
+    if (feedbackBox) {
+      feedbackBox.style.display = 'none';
+      feedbackBox.innerHTML = '';
+      feedbackBox.className = 'closing-feedback-box';
+    }
+
+    const rawChoices = generateClosingChoices(scenario);
+    // 2択をシャッフル
+    currentClosingChoices = [...rawChoices].sort(() => Math.random() - 0.5);
+
+    container.innerHTML = currentClosingChoices.map((c, idx) => `
+      <button class="closing-option-btn" id="closingOptBtn_${idx}" onclick="selectClosingOption(${idx})">
+        <div class="closing-option-top">
+          <span class="closing-option-en">"${escapeHtml(c.text)}"</span>
+          <span style="font-size:10px; color:#10b981; font-weight:700;">1秒選択 ➔</span>
+        </div>
+        <div class="closing-option-jp">${escapeHtml(c.jp)}</div>
+      </button>
+    `).join('');
+  }
+
+  function selectClosingOption(choiceIdx) {
+    if (currentClosingAnswered) return;
+    const choice = currentClosingChoices[choiceIdx];
+    if (!choice) return;
+
+    const clickedBtn = document.getElementById(`closingOptBtn_${choiceIdx}`);
+    const feedbackBox = document.getElementById('closingFeedbackBox');
+
+    if (choice.is_correct) {
+      currentClosingAnswered = true;
+      if (clickedBtn) clickedBtn.classList.add('correct');
+      // 他のボタンを faded
+      currentClosingChoices.forEach((_, idx) => {
+        if (idx !== choiceIdx) {
+          const otherBtn = document.getElementById(`closingOptBtn_${idx}`);
+          if (otherBtn) otherBtn.classList.add('faded');
+        }
+      });
+
+      // 音声読み上げ
+      speakText(choice.text);
+
+      // トースト & XP付与
+      toast("🎉 合意形成完了！ミッション達成 (+10 XP)");
+      awardXP(10, true);
+
+      // フィードバック表示
+      if (feedbackBox) {
+        feedbackBox.className = 'closing-feedback-box correct';
+        feedbackBox.style.display = 'block';
+        feedbackBox.innerHTML = `<b>🤝 合意形成完了！</b> ${escapeHtml(choice.feedback)}`;
+      }
+
+      // 「次の問題へ」ボタンを目立たせる
+      const nextBtn = document.querySelector('.btn-next');
+      if (nextBtn) {
+        nextBtn.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.4)';
+        nextBtn.innerText = '次の問題へ進む ➔';
+      }
+    } else {
+      // 不正解
+      if (clickedBtn) {
+        clickedBtn.classList.add('wrong');
+        setTimeout(() => clickedBtn.classList.remove('wrong'), 400);
+      }
+      toast("💡 相手の合意に感謝し、次アクションを添える選択肢を選んでみましょう！");
+      if (feedbackBox) {
+        feedbackBox.className = 'closing-feedback-box wrong';
+        feedbackBox.style.display = 'block';
+        feedbackBox.innerHTML = `<b>惜しい！</b> ${escapeHtml(choice.feedback)}`;
+      }
+    }
   }
 
   function speakReactionSpeech() {

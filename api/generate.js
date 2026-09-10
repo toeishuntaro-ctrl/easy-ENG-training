@@ -690,7 +690,11 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
     - variation_target: Target English sentence strictly using the SAME pattern with simple junior-high parts inserted.
     - variation_hint_parts: Junior-high English parts hint showing what was combined.
     - variation_chunks: 3-4 word/phrase chunks for variation sentence assembly.
-15. "choices": Exactly 3 distinct choices:
+15. "closing_choices": Exactly 2 fast 1-tap options to close the conversation after counterpart's reaction:
+    - 1 choice with is_correct: true (natural, polite closing confirming agreement/next step, e.g. "Sounds great, thank you! I'll send you an email recap.")
+    - 1 choice with is_correct: false (abrupt, awkward, or overly passive closing, e.g. "Okay, bye." or "Fine, see you later.")
+    - Each option must include "text", "jp", "is_correct", and "feedback".
+16. "choices": Exactly 3 distinct choices:
    **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
    - type: "PERFECT"
      text: Natural, concise Plain English using the key pattern and simple junior-high level core vocabulary (e.g. "keep the original deadline first.").
@@ -743,6 +747,20 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
               }
             },
             required: ["variation_prompt_jp", "variation_target", "variation_hint_parts", "variation_chunks"]
+          }
+        },
+        closing_choices: {
+          type: Type.ARRAY,
+          description: "2 options for 1-tap closing reply: one natural/collaborative closing (is_correct=true) and one abrupt/unnatural closing (is_correct=false)",
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              text: { type: Type.STRING, description: "English closing statement" },
+              jp: { type: Type.STRING, description: "Japanese translation" },
+              is_correct: { type: Type.BOOLEAN, description: "True if natural closing, false if abrupt/unnatural" },
+              feedback: { type: Type.STRING, description: "Brief Japanese explanation of why this closing works or fails" }
+            },
+            required: ["text", "jp", "is_correct", "feedback"]
           }
         },
         choices: {
@@ -856,6 +874,7 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
             variations: finalVariations,
             counterpart_reaction_en: sc.counterpart_reaction_en || "Understood. That sounds like a reasonable next step. Let's keep each other posted.",
             counterpart_reaction_jp: sc.counterpart_reaction_jp || "承知しました。妥当な進め方ですね。引き続き進捗を共有し合いましょう。",
+            closing_choices: Array.isArray(sc.closing_choices) && sc.closing_choices.length >= 2 ? sc.closing_choices : null,
             email_subject: sc.email_subject || (sc.ai_en?.startsWith("Subject:") ? sc.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update and next steps"),
             choices: Array.isArray(sc.choices) ? sc.choices : []
           };
