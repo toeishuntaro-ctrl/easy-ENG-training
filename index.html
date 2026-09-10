@@ -4799,6 +4799,40 @@
       ];
     }
 
+    if (patLower.startsWith("fair point") || patLower.startsWith("good point") || patLower.startsWith("that makes sense") || patLower.startsWith("that's a good point")) {
+      return [
+        {
+          variation_prompt_jp: "【スケジュール厳守の優先】「ごもっともですが、まずは当初のスケジュールを守りましょう」",
+          variation_target: "Fair point, but let's stick to the original schedule for now.",
+          variation_hint_parts: '"the original schedule"（当初の予定）と "for now"（今のところは）を型に組み合わせるだけ！',
+          variation_chunks: ["Fair point,", "but let's stick to", "the original schedule", "for now."]
+        },
+        {
+          variation_prompt_jp: "【コア要件への集中】「ごもっともですが、まずは最優先の要件に絞りましょう」",
+          variation_target: "Fair point, but let's stick to our core priorities first.",
+          variation_hint_parts: '"our core priorities"（最優先事項）と "first"（まずは）を型に組み合わせるだけ！',
+          variation_chunks: ["Fair point,", "but let's stick to", "our core priorities", "first."]
+        }
+      ];
+    }
+
+    if (patLower.startsWith("let's stick to") || patLower.startsWith("let's focus on")) {
+      return [
+        {
+          variation_prompt_jp: "【進捗優先の維持】「今は当初のスケジュールを守り、予定通り進めましょう」",
+          variation_target: "Let's stick to the original plan and review the results next week.",
+          variation_hint_parts: '"the original plan"（当初計画）と "review the results next week"（来週確認）を組み合わせるだけ！',
+          variation_chunks: ["Let's stick to", "the original plan", "and review the results", "next week."]
+        },
+        {
+          variation_prompt_jp: "【最優先要件の推進】「まずは最重要の成果物に絞って集中しましょう」",
+          variation_target: "Let's focus on the core deliverables before adding new tasks.",
+          variation_hint_parts: '"the core deliverables"（中核成果物）と "before adding new tasks"（追加前）を組み合わせるだけ！',
+          variation_chunks: ["Let's focus on", "the core deliverables", "before adding", "new tasks."]
+        }
+      ];
+    }
+
     if (patLower.startsWith("i suggest") || patLower.startsWith("we recommend")) {
       return [
         {
@@ -4818,15 +4852,34 @@
 
     // 2. 辞書外の未知パターンに対する、高精度な文脈別スロット置換エンジン
     const replaceSlots = (pat, config) => {
-      let res = pat;
-      let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
-      res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
-      res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
-      res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
-      res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
-      res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
-      res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
-      res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+      let res = pat.trim().replace(/\.\.\.$/, '').trim();
+      if (res.includes('[')) {
+        let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
+        res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
+        res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
+        res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
+        res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
+        res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
+        res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
+        res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+      } else {
+        // 角括弧がない接頭辞・型フレーズの場合、文構造を自動補完して完全な英文（10語前後）にする
+        const lower = res.toLowerCase();
+        if (/\b(?:to|on|for|with|about|in|at|of|into|from)$/i.test(lower)) {
+          res = `${res} ${config.nouns[0]} ${config.times[0]}`;
+        } else if (/\b(?:that|if|whether|because|although|while)$/i.test(lower)) {
+          res = `${res} ${config.clauses[0]}`;
+        } else if (/\b(?:need to|have to|should|could|can|will|would like to|let's|must)$/i.test(lower)) {
+          res = `${res} ${config.verbs[0]} ${config.times[0]}`;
+        } else if (/\b(?:but|and|so|however)$/i.test(lower) || lower.endsWith(',')) {
+          res = `${res} we should ${config.verbs[0]} ${config.times[0]}`;
+        } else {
+          const wordCount = lower.split(/\s+/).filter(Boolean).length;
+          if (wordCount < 5) {
+            res = `${res} so that we can ${config.goals[0]}`;
+          }
+        }
+      }
       res = res.trim();
       if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
       return res;
@@ -4881,14 +4934,19 @@
     const patternStem = getClientPatternStem(stageData?.key_pattern);
     let rawVariations = Array.isArray(stageData?.variations) && stageData.variations.length > 0 ? stageData.variations : [];
     
-    // Validate that variations strictly match this stage's key pattern stem AND are not dummy phrases
+    // Validate that variations strictly match this stage's key pattern stem AND are complete sentences (not just key pattern)
     let validVariations = rawVariations.filter(v => {
       if (!v || !v.variation_target) return false;
       const targetLower = v.variation_target.toLowerCase().trim();
-      // "to this" などのダミー置換や、元のターゲット英文と全く同じ文、短すぎる文を排除
-      if (targetLower.includes('to this') || targetLower.includes('possible to this') || targetLower.endsWith(' to this.') || targetLower.endsWith(' to this?')) {
-        return false;
-      }
+      const wordCount = targetLower.split(/\s+/).filter(Boolean).length;
+      // 型だけの不完全文（単語数4語以下、または24文字未満）やダミー文を排除
+      if (wordCount <= 4 || targetLower.length < 24) return false;
+      if (targetLower.includes('to this') || targetLower.endsWith(' to this.') || targetLower.endsWith(' to this?')) return false;
+
+      const cleanPat = (stageData?.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanTarget = targetLower.replace(/[^a-z0-9]/g, '');
+      if (cleanPat.length > 0 && cleanPat === cleanTarget) return false;
+
       if (targetLower === (stageData?.target || '').toLowerCase().trim()) return false;
       if (!patternStem) return true;
       return targetLower.includes(patternStem);
@@ -4904,6 +4962,10 @@
         stageData?.key_pattern_jp,
         stageData?.target
       );
+      // stageData 本体の variations も最新の完全版に即時更新・修復
+      if (stageData) {
+        stageData.variations = variations;
+      }
     }
 
     drillState = variations.map((v, vIdx) => {
@@ -4936,6 +4998,13 @@
   function renderDrillPhaseUI() {
     const container = document.getElementById('drillVariationsContainer');
     if (!container) return;
+
+    if (!drillState || drillState.length === 0 || drillState.some(d => !d.target || d.target.length < 24 || d.pool.length < 2)) {
+      const current = scenarios && scenarios[currentStageIndex];
+      if (current) {
+        initDrillForCurrentStage(current);
+      }
+    }
 
     if (!drillState || drillState.length === 0) {
       container.innerHTML = '<div style="font-size:12px; color:#64748b; padding:10px;">ドリル問題の準備中です...</div>';
@@ -5366,6 +5435,25 @@
       data.key_pattern = pInfo.key_pattern;
       data.key_pattern_jp = pInfo.key_pattern_jp;
       data.parts_hint = pInfo.parts_hint;
+    }
+
+    // variations（応用ドリル）が型だけになっていないか・破損していないかを検証して修復
+    const vList = data.variations || [];
+    const isBrokenV = vList.length < 2 || 
+      vList.some(v => {
+        if (!v || !v.variation_target) return true;
+        const t = v.variation_target.trim().toLowerCase();
+        const words = t.split(/\s+/).filter(Boolean);
+        if (words.length <= 4 || t.length < 24) return true;
+        if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+        const cleanP = (data.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanT = t.replace(/[^a-z0-9]/g, '');
+        if (cleanP.length > 0 && cleanP === cleanT) return true;
+        return false;
+      }) ||
+      (vList[0]?.variation_target === vList[1]?.variation_target);
+    if (isBrokenV) {
+      data.variations = synthesizeClientPatternVariations(data.key_pattern, data.key_pattern_jp, data.target);
     }
 
     if (trainingMode === 'sim') {
@@ -6189,7 +6277,17 @@
       : (item.variations && item.variations.length > 0 ? item.variations : null);
     
     const isBrokenVars = !variations || variations.length < 2 ||
-      variations.some(v => !v || !v.variation_target || v.variation_target.includes('to this') || v.variation_target.length < 12) ||
+      variations.some(v => {
+        if (!v || !v.variation_target) return true;
+        const t = v.variation_target.trim().toLowerCase();
+        const words = t.split(/\s+/).filter(Boolean);
+        if (words.length <= 4 || t.length < 24) return true;
+        if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+        const cleanP = (patternInfo.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanT = t.replace(/[^a-z0-9]/g, '');
+        if (cleanP.length > 0 && cleanP === cleanT) return true;
+        return false;
+      }) ||
       (variations[0]?.variation_target === variations[1]?.variation_target);
 
     if (isBrokenVars) {
@@ -7263,7 +7361,17 @@
           }
           const vList = stage.variations || [];
           const isBrokenV = vList.length < 2 || 
-            vList.some(v => !v || !v.variation_target || v.variation_target.includes('to this') || v.variation_target.length < 12) ||
+            vList.some(v => {
+              if (!v || !v.variation_target) return true;
+              const t = v.variation_target.trim().toLowerCase();
+              const words = t.split(/\s+/).filter(Boolean);
+              if (words.length <= 4 || t.length < 24) return true;
+              if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+              const cleanP = (stage.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+              const cleanT = t.replace(/[^a-z0-9]/g, '');
+              if (cleanP.length > 0 && cleanP === cleanT) return true;
+              return false;
+            }) ||
             (vList[0]?.variation_target === vList[1]?.variation_target);
           if (isBrokenV) {
             stage.variations = synthesizeClientPatternVariations(stage.key_pattern, stage.key_pattern_jp, stage.target);
@@ -7328,7 +7436,17 @@
           }
           const vList = stage.variations || [];
           const isBrokenV = vList.length < 2 || 
-            vList.some(v => !v || !v.variation_target || v.variation_target.includes('to this') || v.variation_target.length < 12) ||
+            vList.some(v => {
+              if (!v || !v.variation_target) return true;
+              const t = v.variation_target.trim().toLowerCase();
+              const words = t.split(/\s+/).filter(Boolean);
+              if (words.length <= 4 || t.length < 24) return true;
+              if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+              const cleanP = (stage.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+              const cleanT = t.replace(/[^a-z0-9]/g, '');
+              if (cleanP.length > 0 && cleanP === cleanT) return true;
+              return false;
+            }) ||
             (vList[0]?.variation_target === vList[1]?.variation_target);
           if (isBrokenV) {
             stage.variations = synthesizeClientPatternVariations(stage.key_pattern, stage.key_pattern_jp, stage.target);

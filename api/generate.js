@@ -254,6 +254,40 @@ function synthesizePatternVariations(pattern, patternJp, target) {
     ];
   }
 
+  if (patLower.startsWith("fair point") || patLower.startsWith("good point") || patLower.startsWith("that makes sense") || patLower.startsWith("that's a good point")) {
+    return [
+      {
+        variation_prompt_jp: "【スケジュール厳守の優先】「ごもっともですが、まずは当初のスケジュールを守りましょう」",
+        variation_target: "Fair point, but let's stick to the original schedule for now.",
+        variation_hint_parts: '"the original schedule"（当初の予定）と "for now"（今のところは）を型に組み合わせるだけ！',
+        variation_chunks: ["Fair point,", "but let's stick to", "the original schedule", "for now."]
+      },
+      {
+        variation_prompt_jp: "【コア要件への集中】「ごもっともですが、まずは最優先の要件に絞りましょう」",
+        variation_target: "Fair point, but let's stick to our core priorities first.",
+        variation_hint_parts: '"our core priorities"（最優先事項）と "first"（まずは）を型に組み合わせるだけ！',
+        variation_chunks: ["Fair point,", "but let's stick to", "our core priorities", "first."]
+      }
+    ];
+  }
+
+  if (patLower.startsWith("let's stick to") || patLower.startsWith("let's focus on")) {
+    return [
+      {
+        variation_prompt_jp: "【進捗優先の維持】「今は当初のスケジュールを守り、予定通り進めましょう」",
+        variation_target: "Let's stick to the original plan and review the results next week.",
+        variation_hint_parts: '"the original plan"（当初計画）と "review the results next week"（来週確認）を組み合わせるだけ！',
+        variation_chunks: ["Let's stick to", "the original plan", "and review the results", "next week."]
+      },
+      {
+        variation_prompt_jp: "【最優先要件の推進】「まずは最重要の成果物に絞って集中しましょう」",
+        variation_target: "Let's focus on the core deliverables before adding new tasks.",
+        variation_hint_parts: '"the core deliverables"（中核成果物）と "before adding new tasks"（追加前）を組み合わせるだけ！',
+        variation_chunks: ["Let's focus on", "the core deliverables", "before adding", "new tasks."]
+      }
+    ];
+  }
+
   if (patLower.startsWith("i suggest") || patLower.startsWith("we recommend")) {
     return [
       {
@@ -273,15 +307,34 @@ function synthesizePatternVariations(pattern, patternJp, target) {
 
   // 2. 上記辞書にない未知の型に対する、高精度な文脈別スロット置換エンジン
   const replaceSlots = (pat, config) => {
-    let res = pat;
-    let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
-    res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
-    res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
-    res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
-    res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
-    res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
-    res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
-    res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+    let res = pat.trim().replace(/\.\.\.$/, '').trim();
+    if (res.includes('[')) {
+      let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
+      res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
+      res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
+      res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
+      res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
+      res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
+      res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
+      res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+    } else {
+      // 角括弧がない接頭辞・型フレーズの場合、文構造を自動補完して完全な英文（10語前後）にする
+      const lower = res.toLowerCase();
+      if (/\b(?:to|on|for|with|about|in|at|of|into|from)$/i.test(lower)) {
+        res = `${res} ${config.nouns[0]} ${config.times[0]}`;
+      } else if (/\b(?:that|if|whether|because|although|while)$/i.test(lower)) {
+        res = `${res} ${config.clauses[0]}`;
+      } else if (/\b(?:need to|have to|should|could|can|will|would like to|let's|must)$/i.test(lower)) {
+        res = `${res} ${config.verbs[0]} ${config.times[0]}`;
+      } else if (/\b(?:but|and|so|however)$/i.test(lower) || lower.endsWith(',')) {
+        res = `${res} we should ${config.verbs[0]} ${config.times[0]}`;
+      } else {
+        const wordCount = lower.split(/\s+/).filter(Boolean).length;
+        if (wordCount < 5) {
+          res = `${res} so that we can ${config.goals[0]}`;
+        }
+      }
+    }
     res = res.trim();
     if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
     return res;
@@ -834,11 +887,20 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
           const patternStem = getPatternStem(sc.key_pattern);
           let rawVariations = Array.isArray(sc.variations) && sc.variations.length > 0 ? sc.variations : [];
           
-          // Only keep variations that actually contain the key pattern stem
+          // Only keep variations that actually contain the key pattern stem and are complete sentences (not just the pattern)
           let validVariations = rawVariations.filter(v => {
             if (!v || !v.variation_target) return false;
+            const targetLower = v.variation_target.toLowerCase().trim();
+            const wordCount = targetLower.split(/\s+/).filter(Boolean).length;
+            if (wordCount <= 4 || targetLower.length < 24) return false;
+            if (targetLower.includes('to this') || targetLower.endsWith(' to this.') || targetLower.endsWith(' to this?')) return false;
+
+            const cleanPat = (sc.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const cleanTarget = targetLower.replace(/[^a-z0-9]/g, '');
+            if (cleanPat.length > 0 && cleanPat === cleanTarget) return false;
+
             if (!patternStem) return true;
-            return v.variation_target.toLowerCase().includes(patternStem);
+            return targetLower.includes(patternStem);
           });
 
           // If valid variations are insufficient, synthesize matching variations directly from key_pattern
