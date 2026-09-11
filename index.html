@@ -2470,15 +2470,298 @@
       cursor: not-allowed;
     }
 
-    /* 終了サマリーカード */
-    .roleplay-summary-card {
-      background: #ffffff;
-      border: 2px solid #10b981;
-      border-radius: 12px;
+    /* デイリーフォーカス（今日の1レッスン）カード */
+    .daily-focus-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1.5px solid #334155;
+      border-radius: 14px;
       padding: 16px;
-      margin-top: 12px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+      margin-bottom: 14px;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    .daily-focus-card::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .daily-focus-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .daily-focus-pill {
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .daily-focus-time {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .daily-focus-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .daily-focus-meta {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+    .daily-focus-pattern-box {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 11.5px;
+    }
+    .daily-focus-pattern-box b {
+      color: #38bdf8;
+    }
+    .btn-daily-focus-start {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 9px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 3px 8px rgba(37,99,235,0.35);
+      transition: all 0.15s ease;
+    }
+    .btn-daily-focus-start:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      transform: translateY(-1px);
+    }
+
+    /* 音声スピーキング判定エリア */
+    .speaking-eval-section {
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
       text-align: center;
+    }
+    .speaking-eval-section.listening {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    .btn-speech-record {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #1e293b;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 9999px;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+      transition: all 0.15s ease;
+    }
+    .btn-speech-record.recording {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #dc2626;
+      animation: genPulse 1.3s infinite ease-in-out;
+    }
+    .speaking-transcript-box {
+      margin-top: 10px;
+      font-size: 13px;
+      min-height: 28px;
+      color: #1e293b;
+      font-weight: 600;
+      padding: 6px 10px;
+      background: #ffffff;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      line-height: 1.4;
+    }
+    .speaking-word-tokens {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .word-token {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      line-height: 1.3;
+    }
+    .word-token.matched {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+    .word-token.missed {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .word-token.pending {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+    }
+
+    /* 弱点カルテ＆ヒートマップ (Analytics View) */
+    .carte-header-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .carte-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .carte-sub {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-top: 3px;
+    }
+    .ai-diagnosis-box {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .ai-diagnosis-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #1d4ed8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    .ai-diagnosis-text {
+      font-size: 11.5px;
+      color: #1e3a8a;
+      line-height: 1.45;
+    }
+
+    /* 30日学習ヒートマップ (GitHub風) */
+    .heatmap-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    .heatmap-cell:hover {
+      transform: scale(1.15);
+      z-index: 2;
+    }
+    .heatmap-cell.level-0 { background: #f1f5f9; border-color: #e2e8f0; }
+    .heatmap-cell.level-1 { background: #bbf7d0; border-color: #86efac; }
+    .heatmap-cell.level-2 { background: #4ade80; border-color: #22c55e; }
+    .heatmap-cell.level-3 { background: #16a34a; border-color: #15803d; }
+    .heatmap-cell.level-4 { background: #14532d; border-color: #052e16; }
+
+    /* トピック別カルテリスト */
+    .topic-stat-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .topic-stat-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .topic-stat-name {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .topic-stat-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .topic-stat-bar-track {
+      background: #e2e8f0;
+      height: 6px;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .topic-stat-bar-fill {
+      height: 100%;
+      background: #2563eb;
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+    .topic-stat-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: #64748b;
     }
   </style>
 </head>
@@ -2599,9 +2882,20 @@
 
   <!-- 1. ホームビュー (トピック選択＆レッスン＋実践ハブ) -->
   <div id="viewHome">
-    <div class="home-card">
-      <div class="home-title">実践Plain English トレーニング</div>
-      <div class="home-sub">トピックを絞って生成することで精度が向上。万能な「型」をインプットしてから、中学単語を組み合わせたアウトプットに挑戦します。</div>
+    <!-- 🎯 本日のデイリーフォーカス（今日の1レッスン: 迷わず3分で即スタート） -->
+    <div class="daily-focus-card" id="dailyFocusCard">
+      <div class="daily-focus-badge-row">
+        <span class="daily-focus-pill">🎯 今日の1レッスン</span>
+        <span class="daily-focus-time" id="dailyFocusTimeText">⏱️ 所要時間: 約3分 (全5問)</span>
+      </div>
+      <div class="daily-focus-title" id="dailyFocusTitle">「納期・スコープ交渉」×「I see your point, but...」</div>
+      <div class="daily-focus-meta" id="dailyFocusMeta">相手の意見を受け止めつつ、角を立てずにこちらの条件・現実的な納期を提示する万能の型を身体に染み込ませます。</div>
+      <div class="daily-focus-pattern-box" id="dailyFocusPatternBox">
+        💡 今日の重要型: <b>I see your point, but [文]</b> （おっしゃることは分かりますが、〜）
+      </div>
+      <button class="btn-daily-focus-start" id="btnDailyFocusStart" onclick="startDailyFocusSession()">
+        <span id="btnDailyFocusStartText">🚀 今日のデイリーレッスンを開始する</span>
+      </button>
     </div>
 
     <!-- 忘却曲線 (Spaced Repetition) 自動レコメンドカード -->
@@ -2974,9 +3268,12 @@
 
       <!-- アウトプット回答エリア (並び替え / 3択 切替可能) -->
       <div id="outputArea">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
           <span style="font-size:12px; font-weight:800; color:#1e293b;" id="outputSectionTitle">🧩 並び替えて文章を作成</span>
-          <button class="ctrl-btn" id="btnToggleOutputMode" onclick="toggleAnswerMode()">📝 3択モードで解く</button>
+          <div style="display:flex; gap:5px;">
+            <button class="ctrl-btn" id="btnToggleOutputMode" onclick="toggleAnswerMode()">📝 3択モードで解く</button>
+            <button class="ctrl-btn" id="btnToggleSpeakingMode" onclick="toggleSpeakingMode()" style="background:#f0fdf4; color:#166534; border-color:#bbf7d0;">🎙️ 声に出して解答</button>
+          </div>
         </div>
 
         <!-- A. チャンク並び替えビルダー -->
@@ -3011,6 +3308,26 @@
           <button class="choice-btn" onclick="checkChoice(0)" id="choice0"></button>
           <button class="choice-btn" onclick="checkChoice(1)" id="choice1"></button>
           <button class="choice-btn" onclick="checkChoice(2)" id="choice2"></button>
+        </div>
+
+        <!-- C. 音声スピーキング判定モード (声に出して型とパーツを言う) -->
+        <div id="speakingSection" class="speaking-eval-section" style="display:none;">
+          <div style="font-size:12px; font-weight:800; color:#0f172a; margin-bottom:4px;">
+            🗣️ 音声認識スピーキング判定
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-bottom:10px;">
+            マイクをONにして、覚えた「型」と中学パーツを使って英語を声に出してください。
+          </div>
+          <button class="btn-speech-record" id="btnSpeakingRecord" onclick="toggleSpeakingEvaluation()">
+            🎙️ マイクを押して発話開始
+          </button>
+          <div class="speaking-transcript-box" id="speakingTranscript">
+            （マイクを押して英語を話すと、ここにリアルタイム認識されます）
+          </div>
+          <div class="speaking-word-tokens" id="speakingWordTokens">
+            <!-- 単語単位のハイライトチップ -->
+          </div>
+          <div id="speakingFeedbackMsg" style="font-size:11.5px; margin-top:8px; font-weight:700; color:#2563eb; display:none;"></div>
         </div>
       </div>
     </div>
@@ -3346,6 +3663,73 @@
     </div>
   </div>
 
+  <!-- 7. 弱点カルテ＆学習ヒートマップ（アナリティクス）ビュー -->
+  <div id="viewAnalytics" style="display: none; padding-bottom: 90px;">
+    <!-- カルテヘッダー -->
+    <div class="carte-header-card">
+      <div class="carte-title">
+        <span>📊</span> 弱点カルテ＆成長アナリティクス
+      </div>
+      <div class="carte-sub">シチュエーション別の瞬発力・正答率と、毎日の継続記録を可視化します。</div>
+      
+      <!-- AI弱点診断アドバイス -->
+      <div class="ai-diagnosis-box" id="aiDiagnosisBox">
+        <div class="ai-diagnosis-title">
+          <span>💡</span> AI弱点診断 & 改善アクション
+        </div>
+        <div class="ai-diagnosis-text" id="aiDiagnosisText">
+          データ集計中... クイズを解くほど、あなたが詰まりやすい「型」とシチュエーションの傾向が精密に分析されます。
+        </div>
+        <div style="margin-top: 8px;" id="aiDiagnosisActionArea">
+          <!-- 苦手トピック集中特訓ボタン -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 過去30日間 継続ヒートマップ -->
+    <div class="heatmap-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 13px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 5px;">
+          <span>🌱</span> 過去30日間の学習ヒートマップ
+        </div>
+        <span style="font-size: 11px; color: #64748b;" id="heatmapSummaryText">今月: 0日学習</span>
+      </div>
+      <div class="heatmap-grid" id="heatmapGrid">
+        <!-- JSで30日分のセルを動的生成 -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 8px; font-size: 10px; color: #64748b;">
+        <span>Less</span>
+        <span class="heatmap-cell level-0" style="width: 10px; height: 10px; display: inline-block;"></span>
+        <span class="heatmap-cell level-1" style="width: 10px; height: 10px; display: inline-block;"></span>
+        <span class="heatmap-cell level-2" style="width: 10px; height: 10px; display: inline-block;"></span>
+        <span class="heatmap-cell level-3" style="width: 10px; height: 10px; display: inline-block;"></span>
+        <span class="heatmap-cell level-4" style="width: 10px; height: 10px; display: inline-block;"></span>
+        <span>More</span>
+      </div>
+    </div>
+
+    <!-- シチュエーション別・反応速度カルテ -->
+    <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+      <span>🎯</span> シチュエーション別カルテ（正答率 & 平均反応速度）
+    </div>
+    <div id="topicCarteList">
+      <!-- JSでトピック別統計を動的生成 -->
+    </div>
+
+    <!-- 補助メニュー（耳トレ・過去履歴へのリンク） -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-top: 14px;">
+      <div style="font-size: 12px; font-weight: 800; color: #334155; margin-bottom: 6px;">📂 その他の学習ツール</div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" style="flex: 1; padding: 8px; font-size: 12px;" onclick="switchTab('script')">
+          🎧 耳トレ・音読特化 ➔
+        </button>
+        <button class="btn-action" style="flex: 1; padding: 8px; font-size: 12px;" onclick="switchTab('history')">
+          📁 過去の生成履歴 ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div> <!-- /.container -->
 
 <!-- フラッシュカード（瞬間想起トレーニング）モーダル -->
@@ -3397,7 +3781,7 @@
   </div>
 </div>
 
-<!-- 固定ボトムナビゲーションバー -->
+<!-- 固定ボトムナビゲーションバー (厳選5タブ) -->
 <div class="bottom-nav">
   <button class="nav-item active" id="navHome" onclick="switchTab('home')">
     <div class="nav-icon">🏠</div>
@@ -3405,19 +3789,15 @@
   </button>
   <button class="nav-item" id="navPlay" onclick="switchTab('play')">
     <div class="nav-icon">🎮</div>
-    <div>クイズ</div>
+    <div>レッスン</div>
   </button>
   <button class="nav-item" id="navRoleplay" onclick="switchTab('roleplay')">
     <div class="nav-icon">💬</div>
-    <div>ラリー</div>
+    <div>AIラリー</div>
   </button>
-  <button class="nav-item" id="navScript" onclick="switchTab('script')">
-    <div class="nav-icon">🎧</div>
-    <div>耳トレ</div>
-  </button>
-  <button class="nav-item" id="navHistory" onclick="switchTab('history')">
-    <div class="nav-icon">📁</div>
-    <div>履歴</div>
+  <button class="nav-item" id="navAnalytics" onclick="switchTab('analytics')">
+    <div class="nav-icon">📊</div>
+    <div>カルテ</div>
   </button>
   <button class="nav-item" id="navLibrary" onclick="switchTab('library')">
     <div class="nav-icon">📚</div>
@@ -3557,6 +3937,62 @@
     }
 
     resumeCard.style.display = 'block';
+  }
+
+  // 🎯 本日のデイリーフォーカス（曜日・進捗連動の推奨3分レッスン）
+  const DAILY_FOCUS_SCHEDULE = [
+    { topic: 'pushback', title: '「納期・スコープ交渉」×「I see your point, but...」', formula: 'I see your point, but [文]', patternJp: 'おっしゃることは分かりますが、〜', meta: '相手の意見を受け止めつつ、角を立てずにこちらの条件・現実的な納期を提示する万能の型。' },
+    { topic: 'clarify', title: '「曖昧な指示の確認」×「Could you clarify...?」', formula: 'Could you clarify [名詞/文]?', patternJp: '〜についてもう少し具体的にご教示いただけますか？', meta: '手戻りを防ぎ、依頼内容や優先順位をスマートにすり合わせる必須の型。' },
+    { topic: 'issue', title: '「トラブル対応・持ち帰り」×「Let me look into this...」', formula: 'Let me look into this and get back to you by [日時].', patternJp: 'こちらで調査の上、〜までに回答いたします。', meta: '会議で焦って即答せず、信頼を保ちながら期日を約束する防衛の型。' },
+    { topic: 'meeting', title: '「会議進行・議論整理」×「Before we move on...」', formula: 'Before we move on, can we agree on [点]?', patternJp: '次のアジェンダに移る前に、〜について合意をとれますか？', meta: '議論の発散や脱線を防ぎ、決定事項をその場で固めるファシリテーションの型。' },
+    { topic: 'negotiation', title: '「タフな交渉・利害調整」×「If you can..., we can...」', formula: 'If you can [条件], we can [条件].', patternJp: 'そちらが〜していただければ、こちらは〜できます。', meta: '妥協点を見出し、Give & Takeで双方が納得する合意を取り付ける型。' },
+    { topic: 'clinical', title: '「臨床開発・製薬実務」×「To ensure compliance...」', formula: 'To ensure compliance, we need to [動詞].', patternJp: 'コンプライアンス（手順）を担保するため、〜する必要があります。', meta: 'プロトコルや手順書の遵守を、誤解なく相手に伝える実務の型。' },
+    { topic: 'all', title: '「週末・総合プレッシャー特訓」×「全シチュエーション」', formula: '万能基本動詞（have / get / make / let）の型', patternJp: '全トピックからAIが厳選出題', meta: '平日に鍛えた型をランダムな実戦状況でテストし、瞬発力を定着させます。' }
+  ];
+
+  function getTodayDailyFocus() {
+    const dayOfWeek = new Date().getDay(); // 0: Sun ... 6: Sat
+    return DAILY_FOCUS_SCHEDULE[dayOfWeek] || DAILY_FOCUS_SCHEDULE[0];
+  }
+
+  function initDailyFocusCard() {
+    const card = document.getElementById('dailyFocusCard');
+    if (!card) return;
+
+    const focus = getTodayDailyFocus();
+    const stats = getStats();
+    const todayAnswered = getTodayAnsweredCount(stats);
+    const isGoalAchieved = todayAnswered >= 5;
+
+    const titleEl = document.getElementById('dailyFocusTitle');
+    const metaEl = document.getElementById('dailyFocusMeta');
+    const patternBox = document.getElementById('dailyFocusPatternBox');
+    const timeEl = document.getElementById('dailyFocusTimeText');
+    const btnText = document.getElementById('btnDailyFocusStartText');
+    const btn = document.getElementById('btnDailyFocusStart');
+
+    if (titleEl) titleEl.innerText = focus.title;
+    if (metaEl) metaEl.innerText = focus.meta;
+    if (patternBox) {
+      patternBox.innerHTML = `💡 本日の重要型: <b>${escapeHtml(focus.formula)}</b> <span style="color:#94a3b8; font-size:11px;">(${escapeHtml(focus.patternJp)})</span>`;
+    }
+
+    if (isGoalAchieved) {
+      if (timeEl) timeEl.innerHTML = `🎉 本日のデイリー目標達成！ (${todayAnswered}/5問クリア)`;
+      if (btnText) btnText.innerText = `🔄 今日のレッスンをもう一度復習する (本日 ${todayAnswered}問済)`;
+      if (btn) btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+    } else {
+      if (timeEl) timeEl.innerHTML = `⏱️ 所要時間: 約3分 (進捗: ${todayAnswered}/5問)`;
+      if (btnText) btnText.innerText = `🚀 今日のデイリーレッスンを開始する (残り ${5 - todayAnswered}問)`;
+      if (btn) btn.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+    }
+  }
+
+  function startDailyFocusSession() {
+    const focus = getTodayDailyFocus();
+    selectTopic(focus.topic);
+    selectMode('quiz');
+    startTargetedSession();
   }
 
   function resumeActiveSession() {
@@ -3984,6 +4420,222 @@
     saveStats(s);
   }
 
+  // 📊 シチュエーション別カルテ & 弱点アナリティクス
+  const TOPIC_METRIC_CONFIG = {
+    pushback: { name: '納期・スコープ交渉', icon: '✋', formula: 'I see your point, but [文]' },
+    clarify: { name: '曖昧な指示の確認', icon: '❓', formula: 'Could you clarify [名詞/文]?' },
+    issue: { name: 'トラブル対応・持ち帰り', icon: '⚠️', formula: 'Let me look into this and get back to you by [日時].' },
+    meeting: { name: '会議進行・議論整理', icon: '👥', formula: 'Before we move on, can we agree on [点]?' },
+    negotiation: { name: 'タフな交渉・利害調整', icon: '🤝', formula: 'If you can [条件], we can [条件].' },
+    clinical: { name: '臨床開発・製薬実務', icon: '💊', formula: 'To ensure compliance, we need to [動詞].' }
+  };
+
+  function recordTopicMetric(topic, isCorrect, elapsedSec) {
+    if (!topic || topic === 'all') topic = 'pushback';
+    try {
+      const raw = localStorage.getItem('plain_topic_metrics');
+      const data = raw ? JSON.parse(raw) : {};
+      if (!data[topic]) {
+        data[topic] = { answered: 0, correct: 0, totalSeconds: 0 };
+      }
+      data[topic].answered = (data[topic].answered || 0) + 1;
+      if (isCorrect) data[topic].correct = (data[topic].correct || 0) + 1;
+      const validSec = (typeof elapsedSec === 'number' && elapsedSec > 0 && elapsedSec < 120) ? elapsedSec : 4;
+      data[topic].totalSeconds = (data[topic].totalSeconds || 0) + validSec;
+      localStorage.setItem('plain_topic_metrics', JSON.stringify(data));
+    } catch (e) {
+      console.warn('recordTopicMetric error', e);
+    }
+  }
+
+  function getTopicMetrics() {
+    try {
+      const raw = localStorage.getItem('plain_topic_metrics');
+      const data = raw ? JSON.parse(raw) : {};
+      // 履歴から初期カウントを補間
+      const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      Object.keys(TOPIC_METRIC_CONFIG).forEach(k => {
+        if (!data[k]) {
+          const matchingLogs = history.filter(h => h.topic === k);
+          const ansCount = matchingLogs.reduce((acc, h) => acc + (h.answered || (h.data ? h.data.length : 0)), 0);
+          data[k] = {
+            answered: ansCount,
+            correct: Math.round(ansCount * 0.8),
+            totalSeconds: ansCount * 3.8
+          };
+        }
+      });
+      return data;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function renderAnalyticsView() {
+    const heatmapGrid = document.getElementById('heatmapGrid');
+    const heatmapSummaryText = document.getElementById('heatmapSummaryText');
+    const topicCarteList = document.getElementById('topicCarteList');
+    const aiDiagnosisText = document.getElementById('aiDiagnosisText');
+    const aiDiagnosisActionArea = document.getElementById('aiDiagnosisActionArea');
+
+    // 1. 過去30日間のヒートマップ集計
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const stats = getStats();
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const dayCounts = {};
+
+    // 過去履歴から集計
+    history.forEach(h => {
+      if (h.date) {
+        const parts = h.date.split(' ')[0].split('/');
+        if (parts.length === 2) {
+          const m = parts[0].padStart(2, '0');
+          const d = parts[1].padStart(2, '0');
+          const key = `${new Date().getFullYear()}-${m}-${d}`;
+          dayCounts[key] = (dayCounts[key] || 0) + (h.answered || 5);
+        }
+      }
+    });
+
+    // 今日の回答数を確実に加算
+    dayCounts[todayStr] = Math.max(dayCounts[todayStr] || 0, getTodayAnsweredCount(stats));
+
+    let heatmapCellsHtml = '';
+    let activeDaysThisMonth = 0;
+    const now = new Date();
+
+    for (let i = 29; i >= 0; i--) {
+      const targetDate = new Date();
+      targetDate.setDate(now.getDate() - i);
+      const dateKey = targetDate.toISOString().slice(0, 10);
+      const displayDate = `${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
+      const count = dayCounts[dateKey] || 0;
+
+      if (count > 0 && targetDate.getMonth() === now.getMonth()) {
+        activeDaysThisMonth++;
+      }
+
+      let level = 0;
+      if (count >= 20) level = 4;
+      else if (count >= 10) level = 3;
+      else if (count >= 5) level = 2;
+      else if (count >= 1) level = 1;
+
+      heatmapCellsHtml += `<div class="heatmap-cell level-${level}" title="${displayDate}: ${count}問学習"></div>`;
+    }
+
+    if (heatmapGrid) heatmapGrid.innerHTML = heatmapCellsHtml;
+    if (heatmapSummaryText) {
+      heatmapSummaryText.innerText = `今月: ${activeDaysThisMonth}日学習 (連続 ${stats.streak || 0}日🔥)`;
+    }
+
+    // 2. トピック別カルテ集計
+    const metrics = getTopicMetrics();
+    let topicListHtml = '';
+    let weakestTopic = null;
+    let lowestAccuracy = 999;
+
+    Object.entries(TOPIC_METRIC_CONFIG).forEach(([key, cfg]) => {
+      const m = metrics[key] || { answered: 0, correct: 0, totalSeconds: 0 };
+      const ans = m.answered || 0;
+      const cor = m.correct || 0;
+      const acc = ans > 0 ? Math.round((cor / ans) * 100) : 0;
+      const avgSec = ans > 0 ? (m.totalSeconds / ans).toFixed(1) : '--';
+      const avgSecNum = ans > 0 ? parseFloat(avgSec) : 0;
+
+      // 弱点の判定（回答があり正答率が最も低い、または未受講）
+      if (ans >= 2 && acc < lowestAccuracy) {
+        lowestAccuracy = acc;
+        weakestTopic = { key, cfg, acc, avgSec };
+      } else if (!weakestTopic && ans === 0) {
+        weakestTopic = { key, cfg, acc: 0, avgSec: '--' };
+      }
+
+      let badgeClass = 'badge-weak';
+      let badgeLabel = '⚠️ 要強化';
+      let barColor = '#f59e0b';
+
+      if (ans === 0) {
+        badgeClass = '';
+        badgeLabel = '未受講';
+        barColor = '#cbd5e1';
+      } else if (acc >= 80 && avgSecNum <= 4.5) {
+        badgeClass = 'badge-strong';
+        badgeLabel = '⚡ 瞬発即答';
+        barColor = '#10b981';
+      } else if (acc >= 70) {
+        badgeClass = 'badge-good';
+        badgeLabel = '🎯 順調';
+        barColor = '#2563eb';
+      }
+
+      topicListHtml += `
+        <div class="topic-carte-item">
+          <div class="topic-carte-header">
+            <div class="topic-carte-title">
+              <span>${cfg.icon}</span> ${escapeHtml(cfg.name)}
+            </div>
+            <span class="topic-carte-badge ${badgeClass}">${badgeLabel}</span>
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-bottom:4px;">
+            代表構文: <b>${escapeHtml(cfg.formula)}</b>
+          </div>
+          <div class="topic-bar-bg">
+            <div class="topic-bar-fill" style="width:${ans > 0 ? acc : 0}%; background:${barColor};"></div>
+          </div>
+          <div class="topic-metric-row">
+            <span>正答率: <b>${ans > 0 ? acc + '%' : '--'}</b> (${ans}問解答)</span>
+            <span>平均反応速度: <b>${avgSec !== '--' ? avgSec + '秒' : '--'}</b></span>
+            <button class="topic-practice-btn" onclick="startFocusTopicTraining('${key}')">特訓 ▶</button>
+          </div>
+        </div>
+      `;
+    });
+
+    if (topicCarteList) topicCarteList.innerHTML = topicListHtml;
+
+    // 3. AI弱点診断 & 改善アクションの表示
+    if (weakestTopic) {
+      if (aiDiagnosisText) {
+        if (weakestTopic.acc === 0) {
+          aiDiagnosisText.innerHTML = `
+            現在、<b>「${escapeHtml(weakestTopic.cfg.name)}」</b>の学習履歴がまだありません。<br>
+            実務で慌てないために、まずは代表構文 <b>${escapeHtml(weakestTopic.cfg.formula)}</b> の反射トレーニングから始めましょう。
+          `;
+        } else {
+          aiDiagnosisText.innerHTML = `
+            現在、<b>「${escapeHtml(weakestTopic.cfg.name)}」</b>の正答率が <b>${weakestTopic.acc}%</b>（平均反応速度: ${weakestTopic.avgSec}秒）と迷いが生じやすい傾向です。<br>
+            基本の型 <b>${escapeHtml(weakestTopic.cfg.formula)}</b> を意識して声に出すことで、会議での沈黙をゼロにできます。
+          `;
+        }
+      }
+      if (aiDiagnosisActionArea) {
+        aiDiagnosisActionArea.innerHTML = `
+          <button class="btn-check-builder" style="margin-top:0; padding:9px 14px; font-size:12.5px; background:#2563eb;" onclick="startFocusTopicTraining('${weakestTopic.key}')">
+            🚀 「${escapeHtml(weakestTopic.cfg.name)}」を集中特訓する
+          </button>
+        `;
+      }
+    } else {
+      if (aiDiagnosisText) {
+        aiDiagnosisText.innerHTML = `全トピックで高い瞬発力と正答率を維持できています！AIラリー対話や音読特化でさらに流暢性を磨きましょう。`;
+      }
+      if (aiDiagnosisActionArea) {
+        aiDiagnosisActionArea.innerHTML = `
+          <button class="btn-check-builder" style="margin-top:0; padding:9px 14px; font-size:12.5px; background:#059669;" onclick="switchTab('roleplay')">
+            💬 AIラリー対話で実践する
+          </button>
+        `;
+      }
+    }
+  }
+
+  function startFocusTopicTraining(topicKey) {
+    selectTopic(topicKey);
+    selectMode('quiz');
+    startTargetedSession();
+  }
+
   function showStats() {
     const s = getStats();
     const todayAnswered = getTodayAnsweredCount(s);
@@ -4082,24 +4734,27 @@
 
   function switchTab(tabName) {
     currentTab = tabName;
-    document.getElementById('navHome').classList.toggle('active', tabName === 'home');
-    document.getElementById('navPlay').classList.toggle('active', tabName === 'play');
+    if (document.getElementById('navHome')) document.getElementById('navHome').classList.toggle('active', tabName === 'home');
+    if (document.getElementById('navPlay')) document.getElementById('navPlay').classList.toggle('active', tabName === 'play');
     if (document.getElementById('navRoleplay')) document.getElementById('navRoleplay').classList.toggle('active', tabName === 'roleplay');
-    document.getElementById('navScript').classList.toggle('active', tabName === 'script');
-    document.getElementById('navHistory').classList.toggle('active', tabName === 'history');
-    document.getElementById('navLibrary').classList.toggle('active', tabName === 'library');
+    if (document.getElementById('navAnalytics')) document.getElementById('navAnalytics').classList.toggle('active', tabName === 'analytics');
+    if (document.getElementById('navScript')) document.getElementById('navScript').classList.toggle('active', tabName === 'script');
+    if (document.getElementById('navHistory')) document.getElementById('navHistory').classList.toggle('active', tabName === 'history');
+    if (document.getElementById('navLibrary')) document.getElementById('navLibrary').classList.toggle('active', tabName === 'library');
 
-    document.getElementById('viewHome').style.display = tabName === 'home' ? 'block' : 'none';
-    document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
+    if (document.getElementById('viewHome')) document.getElementById('viewHome').style.display = tabName === 'home' ? 'block' : 'none';
+    if (document.getElementById('viewPlay')) document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
     if (document.getElementById('viewRoleplay')) document.getElementById('viewRoleplay').style.display = tabName === 'roleplay' ? 'block' : 'none';
-    document.getElementById('viewScript').style.display = tabName === 'script' ? 'block' : 'none';
-    document.getElementById('viewHistory').style.display = tabName === 'history' ? 'block' : 'none';
-    document.getElementById('viewLibrary').style.display = tabName === 'library' ? 'block' : 'none';
+    if (document.getElementById('viewAnalytics')) document.getElementById('viewAnalytics').style.display = tabName === 'analytics' ? 'block' : 'none';
+    if (document.getElementById('viewScript')) document.getElementById('viewScript').style.display = tabName === 'script' ? 'block' : 'none';
+    if (document.getElementById('viewHistory')) document.getElementById('viewHistory').style.display = tabName === 'history' ? 'block' : 'none';
+    if (document.getElementById('viewLibrary')) document.getElementById('viewLibrary').style.display = tabName === 'library' ? 'block' : 'none';
 
     if (tabName === 'script') renderScript();
     if (tabName === 'history') renderHistory();
     if (tabName === 'library') renderLibrary();
     if (tabName === 'roleplay') initRoleplayIfNeeded();
+    if (tabName === 'analytics') renderAnalyticsView();
     
     if (tabName !== 'play') {
       stopSimTimer();
@@ -4108,6 +4763,7 @@
     if (tabName === 'home') {
       updateResumeCardUI(); // ホームに戻った際に「続きから再開」カードを最新化
       updateSrsRecommendUI(); // 忘却曲線レコメンドカードを最新化
+      initDailyFocusCard(); // デイリー推奨レッスンカードを最新化
     }
     if (tabName !== 'script' && isHandsFree) toggleHandsFree();
     updateDashboard();
@@ -4605,6 +5261,7 @@
     }
     updateDashboard();
     updateResumeCardUI();
+    initDailyFocusCard();
 
     // Global exposure for Firebase Sync callbacks
     window.updateDashboard = updateDashboard;
@@ -4612,6 +5269,8 @@
     window.renderHistory = renderHistory;
     window.populateScriptLogSelect = populateScriptLogSelect;
     window.populateQuickModeSelect = populateQuickModeSelect;
+    window.initDailyFocusCard = initDailyFocusCard;
+    window.renderAnalyticsView = renderAnalyticsView;
     window.startLibraryQuiz = startLibraryQuiz;
     window.startSinglePhraseQuiz = startSinglePhraseQuiz;
     window.setLibraryFilterTopic = setLibraryFilterTopic;
@@ -5635,25 +6294,59 @@
   }
 
   function toggleAnswerMode() {
-    currentAnswerMode = (currentAnswerMode === 'builder') ? 'choice' : 'builder';
+    if (currentAnswerMode === 'speaking') {
+      currentAnswerMode = 'builder';
+    } else {
+      currentAnswerMode = (currentAnswerMode === 'builder') ? 'choice' : 'builder';
+    }
+    applyAnswerModeUI();
+  }
+
+  function toggleSpeakingMode() {
+    currentAnswerMode = (currentAnswerMode === 'speaking') ? 'builder' : 'speaking';
     applyAnswerModeUI();
   }
 
   function applyAnswerModeUI() {
     const builderSection = document.getElementById('chunkBuilderSection');
     const choiceSection = document.getElementById('choiceSection');
+    const speakingSection = document.getElementById('speakingSection');
     const toggleBtn = document.getElementById('btnToggleOutputMode');
+    const speakingBtn = document.getElementById('btnToggleSpeakingMode');
     const titleEl = document.getElementById('outputSectionTitle');
 
-    if (currentAnswerMode === 'builder') {
+    if (currentAnswerMode === 'speaking') {
+      if (builderSection) builderSection.style.display = 'none';
+      if (choiceSection) choiceSection.style.display = 'none';
+      if (speakingSection) speakingSection.style.display = 'block';
+      if (toggleBtn) toggleBtn.innerText = '🧩 並び替えに戻す';
+      if (speakingBtn) {
+        speakingBtn.style.background = '#16a34a';
+        speakingBtn.style.color = '#ffffff';
+        speakingBtn.style.borderColor = '#15803d';
+      }
+      if (titleEl) titleEl.innerText = '🎙️ 英語を声に出して判定（スピーキング即答）';
+    } else if (currentAnswerMode === 'builder') {
       if (builderSection) builderSection.style.display = 'block';
       if (choiceSection) choiceSection.style.display = 'none';
+      if (speakingSection) speakingSection.style.display = 'none';
       if (toggleBtn) toggleBtn.innerText = '📝 3択モードで解く';
+      if (speakingBtn) {
+        speakingBtn.style.background = '#f0fdf4';
+        speakingBtn.style.color = '#166534';
+        speakingBtn.style.borderColor = '#bbf7d0';
+      }
       if (titleEl) titleEl.innerText = '🧩 並び替えて文章を作成';
     } else {
       if (builderSection) builderSection.style.display = 'none';
       if (choiceSection) choiceSection.style.display = 'flex';
+      if (speakingSection) speakingSection.style.display = 'none';
       if (toggleBtn) toggleBtn.innerText = '🧩 並び替えモードで解く';
+      if (speakingBtn) {
+        speakingBtn.style.background = '#f0fdf4';
+        speakingBtn.style.color = '#166534';
+        speakingBtn.style.borderColor = '#bbf7d0';
+      }
       if (titleEl) titleEl.innerText = '📝 3択から選ぶ（すべて同じ型を使用）';
     }
 
@@ -5666,6 +6359,166 @@
         startTimeAttackTimer();
       }
     }
+  }
+
+  // 🎙️ スピーキング判定用音声認識コントローラー
+  let speakingRecognition = null;
+  let isSpeakingRecording = false;
+
+  function toggleSpeakingEvaluation() {
+    const btn = document.getElementById('btnSpeakingRecord');
+    const transcriptBox = document.getElementById('speakingTranscript');
+    const tokensBox = document.getElementById('speakingWordTokens');
+    const feedbackMsg = document.getElementById('speakingFeedbackMsg');
+
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast('🎙️ このブラウザでは音声認識機能に対応していません（ChromeまたはSafariをご利用ください）');
+      return;
+    }
+
+    if (speakingRecognition && isSpeakingRecording) {
+      speakingRecognition.stop();
+      isSpeakingRecording = false;
+      if (btn) {
+        btn.classList.remove('recording');
+        btn.innerHTML = '🎙️ マイクを押して発話開始';
+      }
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    speakingRecognition = new SpeechRecognition();
+    speakingRecognition.lang = 'en-US';
+    speakingRecognition.interimResults = true;
+    speakingRecognition.maxAlternatives = 1;
+
+    speakingRecognition.onstart = () => {
+      isSpeakingRecording = true;
+      if (btn) {
+        btn.classList.add('recording');
+        btn.innerHTML = '⏹️ 音声を認識中... (話し終えたら自動判定)';
+      }
+      if (transcriptBox) {
+        transcriptBox.innerText = 'Listening... 英語で発話してください';
+      }
+      if (tokensBox) tokensBox.innerHTML = '';
+      if (feedbackMsg) feedbackMsg.style.display = 'none';
+    };
+
+    speakingRecognition.onresult = (e) => {
+      let interim = '';
+      let finalTranscript = '';
+      for (let i = e.resultIndex; i < e.results.length; ++i) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript;
+        } else {
+          interim += e.results[i][0].transcript;
+        }
+      }
+      const liveText = (finalTranscript || interim).trim();
+      if (transcriptBox && liveText) {
+        transcriptBox.innerText = `"${liveText}"`;
+      }
+      if (finalTranscript) {
+        evaluateSpokenSentence(finalTranscript);
+      }
+    };
+
+    speakingRecognition.onerror = (err) => {
+      isSpeakingRecording = false;
+      if (btn) {
+        btn.classList.remove('recording');
+        btn.innerHTML = '🎙️ マイクを押して発話開始';
+      }
+      if (err.error !== 'no-speech') {
+        toast(`⚠️ マイク認識エラー: ${err.error}`);
+      }
+    };
+
+    speakingRecognition.onend = () => {
+      isSpeakingRecording = false;
+      if (btn) {
+        btn.classList.remove('recording');
+        btn.innerHTML = '🎙️ マイクを押して発話開始';
+      }
+    };
+
+    try {
+      speakingRecognition.start();
+    } catch (e) {
+      console.warn('SpeechRecognition start failed', e);
+    }
+  }
+
+  function evaluateSpokenSentence(spokenText) {
+    const current = scenarios[currentStageIndex];
+    if (!current) return;
+
+    stopTimeAttackTimer();
+    if (lastReflexElapsedSec === null) {
+      lastReflexElapsedSec = ((Date.now() - timeAttackStartTime) / 1000).toFixed(2);
+    }
+
+    const tokensBox = document.getElementById('speakingWordTokens');
+    const feedbackMsg = document.getElementById('speakingFeedbackMsg');
+    const targetText = current.target || '';
+
+    const cleanWordList = (str) => {
+      return (str || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
+    };
+
+    const spokenWords = cleanWordList(spokenText);
+    const targetWords = cleanWordList(targetText);
+
+    if (targetWords.length === 0) return;
+
+    let matchedCount = 0;
+    let tokensHtml = '';
+
+    targetWords.forEach(tw => {
+      const isMatched = spokenWords.includes(tw);
+      if (isMatched) {
+        matchedCount++;
+        tokensHtml += `<span class="word-token matched">✓ ${escapeHtml(tw)}</span>`;
+      } else {
+        tokensHtml += `<span class="word-token missed">✕ ${escapeHtml(tw)}</span>`;
+      }
+    });
+
+    if (tokensBox) tokensBox.innerHTML = tokensHtml;
+
+    const matchRatio = matchedCount / targetWords.length;
+    const isPass = matchRatio >= 0.65;
+
+    sessionAnswered++;
+    recordTopicMetric(selectedTopic, isPass, parseFloat(lastReflexElapsedSec) || 4);
+
+    if (isPass) {
+      combo++;
+      sessionCorrect++;
+      awardXP(35, true);
+      toast(`🎙️ スピーキング合格！ 一致率 ${Math.round(matchRatio * 100)}% (Combo ×${combo})`);
+      if (feedbackMsg) {
+        feedbackMsg.style.display = 'block';
+        feedbackMsg.style.color = '#16a34a';
+        feedbackMsg.innerHTML = `🎉 <b>Pass!</b> 伝わるPlain Englishとして十分合格です（発話一致率: ${Math.round(matchRatio * 100)}%）`;
+      }
+      showResultCard(true, current);
+      speakText(current.target);
+      if (typeof advanceSrsItemLevel === 'function') advanceSrsItemLevel(current.target);
+    } else {
+      combo = 0;
+      awardXP(5, false);
+      recordMistake(current);
+      toast('💡 もう少し！型を意識して再度発話してみましょう');
+      if (feedbackMsg) {
+        feedbackMsg.style.display = 'block';
+        feedbackMsg.style.color = '#dc2626';
+        feedbackMsg.innerHTML = `⚠️ <b>Retry:</b> 一致率 ${Math.round(matchRatio * 100)}%。「型」の単語（${escapeHtml(current.key_pattern || '')}）をはっきり声に出してみましょう！`;
+      }
+    }
+    updateHistoryStatus(isPass);
+    updateDashboard();
   }
 
   // 選択肢のヒント漏れ（大文字や文末記号）を除去するサニタイズ関数
@@ -5895,6 +6748,7 @@
     const correct = isOrderCorrect || (normUser.length > 0 && normUser === normTarget);
 
     sessionAnswered++;
+    recordTopicMetric(selectedTopic, correct, parseFloat(lastReflexElapsedSec) || 4);
 
     if (correct) {
       combo++;
@@ -7546,6 +8400,7 @@
     const correct = selected.type === 'PERFECT';
 
     sessionAnswered++;
+    recordTopicMetric(selectedTopic, correct, parseFloat(lastReflexElapsedSec) || 3);
     if (correct) {
       combo++; sessionCorrect++;
       awardXP(trainingMode === 'sim' ? 30 : 20, true);
@@ -9110,10 +9965,16 @@
   window.toggleElementDisplay = toggleElementDisplay;
   window.startSrsReviewSession = startSrsReviewSession;
   window.updateSrsRecommendUI = updateSrsRecommendUI;
+  window.toggleSpeakingMode = toggleSpeakingMode;
+  window.toggleSpeakingEvaluation = toggleSpeakingEvaluation;
+  window.startDailyFocusSession = startDailyFocusSession;
+  window.renderAnalyticsView = renderAnalyticsView;
+  window.startFocusTopicTraining = startFocusTopicTraining;
 
   initApp();
   if (typeof updateTimeAttackUIState === 'function') updateTimeAttackUIState();
   if (typeof updateSrsRecommendUI === 'function') updateSrsRecommendUI();
+  if (typeof initDailyFocusCard === 'function') initDailyFocusCard();
 </script>
 
 </body>
