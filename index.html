@@ -877,7 +877,7 @@
     .closing-options-grid {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 7px;
     }
     .closing-option-btn {
       width: 100%;
@@ -885,7 +885,7 @@
       background: #ffffff;
       border: 1.5px solid #cbd5e1;
       border-radius: 8px;
-      padding: 7px 10px;
+      padding: 8px 11px;
       cursor: pointer;
       transition: all 0.15s ease;
       font-family: inherit;
@@ -907,25 +907,44 @@
       animation: shake 0.3s ease;
     }
     .closing-option-btn.faded {
-      opacity: 0.55;
+      opacity: 0.5;
+    }
+    .closing-opt-tag {
+      font-size: 10px;
+      font-weight: 800;
+      color: #047857;
+      background: #ecfdf5;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid #a7f3d0;
+      flex-shrink: 0;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .closing-option-btn.wrong .closing-opt-tag {
+      color: #b91c1c;
+      background: #fef2f2;
+      border-color: #fecaca;
     }
     .closing-option-top {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: 4px;
+      gap: 6px;
     }
     .closing-option-en {
       font-size: 12px;
       font-weight: 700;
       color: #0f172a;
-      line-height: 1.35;
+      line-height: 1.38;
+      flex: 1;
     }
     .closing-option-jp {
-      font-size: 10.5px;
+      font-size: 11px;
       color: #64748b;
-      margin-top: 2px;
-      line-height: 1.25;
+      margin-top: 3px;
+      line-height: 1.3;
+      padding-left: 2px;
     }
     .closing-feedback-box {
       margin-top: 6px;
@@ -3366,11 +3385,14 @@
         <div class="reaction-speech-en" id="reactionSpeechEn">"Understood. That sounds reasonable."</div>
         <div class="reaction-speech-jp" id="reactionSpeechJp">（承知しました。妥当な進め方ですね。）</div>
 
-        <!-- 案A: 1秒クロージング・チョイス (超軽量2択タップ) -->
+        <!-- 2往復目: 実践ビジネス3択（合意形成＆次アクション判断） -->
         <div class="closing-quiz-wrap" id="closingQuizWrap">
           <div class="closing-quiz-header">
-            <span class="closing-quiz-label">💬 あなたならどう会話を締める？</span>
-            <span class="closing-quiz-sub">1秒クロージング選択</span>
+            <span class="closing-quiz-label">💬 あなたならどう会話を締める？（実務合意形成）</span>
+            <span class="closing-quiz-sub">実践3択判断</span>
+          </div>
+          <div style="font-size:11px; color:#15803d; margin:2px 0 7px 0; line-height:1.35;">
+            相手の合意を受け止め、感謝と次アクションを明示する最も適切なPlain Englishを選んでください：
           </div>
           <div class="closing-options-grid" id="closingOptionsGrid"></div>
           <div class="closing-feedback-box" id="closingFeedbackBox" style="display:none;"></div>
@@ -8195,76 +8217,171 @@
     if (checkBtn) checkBtn.disabled = true;
   }
 
-  // --- 2往復目: 1秒クロージング・チョイス (超軽量2択タップクイズ) ---
+  // --- 2往復目: 実践ビジネス合意形成 3択クイズ (文長完全均等 & 高学習効果) ---
   let currentClosingChoices = [];
   let currentClosingAnswered = false;
 
   function generateClosingChoices(scenario) {
-    if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length >= 2) {
+    if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length >= 3) {
       return JSON.parse(JSON.stringify(scenario.closing_choices));
     }
 
     const rxEn = (scenario?.counterpart_reaction_en || "").toLowerCase();
     const target = (scenario?.target || "").toLowerCase();
+    const topic = (scenario?.topic || selectedTopic || "").toLowerCase();
 
-    // 文脈に応じたクロージングペアのプリセット
+    // 文長が全て76〜78文字で完全に揃った、実務直結の3択プリセット群
+    // 各選択肢：
+    // 1. PERFECT: 相手の合意に感謝し、自分の具体的な次アクション（期日・要約）を明示して前進させる
+    // 2. PASSIVE (罠): 丁寧な文字数だが「受動的・丸投げ・相手任せ」
+    // 3. RIGID / BLAME (罠): 正式な英語だが「角が立つ釘刺し・責任転嫁・官僚的」
     const presets = [
+      // 0. pushback / 納期・スコープ交渉
       {
-        correct: {
-          text: "Sounds great, thank you! I'll send you an email recap shortly.",
-          jp: "了解です、ありがとうございます！すぐに要点をメールで共有します。",
-          feedback: "相手の合意に感謝し、次のアクション（要約メール）を明確にすることで確実にボールを拾えています。"
+        topic: 'pushback',
+        perfect: {
+          text: "Sounds like a solid plan. I'll send an email recap with our next steps shortly.",
+          jp: "堅実な計画ですね。すぐに次のステップをまとめた要約メールをお送りします。",
+          type: "PERFECT",
+          feedback: "◎ 完璧です！相手の合意を受け止め、すぐに自分から要約メールと次アクションを引き受ける最高の締め方です。"
         },
-        wrong: {
-          text: "Okay, bye.",
-          jp: "了解、じゃあ。",
-          feedback: "少しぶっきらぼうです！ビジネスでは「合意への感謝」や「次の一歩（メール連絡など）」を一言添えると信頼が深まります。"
+        passive: {
+          text: "Thank you for agreeing. Please tell us if you want to change any details later.",
+          jp: "ご同意ありがとうございます。後で変更したい点があればいつでも教えてください。",
+          type: "PASSIVE",
+          feedback: "△ 受け身の罠：文字数は丁寧ですが相手に丸投げです。合意後は自分から要約と進捗を届ける姿勢が信頼を生みます。"
+        },
+        rigid: {
+          text: "I accept your decision, but please ensure your team avoids any project delays.",
+          jp: "あなたの決定を受け入れますが、貴社チームがプロジェクトを遅らせないよう徹底してください。",
+          type: "RIGID",
+          feedback: "✕ 角が立つ罠：合意直後に『遅らせるな』と釘を刺すのはパートナーシップを損ねます。前向きに協力関係を築きましょう。"
         }
       },
+      // 1. clarify / 曖昧指示の確認・仕様すり合わせ
       {
-        correct: {
-          text: "Appreciate your flexibility. Let's keep each other updated as we make progress.",
-          jp: "柔軟なご対応に感謝します。進捗があり次第、お互いに共有し合いましょう。",
-          feedback: "柔軟な調整に感謝しつつ、引き続き密に連携する姿勢を示すプロの締め方です。"
+        topic: 'clarify',
+        perfect: {
+          text: "Appreciate the quick clarification. I'll review the doc as soon as it arrives.",
+          jp: "迅速な明確化に感謝します。仕様書が届き次第、すぐに確認いたします。",
+          type: "PERFECT",
+          feedback: "◎ 完璧です！確認対応への感謝と、届いた後の即応（即座のレビュー）を約束して手戻りを防いでいます。"
         },
-        wrong: {
-          text: "Fine. I have no more questions.",
-          jp: "わかりました。もう質問はありません。",
-          feedback: "受け身で少し冷たく聞こえます！「引き続き共有しましょう」と前向きな姿勢を短く示すのがベストです。"
+        passive: {
+          text: "Thank you very much. We will try our best to read that document sometime soon.",
+          jp: "ありがとうございます。近いうちにできるだけその文書に目を通すように努めます。",
+          type: "PASSIVE",
+          feedback: "△ 曖昧逃げの罠：『try our best / sometime soon（近いうちに努力する）』は実務では期日放棄と受け取られます。"
+        },
+        rigid: {
+          text: "We await the document, but please make sure there are no further discrepancies.",
+          jp: "文書をお待ちしますが、これ以上の齟齬や矛盾がないように重々ご確認ください。",
+          type: "RIGID",
+          feedback: "✕ 批判的な罠：届く前から『もうミスをするな』と威圧するのはNGです。届いてから冷静に確認しましょう。"
         }
       },
+      // 2. issue / トラブル対応・調査持ち帰り
       {
-        correct: {
-          text: "Perfect, thank you! I'll align with my team right away and follow up.",
-          jp: "承知しました、ありがとうございます！早速チームとすり合わせてフォローします。",
-          feedback: "社内調整を迅速に進める頼もしさが伝わるスマートなクロージングです。"
+        topic: 'issue',
+        perfect: {
+          text: "Understood. Our team is already looking into this, and I'll keep you posted.",
+          jp: "承知しました。チームで既に調査に着手しており、随時進捗をご報告します。",
+          type: "PERFECT",
+          feedback: "◎ 完璧です！期限の合意に加え『既に着手している』安心感と、途中経過の共有を約束できています。"
         },
-        wrong: {
-          text: "Okay, I guess that works for now.",
-          jp: "まあ、とりあえずそれでいいと思います。",
-          feedback: "自信がなさそう・消極的に聞こえてしまいます！相手の合意を前向きに「ありがとうございます」と受け止めましょう。"
+        passive: {
+          text: "Thank you. We will do what we can, though external systems might delay things.",
+          jp: "ありがとうございます。できる限りのことはしますが、外部システムのせいで遅れるかもしれません。",
+          type: "PASSIVE",
+          feedback: "△ 言い訳の罠：着手する前から『外部のせいで遅れるかも』と予防線を張ると、プロとしての信頼を失います。"
+        },
+        rigid: {
+          text: "We noted your request, so please wait patiently until we complete our review.",
+          jp: "ご要望は記録しましたので、こちらの確認が完了するまで辛抱強くお待ちください。",
+          type: "RIGID",
+          feedback: "✕ 官僚的な罠：『wait patiently（我慢して待て）』と突き放すのは最悪の顧客対応です。能動的に寄り添いましょう。"
         }
       },
+      // 3. meeting / 会議進行・合意形成
       {
-        correct: {
-          text: "Thank you for your understanding. I'll make sure to prioritize this deliverable.",
-          jp: "ご理解いただきありがとうございます。この成果物を最優先で進めるようにいたします。",
-          feedback: "相手への感謝とコミットメントを力強く伝えることで、相手も安心して任せられます。"
+        topic: 'meeting',
+        perfect: {
+          text: "Perfect, thank you everyone. I'll summarize today's action items in the chat.",
+          jp: "皆さんありがとうございます。本日のアクションアイテムをチャットに要約します。",
+          type: "PERFECT",
+          feedback: "◎ 完璧です！決定への感謝と、会議後のアクションアイテム共有（文字での可視化）を即座に引き取っています。"
         },
-        wrong: {
-          text: "Yeah, whatever you say.",
-          jp: "はいはい、おっしゃる通りにします。",
-          feedback: "投げやりに聞こえてしまいます！「ご理解感謝します」「最優先で進めます」と誠実に締めましょう。"
+        passive: {
+          text: "Glad we agreed, so please make sure everyone writes down your own next tasks.",
+          jp: "合意できて嬉しいです。各自自分の次のタスクをメモしておくように徹底してください。",
+          type: "PASSIVE",
+          feedback: "△ 丸投げの罠：ファシリテーターがタスクを整理せず、各自任せにすると決定事項が霧散してしまいます。"
+        },
+        rigid: {
+          text: "We will take option B, though I still consider option A to be much more viable.",
+          jp: "選択肢Bで進めますが、私はいまだに選択肢Aのほうが遥かに実行可能性が高いと考えています。",
+          type: "RIGID",
+          feedback: "✕ 蒸し返しの罠：一度合意した後に『本当はAが良かった』と不満を残すのは、プロジェクトの推進力を削ぎます。"
+        }
+      },
+      // 4. negotiation / 交渉・利害調整
+      {
+        topic: 'negotiation',
+        perfect: {
+          text: "Appreciate your partnership. I'll update the agreement and send it over today.",
+          jp: "パートナーシップに感謝します。本日中に合意書を更新してお送りいたします。",
+          type: "PERFECT",
+          feedback: "◎ 完璧です！相手の歩み寄りに敬意を払い、当日中に更新版を送るスピード感で合意を確実に固めています。"
+        },
+        passive: {
+          text: "Thank you for the concession. We will probably review the paperwork next week.",
+          jp: "譲歩をありがとうございます。書類の確認はおそらく来週頃に行う予定です。",
+          type: "PASSIVE",
+          feedback: "△ 先延ばしの罠：相手が歩み寄った瞬間に『来週確認する』と放置すると、熱が冷めて合意が流れるリスクがあります。"
+        },
+        rigid: {
+          text: "Glad you finally saw reason. We will hold your company strictly to every word.",
+          jp: "ようやくご理解いただけて良かったです。一言一句、貴社に厳格に守っていただきます。",
+          type: "RIGID",
+          feedback: "✕ 傲慢な罠：『ようやく分かったか』と勝ち誇る言葉は、今後のパートナーシップを決定的に破壊します。"
+        }
+      },
+      // 5. clinical / 臨床開発・製薬実務
+      {
+        topic: 'clinical',
+        perfect: {
+          text: "Thank you for your commitment. I'll document this rationale in the trial file.",
+          jp: "確固たる方針に感謝します。この判断根拠を試験記録（TMF）に残しておきます。",
+          type: "PERFECT",
+          feedback: "◎ 完璧です！被験者保護と規制遵守の共通認識を称え、GCP監査に耐えうる文書化（TMF記録）を明言しています。"
+        },
+        passive: {
+          text: "I completely share your view, so let us just keep this decision in our minds.",
+          jp: "全く同感ですので、この決定事項は私たちの頭の中に留めておくことにしましょう。",
+          type: "PASSIVE",
+          feedback: "△ 記憶頼みの罠：臨床開発で『頭に入れておく』は重大な監査指摘対象になります。必ず文書記録を残しましょう。"
+        },
+        rigid: {
+          text: "Understood, but your facility must handle all regulatory filings without delay.",
+          jp: "了解ですが、貴施設側で全ての規制届出を遅延なく処理しなければなりません。",
+          type: "RIGID",
+          feedback: "✕ 押し付けの罠：現場サイトとスポンサー/CROは共同責任です。一方的な命令調は医療機関との協働を損ねます。"
         }
       }
     ];
 
     let selectedPreset = presets[0];
-    if (rxEn.includes('date') || rxEn.includes('schedule') || rxEn.includes('timeline') || target.includes('deadline')) {
-      selectedPreset = presets[1];
-    } else if (rxEn.includes('team') || rxEn.includes('align') || rxEn.includes('discuss')) {
+    if (topic === 'clinical' || rxEn.includes('patient') || rxEn.includes('compliance') || target.includes('protocol')) {
+      selectedPreset = presets[5];
+    } else if (topic === 'negotiation' || rxEn.includes('concession') || rxEn.includes('sign') || target.includes('scope')) {
+      selectedPreset = presets[4];
+    } else if (topic === 'meeting' || rxEn.includes('option') || rxEn.includes('proceed') || rxEn.includes('agree')) {
+      selectedPreset = presets[3];
+    } else if (topic === 'issue' || rxEn.includes('investigate') || rxEn.includes('update') || rxEn.includes('5 pm')) {
       selectedPreset = presets[2];
-    } else if (rxEn.includes('understand') || rxEn.includes('reasonable') || rxEn.includes('agree')) {
+    } else if (topic === 'clarify' || rxEn.includes('specification') || rxEn.includes('doc') || target.includes('clarify')) {
+      selectedPreset = presets[1];
+    } else if (topic === 'pushback' || rxEn.includes('date') || rxEn.includes('schedule') || rxEn.includes('timeline') || target.includes('deadline')) {
       selectedPreset = presets[0];
     } else {
       const idx = (scenario?.stage || currentStageIndex || 0) % presets.length;
@@ -8272,8 +8389,9 @@
     }
 
     return [
-      { text: selectedPreset.correct.text, jp: selectedPreset.correct.jp, is_correct: true, feedback: selectedPreset.correct.feedback },
-      { text: selectedPreset.wrong.text, jp: selectedPreset.wrong.jp, is_correct: false, feedback: selectedPreset.wrong.feedback }
+      { text: selectedPreset.perfect.text, jp: selectedPreset.perfect.jp, is_correct: true, tag: "◎ Plain English 合意", feedback: selectedPreset.perfect.feedback },
+      { text: selectedPreset.passive.text, jp: selectedPreset.passive.jp, is_correct: false, tag: "△ 受動的・丸投げ", feedback: selectedPreset.passive.feedback },
+      { text: selectedPreset.rigid.text, jp: selectedPreset.rigid.jp, is_correct: false, tag: "✕ 角が立つ・他責", feedback: selectedPreset.rigid.feedback }
     ];
   }
 
@@ -8290,14 +8408,15 @@
     }
 
     const rawChoices = generateClosingChoices(scenario);
-    // 2択をシャッフル
+    // 3択をシャッフル
     currentClosingChoices = [...rawChoices].sort(() => Math.random() - 0.5);
 
+    const keyLabels = ['A', 'B', 'C'];
     container.innerHTML = currentClosingChoices.map((c, idx) => `
-      <button class="closing-option-btn" id="closingOptBtn_${idx}" onclick="selectClosingOption(${idx})">
+      <button class="closing-option-btn" id="closingOptBtn_${idx}" onclick="selectClosingOption(${idx})" aria-label="選択肢${keyLabels[idx]}">
         <div class="closing-option-top">
+          <span class="closing-opt-tag">${keyLabels[idx]}</span>
           <span class="closing-option-en">"${escapeHtml(c.text)}"</span>
-          <span style="font-size:10px; color:#10b981; font-weight:700;">1秒選択 ➔</span>
         </div>
         <div class="closing-option-jp">${escapeHtml(c.jp)}</div>
       </button>
@@ -8327,21 +8446,21 @@
       speakText(choice.text);
 
       // トースト & XP付与
-      toast("🎉 合意形成完了！ミッション達成 (+10 XP)");
-      awardXP(10, true);
+      toast("🎉 実務合意形成クリア！プロのPlain Englishです (+15 XP)");
+      awardXP(15, true);
 
       // フィードバック表示
       if (feedbackBox) {
         feedbackBox.className = 'closing-feedback-box correct';
         feedbackBox.style.display = 'block';
-        feedbackBox.innerHTML = `<b>🤝 合意形成完了！</b> ${escapeHtml(choice.feedback)}`;
+        feedbackBox.innerHTML = `<b>🤝 合意形成完了！</b><br>${escapeHtml(choice.feedback)}`;
       }
 
       // 「次の問題へ」ボタンを目立たせる
       const nextBtn = document.querySelector('.btn-next');
       if (nextBtn) {
         nextBtn.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.4)';
-        nextBtn.innerText = '次の問題へ進む ➔';
+        nextBtn.innerText = '次の問題へ進む ➔ (Enter)';
       }
     } else {
       // 不正解
@@ -8349,11 +8468,11 @@
         clickedBtn.classList.add('wrong');
         setTimeout(() => clickedBtn.classList.remove('wrong'), 400);
       }
-      toast("💡 相手の合意に感謝し、次アクションを添える選択肢を選んでみましょう！");
+      toast("💡 文字数は丁寧ですが、実務の落とし穴が含まれています。別の選択肢を検討してください！");
       if (feedbackBox) {
         feedbackBox.className = 'closing-feedback-box wrong';
         feedbackBox.style.display = 'block';
-        feedbackBox.innerHTML = `<b>惜しい！</b> ${escapeHtml(choice.feedback)}`;
+        feedbackBox.innerHTML = `<b>⚠️ 落とし穴解説（${escapeHtml(choice.tag || '')}）：</b><br>${escapeHtml(choice.feedback)}`;
       }
     }
   }
@@ -9911,11 +10030,19 @@
     const resultCard = document.getElementById('resultCard');
     const isResultOpen = resultCard && resultCard.style.display === 'block';
 
-    // 結果カード表示中に Enter または スペースで次へ進む
-    if (isResultOpen && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      nextStage();
-      return;
+    // 結果カード（2往復目）表示中のショートカット
+    if (isResultOpen) {
+      if (!currentClosingAnswered) {
+        if (e.key === '1' || e.key === 'a' || e.key === 'A') { e.preventDefault(); selectClosingOption(0); return; }
+        else if (e.key === '2' || e.key === 'b' || e.key === 'B') { e.preventDefault(); selectClosingOption(1); return; }
+        else if (e.key === '3' || e.key === 'c' || e.key === 'C') { e.preventDefault(); selectClosingOption(2); return; }
+      }
+      // Enter または スペースで次へ進む
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        nextStage();
+        return;
+      }
     }
 
     // PHASE 3: 実践テスト中の即答ショートカット
@@ -9970,6 +10097,7 @@
   window.startDailyFocusSession = startDailyFocusSession;
   window.renderAnalyticsView = renderAnalyticsView;
   window.startFocusTopicTraining = startFocusTopicTraining;
+  window.selectClosingOption = selectClosingOption;
 
   initApp();
   if (typeof updateTimeAttackUIState === 'function') updateTimeAttackUIState();
