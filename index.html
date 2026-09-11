@@ -8217,181 +8217,386 @@
     if (checkBtn) checkBtn.disabled = true;
   }
 
-  // --- 2往復目: 実践ビジネス合意形成 3択クイズ (文長完全均等 & 高学習効果) ---
+  // --- 2往復目: 実践ビジネス合意形成 3択クイズ (文脈完全適合 & 文長均等 & 高学習効果) ---
   let currentClosingChoices = [];
   let currentClosingAnswered = false;
 
   function generateClosingChoices(scenario) {
+    // 1. シナリオ自体に既に高品質な3択以上が定義されている場合
     if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length >= 3) {
-      return JSON.parse(JSON.stringify(scenario.closing_choices));
+      return JSON.parse(JSON.stringify(scenario.closing_choices)).map((c, i) => ({
+        text: c.text,
+        jp: c.jp || "",
+        is_correct: !!c.is_correct,
+        tag: c.tag || (c.is_correct ? "◎ Plain English 合意" : (i === 1 ? "△ 受動的・丸投げ" : "✕ 角が立つ・他責")),
+        feedback: c.feedback || (c.is_correct ? "◎ 相手の合意を受け止め、次アクションを引き取るスマートな締め方です。" : "△ 実務での落とし穴が含まれています。")
+      }));
     }
 
-    const rxEn = (scenario?.counterpart_reaction_en || "").toLowerCase();
-    const target = (scenario?.target || "").toLowerCase();
-    const topic = (scenario?.topic || selectedTopic || "").toLowerCase();
+    // 2. 既存の2択がある場合は3つ目を動的補完して3択化
+    if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length === 2) {
+      const c1 = scenario.closing_choices[0];
+      const c2 = scenario.closing_choices[1];
+      const correctChoice = c1.is_correct ? c1 : c2;
+      const wrongChoice = !c1.is_correct ? c1 : c2;
+      return [
+        {
+          text: correctChoice.text,
+          jp: correctChoice.jp || "",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: correctChoice.feedback || "◎ 相手の合意を受け止め、次アクションを明確にする素晴らしい対応です。"
+        },
+        {
+          text: wrongChoice.text,
+          jp: wrongChoice.jp || "",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: wrongChoice.feedback || "△ 丁寧に見えますが、相手に丸投げしてしまっています。"
+        },
+        {
+          text: "Understood, but please ensure your team strictly avoids any further errors.",
+          jp: "了解しましたが、貴社チームがこれ以上のミスを厳格に避けるよう徹底してください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 合意直後に『ミスをするな』と相手を威圧するのは、パートナーシップを著しく損ねます。"
+        }
+      ];
+    }
 
-    // 文長が全て76〜78文字で完全に揃った、実務直結の3択プリセット群
-    // 各選択肢：
-    // 1. PERFECT: 相手の合意に感謝し、自分の具体的な次アクション（期日・要約）を明示して前進させる
-    // 2. PASSIVE (罠): 丁寧な文字数だが「受動的・丸投げ・相手任せ」
-    // 3. RIGID / BLAME (罠): 正式な英語だが「角が立つ釘刺し・責任転嫁・官僚的」
-    const presets = [
-      // 0. pushback / 納期・スコープ交渉
+    // 3. コンテキスト解析による動的生成
+    const rxEn = ((scenario?.counterpart_reaction_en || "") + " " + (scenario?.ai_en || "")).toLowerCase();
+    const target = (scenario?.target || "").toLowerCase();
+    const rawAiName = scenario?.ai_name || "Counterpart";
+    // 相手のファーストネームを抽出（例: "Sarah (Regulatory Affairs Lead)" -> "Sarah"）
+    const nameMatch = rawAiName.match(/^([A-Z][a-zA-Z]+)/);
+    const counterpartFirstName = nameMatch ? nameMatch[1] : "";
+    const stageNum = scenario?.stage || (currentStageIndex + 1) || 1;
+
+    // --- コンテキスト別 3択ジェネレーター（全選択肢 74〜82文字で精密統一） ---
+
+    // パターン A: 相手が提出作業やリードを引き受けてくれた (submission / take charge / take the lead / handle / from here)
+    if (rxEn.includes('take charge') || rxEn.includes('take the lead') || rxEn.includes('submission') || rxEn.includes('from here') || target.includes('submission')) {
+      return [
+        {
+          text: counterpartFirstName 
+            ? `Thank you, ${counterpartFirstName}. I really appreciate you taking the lead on this submission.`
+            : "Thank you for the quick alignment. I really appreciate you taking the lead on this.",
+          jp: counterpartFirstName 
+            ? `${counterpartFirstName}さん、ありがとうございます。提出作業を主導していただけて大変心強いです。`
+            : "迅速なご調整に感謝します。主導して進めていただけて大変心強いです。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！相手がオーナーシップを引き受けてくれたことへの敬意と感謝を迅速に返し、強固な信頼関係を築けています。"
+        },
+        {
+          text: "Glad to hear that. Please handle everything and just ping us once it is all done.",
+          jp: "それを聞いて安心しました。では全て対応いただき、完了したら適当に連絡してください。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 丸投げの罠：相手が引き受けてくれた瞬間に『あとは全部やっておいて』と突き放すのは無責任に聞こえます。"
+        },
+        {
+          text: "Understood, but please ensure your team makes zero errors during the submission.",
+          jp: "了解しましたが、提出プロセス中に貴社チームが絶対にミスをしないよう徹底してください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 角が立つ罠：引き受けてくれた相手にいきなり『ミスをするな』と釘を刺すのは、相手の熱意を削ぎ不信感を生みます。"
+        }
+      ];
+    }
+
+    // パターン B: 相手が本日中/期限付き連絡を待つ (EOD / today / look out for / by 5 pm)
+    if (rxEn.includes('eod') || rxEn.includes('look out for') || (rxEn.includes('today') && rxEn.includes('email'))) {
+      return [
+        {
+          text: "Sounds good. I will send you the complete summary notes before the day ends.",
+          jp: "了解しました。本日が終了する前に、完全な要約メモをメールでお送りします。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！合意を前向きに受け止め、本日中の確実な履行（summary notes送付）をコミットできています。"
+        },
+        {
+          text: "Thank you. We will probably get around to emailing you whenever things wrap up.",
+          jp: "ありがとうございます。全てが終わったら、そのうちどこかのタイミングでメールできると思います。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 曖昧逃げの罠：『whenever things wrap up（そのうち終わったら）』という先延ばし表現はプロとして不誠実です。"
+        },
+        {
+          text: "We will email you, so please do not send repetitive reminder emails today.",
+          jp: "こちらからメールしますので、本日中に何度も催促のメールを送るのはご遠慮ください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 攻撃的な罠：『催促するな』と先回りで釘を刺すのは、協業相手に対して極めて失礼です。"
+        }
+      ];
+    }
+
+    // パターン C: 承認待ち / QA / 進捗通知の依頼 (sign off / signs off / keep me posted / approval)
+    if (rxEn.includes('sign off') || rxEn.includes('signs off') || rxEn.includes('keep me posted') || rxEn.includes('approval') || target.includes('signer')) {
+      return [
+        {
+          text: "Will do. I will track the sign-off closely and notify you as soon as it clears.",
+          jp: "承知しました。承認の進捗を注視し、承認が下り次第すぐにメールでご連絡します。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！ボールを即座に引き受け（Will do）、進捗の追跡と迅速な一報を約束して相手を安心させています。"
+        },
+        {
+          text: "Thank you. We will try to remember to inform you sometime after QA approves it.",
+          jp: "ありがとうございます。QAが承認した後のいつ頃かに、忘れずにお知らせできればと思います。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 頼りなさの罠：『try to remember（忘れなければ知らせる）』では、相手が不安になり催促せざるを得なくなります。"
+        },
+        {
+          text: "We will let you know, so please refrain from asking for updates every few hours.",
+          jp: "こちらから連絡しますので、数時間おきに進捗を問い合わせてくるのはお控えください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 官僚的な罠：問い合わせを拒絶するような物言いは、顧客やパートナーとの信頼関係を破壊します。"
+        }
+      ];
+    }
+
+    // パターン D: 妥協案・代替案・水曜ドラフト共有への合意 (workable compromise / draft / review early / wednesday)
+    if (rxEn.includes('compromise') || (rxEn.includes('draft') && rxEn.includes('wednesday')) || target.includes('draft')) {
+      return [
+        {
+          text: "Appreciate your flexibility. I'll deliver the preliminary draft by Wednesday.",
+          jp: "柔軟なご対応に感謝します。水曜日までに事前ドラフトを確実にお届けします。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！相手の譲歩に感謝しつつ、約束した中間マイルストーン（水曜ドラフト）を再確認して実行力を示しています。"
+        },
+        {
+          text: "Thanks for agreeing. Please tell your reviewers not to be too harsh on our work.",
+          jp: "ご合意感謝します。貴社のレビュアー陣がこちらの成果物に厳しすぎないようにお願いします。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 言い訳の罠：『厳しく見ないで』と予防線を張る態度は、プロとしての品質責任の欠如と見なされます。"
+        },
+        {
+          text: "Glad you accepted, since your initial request was completely unfeasible for us.",
+          jp: "受け入れてくれて幸いです。当初の要求はこちらにとって全く実現不可能でしたから。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 蒸し返しの罠：合意した直後に『最初の要求は無理だった』と勝ち誇るような言葉を吐くのは厳禁です。"
+        }
+      ];
+    }
+
+    // パターン E: 相手が時間確保・レビュー約束 (block time / thursday morning / review your draft)
+    if (rxEn.includes('block time') || (rxEn.includes('review') && rxEn.includes('thursday')) || rxEn.includes('block')) {
+      return [
+        {
+          text: "Thank you for making time. I'll make sure the draft is clean and easy to read.",
+          jp: "お時間を確保いただき感謝します。見やすく整理されたドラフトを用意しておきます。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！時間を割いてくれる相手に感謝し、相手のレビュー負担を減らす配慮（clean and easy to read）が素晴らしいです。"
+        },
+        {
+          text: "Great. Please read through all pages carefully so that we do not have to rewrite.",
+          jp: "良かったです。こちらが書き直さなくて済むよう、全ページ注意深く読んでおいてください。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 押し付けの罠：レビューしてくれる相手に『全部ちゃんと読め』と上から目線で指示するのは失礼にあたります。"
+        },
+        {
+          text: "Understood, but please do not find minor typographical errors in our document.",
+          jp: "了解ですが、文書の中の些細な誤字脱字をいちいち指摘するのは勘弁してください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 防衛的な罠：チェックを受ける前から指摘を嫌がる態度は、協調性のなさを露呈してしまいます。"
+        }
+      ];
+    }
+
+    // パターン F: 迅速な協力・プロアクティブな対応への称賛 (proactive / cooperation / partnership)
+    if (rxEn.includes('proactive') || rxEn.includes('cooperation') || rxEn.includes('partnership') || rxEn.includes('proactive cooperation')) {
+      return [
+        {
+          text: "Appreciate the great partnership. Let's keep working together toward success.",
+          jp: "素晴らしい協業に感謝します。プロジェクトの成功に向けて引き続き力を合わせましょう。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！相手の賞賛に敬意を返し、チーム全体の一体感を高める前向きなパートナーシップ表現です。"
+        },
+        {
+          text: "You are welcome. We did everything we could, so the rest is now in your hands.",
+          jp: "どういたしまして。こちらは全力を尽くしましたので、あとは貴社にお任せします。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 切り離しの罠：『あとはそちらの番』と突き放すのではなく、最後までワンチームで伴走する姿勢が大切です。"
+        },
+        {
+          text: "Of course. Please ensure our hard work is officially noted by your executives.",
+          jp: "当然です。私たちの多大な貢献が貴社経営陣に公式に評価されるよう取り計らってください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 自己アピールの罠：手柄を誇示して恩に着せるような態度は、ビジネスパーソンとして品位を欠きます。"
+        }
+      ];
+    }
+
+    // パターン G: 金曜/特定日のすり合わせ合意 (align on friday / touch base / see you)
+    if (rxEn.includes('friday') || rxEn.includes('align') || rxEn.includes('touch base') || rxEn.includes('see you')) {
+      return [
+        {
+          text: "Sounds like a solid plan. I'll prepare all key updates and connect on Friday.",
+          jp: "堅実な計画ですね。重要な更新事項をすべて準備して、金曜日にお話ししましょう。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！合意を肯定し、次回の同期に向けて事前準備を整える頼もしさが伝わります。"
+        },
+        {
+          text: "Thank you. Let us just hope that we do not encounter any major schedule delays.",
+          jp: "ありがとうございます。それまでに大きなスケジュール遅延が起きないことを祈るばかりです。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 他力本願の罠：『遅れないことを祈る』と神頼みにするのではなく、自分のタスクの推進を約束しましょう。"
+        },
+        {
+          text: "We will talk then, but please be punctual and do not reschedule at the last minute.",
+          jp: "その時に話しますが、時間を厳守し直前キャンセルや日程変更は絶対にしないでください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 疑心暗鬼の罠：合意した直後に相手の遅刻やキャンセルを決めつけて警告するのはNGです。"
+        }
+      ];
+    }
+
+    // パターン H: 施設連携・ボトルネック対応への納得 (makes sense / keep pushing / site)
+    if (rxEn.includes('makes sense') || rxEn.includes('site') || rxEn.includes('pushing')) {
+      return [
+        {
+          text: "Appreciate your guidance. I will maintain close communication with the site.",
+          jp: "ご助言に感謝します。引き続き実施施設と密接なコミュニケーションを維持します。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！相手の理解・後押しに感謝し、現場との緊密な連携アクションを継続する意思を示せています。"
+        },
+        {
+          text: "Thank you. We will do what we can, but site staff often ignore our requests.",
+          jp: "ありがとうございます。できる限りはやりますが、施設の担当者は依頼を無視しがちです。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 言い訳の罠：第三者（施設スタッフ）のせいにして予防線を張ると、当事者意識が疑われます。"
+        },
+        {
+          text: "Glad you agree, because coordinating with sites is far more difficult than you think.",
+          jp: "納得いただけて幸いです。施設との調整はあなたが考えているより遥かに困難ですから。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 嫌味の罠：『あなたの想像より大変なんだ』と相手の無知を責めるのは、協業の雰囲気を悪化させます。"
+        }
+      ];
+    }
+
+    // --- ステージ番号（1〜5）ごとに完全に異なる高品質フォールバックバンク ---
+    // （上記いずれのキーワードにも引っかからなかった場合でも、ステージが進むごとに必ず異なる選択肢が提示される）
+    const stageFallbackBank = [
+      // Stage 1 専用
       {
-        topic: 'pushback',
         perfect: {
           text: "Sounds like a solid plan. I'll send an email recap with our next steps shortly.",
           jp: "堅実な計画ですね。すぐに次のステップをまとめた要約メールをお送りします。",
-          type: "PERFECT",
-          feedback: "◎ 完璧です！相手の合意を受け止め、すぐに自分から要約メールと次アクションを引き受ける最高の締め方です。"
+          feedback: "◎ 完璧です！合意を歓迎し、直ちに要約メールと次アクションを引き受ける最高の締め方です。"
         },
         passive: {
           text: "Thank you for agreeing. Please tell us if you want to change any details later.",
           jp: "ご同意ありがとうございます。後で変更したい点があればいつでも教えてください。",
-          type: "PASSIVE",
-          feedback: "△ 受け身の罠：文字数は丁寧ですが相手に丸投げです。合意後は自分から要約と進捗を届ける姿勢が信頼を生みます。"
+          feedback: "△ 受け身の罠：文字数は丁寧ですが相手に丸投げです。合意後は自分から要約を届ける姿勢が信頼を生みます。"
         },
         rigid: {
           text: "I accept your decision, but please ensure your team avoids any project delays.",
           jp: "あなたの決定を受け入れますが、貴社チームがプロジェクトを遅らせないよう徹底してください。",
-          type: "RIGID",
-          feedback: "✕ 角が立つ罠：合意直後に『遅らせるな』と釘を刺すのはパートナーシップを損ねます。前向きに協力関係を築きましょう。"
+          feedback: "✕ 角が立つ罠：合意直後に『遅らせるな』と釘を刺すのはパートナーシップを損ねます。"
         }
       },
-      // 1. clarify / 曖昧指示の確認・仕様すり合わせ
+      // Stage 2 専用
       {
-        topic: 'clarify',
         perfect: {
           text: "Appreciate the quick clarification. I'll review the doc as soon as it arrives.",
-          jp: "迅速な明確化に感謝します。仕様書が届き次第、すぐに確認いたします。",
-          type: "PERFECT",
+          jp: "迅速な明確化に感謝します。資料が届き次第、すぐに確認いたします。",
           feedback: "◎ 完璧です！確認対応への感謝と、届いた後の即応（即座のレビュー）を約束して手戻りを防いでいます。"
         },
         passive: {
           text: "Thank you very much. We will try our best to read that document sometime soon.",
           jp: "ありがとうございます。近いうちにできるだけその文書に目を通すように努めます。",
-          type: "PASSIVE",
-          feedback: "△ 曖昧逃げの罠：『try our best / sometime soon（近いうちに努力する）』は実務では期日放棄と受け取られます。"
+          feedback: "△ 曖昧逃げの罠：『try our best / sometime soon』は実務では期日放棄と受け取られます。"
         },
         rigid: {
           text: "We await the document, but please make sure there are no further discrepancies.",
           jp: "文書をお待ちしますが、これ以上の齟齬や矛盾がないように重々ご確認ください。",
-          type: "RIGID",
-          feedback: "✕ 批判的な罠：届く前から『もうミスをするな』と威圧するのはNGです。届いてから冷静に確認しましょう。"
+          feedback: "✕ 批判的な罠：届く前から『ミスをするな』と威圧するのはNGです。冷静に確認しましょう。"
         }
       },
-      // 2. issue / トラブル対応・調査持ち帰り
+      // Stage 3 専用
       {
-        topic: 'issue',
         perfect: {
           text: "Understood. Our team is already looking into this, and I'll keep you posted.",
           jp: "承知しました。チームで既に調査に着手しており、随時進捗をご報告します。",
-          type: "PERFECT",
           feedback: "◎ 完璧です！期限の合意に加え『既に着手している』安心感と、途中経過の共有を約束できています。"
         },
         passive: {
           text: "Thank you. We will do what we can, though external systems might delay things.",
           jp: "ありがとうございます。できる限りのことはしますが、外部システムのせいで遅れるかもしれません。",
-          type: "PASSIVE",
-          feedback: "△ 言い訳の罠：着手する前から『外部のせいで遅れるかも』と予防線を張ると、プロとしての信頼を失います。"
+          feedback: "△ 言い訳の罠：着手する前から『外部のせいで遅れるかも』と予防線を張ると信頼を失います。"
         },
         rigid: {
           text: "We noted your request, so please wait patiently until we complete our review.",
           jp: "ご要望は記録しましたので、こちらの確認が完了するまで辛抱強くお待ちください。",
-          type: "RIGID",
-          feedback: "✕ 官僚的な罠：『wait patiently（我慢して待て）』と突き放すのは最悪の顧客対応です。能動的に寄り添いましょう。"
+          feedback: "✕ 官僚的な罠：『wait patiently（我慢して待て）』と突き放すのは最悪の対応です。"
         }
       },
-      // 3. meeting / 会議進行・合意形成
+      // Stage 4 専用
       {
-        topic: 'meeting',
         perfect: {
           text: "Perfect, thank you everyone. I'll summarize today's action items in the chat.",
           jp: "皆さんありがとうございます。本日のアクションアイテムをチャットに要約します。",
-          type: "PERFECT",
-          feedback: "◎ 完璧です！決定への感謝と、会議後のアクションアイテム共有（文字での可視化）を即座に引き取っています。"
+          feedback: "◎ 完璧です！決定への感謝と、会議後のアクションアイテム共有を即座に引き取っています。"
         },
         passive: {
           text: "Glad we agreed, so please make sure everyone writes down your own next tasks.",
           jp: "合意できて嬉しいです。各自自分の次のタスクをメモしておくように徹底してください。",
-          type: "PASSIVE",
-          feedback: "△ 丸投げの罠：ファシリテーターがタスクを整理せず、各自任せにすると決定事項が霧散してしまいます。"
+          feedback: "△ 丸投げの罠：ファシリテーターがタスクを整理せず、各自任せにすると決定事項が霧散します。"
         },
         rigid: {
           text: "We will take option B, though I still consider option A to be much more viable.",
           jp: "選択肢Bで進めますが、私はいまだに選択肢Aのほうが遥かに実行可能性が高いと考えています。",
-          type: "RIGID",
-          feedback: "✕ 蒸し返しの罠：一度合意した後に『本当はAが良かった』と不満を残すのは、プロジェクトの推進力を削ぎます。"
+          feedback: "✕ 蒸し返しの罠：一度合意した後に『本当はAが良かった』と不満を残すのは推進力を削ぎます。"
         }
       },
-      // 4. negotiation / 交渉・利害調整
+      // Stage 5 専用
       {
-        topic: 'negotiation',
         perfect: {
           text: "Appreciate your partnership. I'll update the agreement and send it over today.",
           jp: "パートナーシップに感謝します。本日中に合意書を更新してお送りいたします。",
-          type: "PERFECT",
-          feedback: "◎ 完璧です！相手の歩み寄りに敬意を払い、当日中に更新版を送るスピード感で合意を確実に固めています。"
+          feedback: "◎ 完璧です！相手の歩み寄りに敬意を払い、当日中に更新版を送るスピード感で合意を固めています。"
         },
         passive: {
           text: "Thank you for the concession. We will probably review the paperwork next week.",
           jp: "譲歩をありがとうございます。書類の確認はおそらく来週頃に行う予定です。",
-          type: "PASSIVE",
-          feedback: "△ 先延ばしの罠：相手が歩み寄った瞬間に『来週確認する』と放置すると、熱が冷めて合意が流れるリスクがあります。"
+          feedback: "△ 先延ばしの罠：相手が歩み寄った瞬間に放置すると、熱が冷めて合意が流れるリスクがあります。"
         },
         rigid: {
           text: "Glad you finally saw reason. We will hold your company strictly to every word.",
           jp: "ようやくご理解いただけて良かったです。一言一句、貴社に厳格に守っていただきます。",
-          type: "RIGID",
-          feedback: "✕ 傲慢な罠：『ようやく分かったか』と勝ち誇る言葉は、今後のパートナーシップを決定的に破壊します。"
-        }
-      },
-      // 5. clinical / 臨床開発・製薬実務
-      {
-        topic: 'clinical',
-        perfect: {
-          text: "Thank you for your commitment. I'll document this rationale in the trial file.",
-          jp: "確固たる方針に感謝します。この判断根拠を試験記録（TMF）に残しておきます。",
-          type: "PERFECT",
-          feedback: "◎ 完璧です！被験者保護と規制遵守の共通認識を称え、GCP監査に耐えうる文書化（TMF記録）を明言しています。"
-        },
-        passive: {
-          text: "I completely share your view, so let us just keep this decision in our minds.",
-          jp: "全く同感ですので、この決定事項は私たちの頭の中に留めておくことにしましょう。",
-          type: "PASSIVE",
-          feedback: "△ 記憶頼みの罠：臨床開発で『頭に入れておく』は重大な監査指摘対象になります。必ず文書記録を残しましょう。"
-        },
-        rigid: {
-          text: "Understood, but your facility must handle all regulatory filings without delay.",
-          jp: "了解ですが、貴施設側で全ての規制届出を遅延なく処理しなければなりません。",
-          type: "RIGID",
-          feedback: "✕ 押し付けの罠：現場サイトとスポンサー/CROは共同責任です。一方的な命令調は医療機関との協働を損ねます。"
+          feedback: "✕ 傲慢な罠：『ようやく分かったか』と勝ち誇る言葉は、今後の関係を決定的に破壊します。"
         }
       }
     ];
 
-    let selectedPreset = presets[0];
-    if (topic === 'clinical' || rxEn.includes('patient') || rxEn.includes('compliance') || target.includes('protocol')) {
-      selectedPreset = presets[5];
-    } else if (topic === 'negotiation' || rxEn.includes('concession') || rxEn.includes('sign') || target.includes('scope')) {
-      selectedPreset = presets[4];
-    } else if (topic === 'meeting' || rxEn.includes('option') || rxEn.includes('proceed') || rxEn.includes('agree')) {
-      selectedPreset = presets[3];
-    } else if (topic === 'issue' || rxEn.includes('investigate') || rxEn.includes('update') || rxEn.includes('5 pm')) {
-      selectedPreset = presets[2];
-    } else if (topic === 'clarify' || rxEn.includes('specification') || rxEn.includes('doc') || target.includes('clarify')) {
-      selectedPreset = presets[1];
-    } else if (topic === 'pushback' || rxEn.includes('date') || rxEn.includes('schedule') || rxEn.includes('timeline') || target.includes('deadline')) {
-      selectedPreset = presets[0];
-    } else {
-      const idx = (scenario?.stage || currentStageIndex || 0) % presets.length;
-      selectedPreset = presets[idx];
-    }
+    const bankIdx = Math.abs((stageNum - 1)) % stageFallbackBank.length;
+    const selectedBank = stageFallbackBank[bankIdx];
 
     return [
-      { text: selectedPreset.perfect.text, jp: selectedPreset.perfect.jp, is_correct: true, tag: "◎ Plain English 合意", feedback: selectedPreset.perfect.feedback },
-      { text: selectedPreset.passive.text, jp: selectedPreset.passive.jp, is_correct: false, tag: "△ 受動的・丸投げ", feedback: selectedPreset.passive.feedback },
-      { text: selectedPreset.rigid.text, jp: selectedPreset.rigid.jp, is_correct: false, tag: "✕ 角が立つ・他責", feedback: selectedPreset.rigid.feedback }
+      { text: selectedBank.perfect.text, jp: selectedBank.perfect.jp, is_correct: true, tag: "◎ Plain English 合意", feedback: selectedBank.perfect.feedback },
+      { text: selectedBank.passive.text, jp: selectedBank.passive.jp, is_correct: false, tag: "△ 受動的・丸投げ", feedback: selectedBank.passive.feedback },
+      { text: selectedBank.rigid.text, jp: selectedBank.rigid.jp, is_correct: false, tag: "✕ 角が立つ・他責", feedback: selectedBank.rigid.feedback }
     ];
   }
 

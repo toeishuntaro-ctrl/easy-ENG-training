@@ -743,10 +743,12 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
     - variation_target: Target English sentence strictly using the SAME pattern with simple junior-high parts inserted.
     - variation_hint_parts: Junior-high English parts hint showing what was combined.
     - variation_chunks: 3-4 word/phrase chunks for variation sentence assembly.
-15. "closing_choices": Exactly 2 fast 1-tap options to close the conversation after counterpart's reaction:
-    - 1 choice with is_correct: true (natural, polite closing confirming agreement/next step, e.g. "Sounds great, thank you! I'll send you an email recap.")
-    - 1 choice with is_correct: false (abrupt, awkward, or overly passive closing, e.g. "Okay, bye." or "Fine, see you later.")
-    - Each option must include "text", "jp", "is_correct", and "feedback".
+15. "closing_choices": Exactly 3 challenging closing reply options specifically and directly tailored to this stage's "counterpart_reaction_en" and topic:
+    - ALL 3 choices MUST be of very similar, balanced length (each approx. 70-85 characters) so that sentence length CANNOT give away the answer!
+    - Choice 1 (is_correct: true): Proactive, collaborative Plain English closing that directly addresses the counterpart's reaction ("counterpart_reaction_en"), thanks them, and confirms a concrete next step or ownership.
+    - Choice 2 (is_correct: false): Passive / deferral trap - polite and similar in length, but defers responsibility, leaves next steps vague, or dumps the action back onto the counterpart.
+    - Choice 3 (is_correct: false): Rigid / blame trap - similar in length and business-like, but sounds defensive, overly bureaucratic, or needlessly cautionary ("make sure you don't mess up"), damaging partnership.
+    - Each option must include "text", "jp", "is_correct", "tag" (e.g. "◎ Plain English 合意", "△ 受動的・丸投げ", "✕ 角が立つ・他責"), and "feedback" (context-specific Japanese explanation of why this closing works or fails in this exact conversation).
 16. "choices": Exactly 3 distinct choices:
    **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
    - type: "PERFECT"
@@ -804,16 +806,17 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
         },
         closing_choices: {
           type: Type.ARRAY,
-          description: "2 options for 1-tap closing reply: one natural/collaborative closing (is_correct=true) and one abrupt/unnatural closing (is_correct=false)",
+          description: "Exactly 3 distinct, balanced-length closing reply options tailored specifically to this stage's counterpart reaction: one proactive/collaborative Plain English closing (is_correct=true), one passive/deferral trap (is_correct=false), and one rigid/blame trap (is_correct=false). All 3 must be roughly the same length.",
           items: {
             type: Type.OBJECT,
             properties: {
-              text: { type: Type.STRING, description: "English closing statement" },
+              text: { type: Type.STRING, description: "English closing statement (approx 70-85 characters)" },
               jp: { type: Type.STRING, description: "Japanese translation" },
-              is_correct: { type: Type.BOOLEAN, description: "True if natural closing, false if abrupt/unnatural" },
-              feedback: { type: Type.STRING, description: "Brief Japanese explanation of why this closing works or fails" }
+              is_correct: { type: Type.BOOLEAN, description: "True if proactive/collaborative closing, false if trap" },
+              tag: { type: Type.STRING, description: "Badge tag such as '◎ Plain English 合意', '△ 受動的・丸投げ', or '✕ 角が立つ・他責'" },
+              feedback: { type: Type.STRING, description: "Context-specific Japanese explanation of why this closing works or fails" }
             },
-            required: ["text", "jp", "is_correct", "feedback"]
+            required: ["text", "jp", "is_correct", "tag", "feedback"]
           }
         },
         choices: {
