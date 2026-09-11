@@ -3674,11 +3674,14 @@
       <div style="font-size: 12px; color: #1f2937; margin-top: 8px; line-height: 1.5; background: #f0fdf4; border-radius: 8px; padding: 10px;" id="roleplaySummaryText">
         相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました。
       </div>
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <button class="btn-action" style="flex: 1; padding: 10px; background: #2563eb; color: #fff; border: none; font-weight: 700;" onclick="resetRoleplaySession()">
-          🔄 次のシチュエーションで練習
+      <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+        <button class="btn-action" style="flex: 1 1 180px; padding: 10px; background: #2563eb; color: #fff; border: none; font-weight: 700; border-radius: 8px; cursor: pointer;" onclick="advanceToNextRoleplaySituation()">
+          ➡️ 次のシチュエーションで練習
         </button>
-        <button class="btn-action" style="padding: 10px 14px;" onclick="switchTab('home')">
+        <button class="btn-action" style="padding: 10px 12px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-weight: 600; border-radius: 8px; cursor: pointer;" onclick="resetRoleplaySession(true)" title="今の話題をもう一度最初から練習する">
+          ↺ 同じ内容を復習
+        </button>
+        <button class="btn-action" style="padding: 10px 14px; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;" onclick="switchTab('home')">
           🏠 ホームへ
         </button>
       </div>
@@ -9738,6 +9741,37 @@
     toast(`🎲 【おまかせマッチ】${char.name} との「${topic.title}」を開始しました！`);
   }
 
+  function advanceToNextRoleplaySituation() {
+    const topicKeys = ['pushback', 'issue', 'clarify', 'freeze', 'escalation', 'cost'];
+    const topicDefaultChars = {
+      pushback: 'sarah',
+      issue: 'david',
+      clarify: 'rajesh',
+      freeze: 'elena',
+      escalation: 'alex',
+      cost: 'michael'
+    };
+
+    const currentIdx = topicKeys.indexOf(roleplayState.topicKey);
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % topicKeys.length : 0;
+    const nextTopicKey = topicKeys[nextIdx];
+    const nextCharKey = topicDefaultChars[nextTopicKey] || 'sarah';
+
+    roleplayState.topicKey = nextTopicKey;
+    roleplayState.characterKey = nextCharKey;
+
+    resetRoleplaySession(false);
+
+    const char = ROLEPLAY_CHARACTERS[nextCharKey] || ROLEPLAY_CHARACTERS.sarah;
+    const topic = ROLEPLAY_TOPICS[nextTopicKey] || ROLEPLAY_TOPICS.pushback;
+
+    toast(`✨ 次のシチュエーション: 【${topic.title}】を開始しました！（相手: ${char.name}）`);
+
+    // タイムラインを上部にスムーズスクロール
+    const timeline = document.getElementById('roleplayTimeline');
+    if (timeline) timeline.scrollTop = 0;
+  }
+
   function resetRoleplaySession(showToast = true) {
     const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
     const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
@@ -10286,6 +10320,7 @@
   window.changeRoleplayCharacter = changeRoleplayCharacter;
   window.changeRoleplayTopic = changeRoleplayTopic;
   window.resetRoleplaySession = resetRoleplaySession;
+  window.advanceToNextRoleplaySituation = advanceToNextRoleplaySituation;
   window.startRandomRoleplay = startRandomRoleplay;
   window.toggleRoleplayMic = toggleRoleplayMic;
   window.handleRoleplayKeyDown = handleRoleplayKeyDown;
