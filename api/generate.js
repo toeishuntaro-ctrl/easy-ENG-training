@@ -743,11 +743,19 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
     - variation_target: Target English sentence strictly using the SAME pattern with simple junior-high parts inserted.
     - variation_hint_parts: Junior-high English parts hint showing what was combined.
     - variation_chunks: 3-4 word/phrase chunks for variation sentence assembly.
-15. "closing_choices": Exactly 3 challenging closing reply options specifically and directly tailored to this stage's "counterpart_reaction_en" and topic:
+15. "closing_choices": Exactly 3 challenging closing reply options SPOKEN BY THE USER to conclude this 2-way rally:
+    - CONVERSATION FLOW REMINDER:
+      * Turn 1: Counterpart says "ai_en" -> User replies with "target".
+      * Turn 2: Counterpart reacts with "counterpart_reaction_en" -> User concludes the exchange with one of these "closing_choices".
+    - CRITICAL ABSOLUTE MANDATE:
+      * The speaker of "closing_choices" is THE USER, NOT the counterpart.
+      * NEVER parrot, copy, or repeat the text of "counterpart_reaction_en" in any choice! The user must NOT say what the counterpart just said.
+      * For example, if counterpart says: "I will set up a daily check system to ensure we capture all the logs properly.",
+        Choice 1 (is_correct: true) MUST be the USER acknowledging and responding to that proposal (e.g. "Thank you, Hans. Our team will review the daily check logs with you every morning."), NEVER the user repeating "I will set up a daily check system..."!
     - ALL 3 choices MUST be of very similar, balanced length (each approx. 70-85 characters) so that sentence length CANNOT give away the answer!
-    - Choice 1 (is_correct: true): Proactive, collaborative Plain English closing that directly addresses the counterpart's reaction ("counterpart_reaction_en"), thanks them, and confirms a concrete next step or ownership.
-    - Choice 2 (is_correct: false): Passive / deferral trap - polite and similar in length, but defers responsibility, leaves next steps vague, or dumps the action back onto the counterpart.
-    - Choice 3 (is_correct: false): Rigid / blame trap - similar in length and business-like, but sounds defensive, overly bureaucratic, or needlessly cautionary ("make sure you don't mess up"), damaging partnership.
+    - Choice 1 (is_correct: true): Proactive, collaborative Plain English closing spoken by the USER that directly addresses the counterpart's reaction ("counterpart_reaction_en"), thanks them, and confirms concrete mutual follow-up or support.
+    - Choice 2 (is_correct: false): Passive / deferral trap - spoken by the USER, polite and similar in length, but defers responsibility, leaves next steps vague, or dumps all work back onto the counterpart.
+    - Choice 3 (is_correct: false): Rigid / blame trap - spoken by the USER, similar in length and business-like, but sounds defensive, overly bureaucratic, or needlessly cautionary ("make sure you don't mess up"), damaging partnership.
     - Each option must include "text", "jp", "is_correct", "tag" (e.g. "◎ Plain English 合意", "△ 受動的・丸投げ", "✕ 角が立つ・他責"), and "feedback" (context-specific Japanese explanation of why this closing works or fails in this exact conversation).
 16. "choices": Exactly 3 distinct choices:
    **CRITICAL CONSTRAINT**: ALL 3 choices MUST start with or incorporate the EXACT SAME key pattern (e.g., "I see your point, but we need to..."). DO NOT give away the answer by having only one choice contain the pattern! The user must judge the junior-high vocabulary and tone in the remainder of the sentence:
@@ -939,7 +947,21 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
             variations: finalVariations,
             counterpart_reaction_en: sc.counterpart_reaction_en || "Understood. That sounds like a reasonable next step. Let's keep each other posted.",
             counterpart_reaction_jp: sc.counterpart_reaction_jp || "承知しました。妥当な進め方ですね。引き続き進捗を共有し合いましょう。",
-            closing_choices: Array.isArray(sc.closing_choices) && sc.closing_choices.length >= 2 ? sc.closing_choices : null,
+            closing_choices: (() => {
+              if (!Array.isArray(sc.closing_choices) || sc.closing_choices.length < 2) return null;
+              const rxNorm = (sc.counterpart_reaction_en || "").toLowerCase().replace(/[^a-z0-9]/g, '');
+              // 相手の発言(counterpart_reaction_en)をそのままオウム返ししている選択肢があるか厳格チェック
+              const hasParroting = sc.closing_choices.some(c => {
+                const cNorm = (c.text || "").toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (!cNorm || !rxNorm) return false;
+                return cNorm === rxNorm || (cNorm.length > 25 && rxNorm.includes(cNorm)) || (rxNorm.length > 25 && cNorm.includes(rxNorm));
+              });
+              if (hasParroting) {
+                console.warn(`[AI Generate] Filtered out parroted closing_choices in stage ${sc.stage}`);
+                return null; // クライアント側の高精度コンテキスト生成器にフォールバックさせる
+              }
+              return sc.closing_choices;
+            })(),
             email_subject: sc.email_subject || (sc.ai_en?.startsWith("Subject:") ? sc.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update and next steps"),
             choices: Array.isArray(sc.choices) ? sc.choices : []
           };

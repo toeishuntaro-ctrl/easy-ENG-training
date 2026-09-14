@@ -8225,58 +8225,111 @@
   let currentClosingAnswered = false;
 
   function generateClosingChoices(scenario) {
-    // 1. シナリオ自体に既に高品質な3択以上が定義されている場合
+    const rxEnRaw = (scenario?.counterpart_reaction_en || "").trim();
+    const rxNorm = rxEnRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // 1. シナリオ自体に既に高品質な3択以上が定義されている場合（相手発言のオウム返し・不整合を厳格検知）
     if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length >= 3) {
-      return JSON.parse(JSON.stringify(scenario.closing_choices)).map((c, i) => ({
-        text: c.text,
-        jp: c.jp || "",
-        is_correct: !!c.is_correct,
-        tag: c.tag || (c.is_correct ? "◎ Plain English 合意" : (i === 1 ? "△ 受動的・丸投げ" : "✕ 角が立つ・他責")),
-        feedback: c.feedback || (c.is_correct ? "◎ 相手の合意を受け止め、次アクションを引き取るスマートな締め方です。" : "△ 実務での落とし穴が含まれています。")
-      }));
+      const choices = scenario.closing_choices;
+      const isParroting = choices.some(c => {
+        const cNorm = (c.text || "").toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!cNorm || !rxNorm) return false;
+        return cNorm === rxNorm || (cNorm.length > 25 && rxNorm.includes(cNorm)) || (rxNorm.length > 25 && cNorm.includes(rxNorm));
+      });
+
+      if (!isParroting) {
+        return JSON.parse(JSON.stringify(choices)).map((c, i) => ({
+          text: c.text,
+          jp: c.jp || "",
+          is_correct: !!c.is_correct,
+          tag: c.tag || (c.is_correct ? "◎ Plain English 合意" : (i === 1 ? "△ 受動的・丸投げ" : "✕ 角が立つ・他責")),
+          feedback: c.feedback || (c.is_correct ? "◎ 相手の合意を受け止め、次アクションを引き取るスマートな締め方です。" : "△ 実務での落とし穴が含まれています。")
+        }));
+      }
+      console.warn("Detected counterpart reaction parroting in scenario.closing_choices. Regenerating clean context-aware choices.");
     }
 
-    // 2. 既存の2択がある場合は3つ目を動的補完して3択化
+    // 2. 既存の2択がある場合は3つ目を動的補完して3択化（オウム返しをチェック）
     if (scenario && Array.isArray(scenario.closing_choices) && scenario.closing_choices.length === 2) {
       const c1 = scenario.closing_choices[0];
       const c2 = scenario.closing_choices[1];
-      const correctChoice = c1.is_correct ? c1 : c2;
-      const wrongChoice = !c1.is_correct ? c1 : c2;
-      return [
-        {
-          text: correctChoice.text,
-          jp: correctChoice.jp || "",
-          is_correct: true,
-          tag: "◎ Plain English 合意",
-          feedback: correctChoice.feedback || "◎ 相手の合意を受け止め、次アクションを明確にする素晴らしい対応です。"
-        },
-        {
-          text: wrongChoice.text,
-          jp: wrongChoice.jp || "",
-          is_correct: false,
-          tag: "△ 受動的・丸投げ",
-          feedback: wrongChoice.feedback || "△ 丁寧に見えますが、相手に丸投げしてしまっています。"
-        },
-        {
-          text: "Understood, but please ensure your team strictly avoids any further errors.",
-          jp: "了解しましたが、貴社チームがこれ以上のミスを厳格に避けるよう徹底してください。",
-          is_correct: false,
-          tag: "✕ 角が立つ・他責",
-          feedback: "✕ 合意直後に『ミスをするな』と相手を威圧するのは、パートナーシップを著しく損ねます。"
-        }
-      ];
+      const isParroting = [c1, c2].some(c => {
+        const cNorm = (c.text || "").toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!cNorm || !rxNorm) return false;
+        return cNorm === rxNorm || (cNorm.length > 25 && rxNorm.includes(cNorm)) || (rxNorm.length > 25 && cNorm.includes(rxNorm));
+      });
+
+      if (!isParroting) {
+        const correctChoice = c1.is_correct ? c1 : c2;
+        const wrongChoice = !c1.is_correct ? c1 : c2;
+        return [
+          {
+            text: correctChoice.text,
+            jp: correctChoice.jp || "",
+            is_correct: true,
+            tag: "◎ Plain English 合意",
+            feedback: correctChoice.feedback || "◎ 相手の合意を受け止め、次アクションを明確にする素晴らしい対応です。"
+          },
+          {
+            text: wrongChoice.text,
+            jp: wrongChoice.jp || "",
+            is_correct: false,
+            tag: "△ 受動的・丸投げ",
+            feedback: wrongChoice.feedback || "△ 丁寧に見えますが、相手に丸投げしてしまっています。"
+          },
+          {
+            text: "Understood, but please ensure your team strictly avoids any further errors.",
+            jp: "了解しましたが、貴社チームがこれ以上のミスを厳格に避けるよう徹底してください。",
+            is_correct: false,
+            tag: "✕ 角が立つ・他責",
+            feedback: "✕ 合意直後に『ミスをするな』と相手を威圧するのは、パートナーシップを著しく損ねます。"
+          }
+        ];
+      }
+      console.warn("Detected counterpart reaction parroting in 2-choice closing_choices. Regenerating clean context-aware choices.");
     }
 
     // 3. コンテキスト解析による動的生成
     const rxEn = ((scenario?.counterpart_reaction_en || "") + " " + (scenario?.ai_en || "")).toLowerCase();
     const target = (scenario?.target || "").toLowerCase();
     const rawAiName = scenario?.ai_name || "Counterpart";
-    // 相手のファーストネームを抽出（例: "Sarah (Regulatory Affairs Lead)" -> "Sarah"）
+    // 相手のファーストネームを抽出（例: "Sarah (Regulatory Affairs Lead)" -> "Sarah", "Hans (External Quality Auditor)" -> "Hans"）
     const nameMatch = rawAiName.match(/^([A-Z][a-zA-Z]+)/);
     const counterpartFirstName = nameMatch ? nameMatch[1] : "";
     const stageNum = scenario?.stage || (currentStageIndex + 1) || 1;
 
     // --- コンテキスト別 3択ジェネレーター（全選択肢 74〜82文字で精密統一） ---
+
+    // パターン 0: 相手がチェック体制・監査対策・ログ管理を自ら構築/提案してくれた (check system / daily check / log / audit / monitor / capture / tracking)
+    if (rxEn.includes('check system') || rxEn.includes('daily check') || rxEn.includes('log') || rxEn.includes('audit') || rxEn.includes('capture') || rxEn.includes('monitor')) {
+      return [
+        {
+          text: counterpartFirstName
+            ? `Thank you, ${counterpartFirstName}. Our team will review the check logs with you every morning.`
+            : "Thank you for setting this up. Our team will review the logs with you closely.",
+          jp: counterpartFirstName
+            ? `${counterpartFirstName}さん、ありがとうございます。毎朝チームでログを一緒に確認します。`
+            : "体制の整備に感謝します。毎朝チームで一緒にログを確認してまいります。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！相手が整えてくれたチェック体制に感謝し、自分たちも毎朝の共同レビューで伴走する姿勢が伝わります。"
+        },
+        {
+          text: "Glad to hear that. Please manage all logs by yourself and only ping us if it breaks.",
+          jp: "それを聞いて安心しました。全ログをご自身で管理し、問題が起きた時だけ呼んでください。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 丸投げの罠：相手が仕組みを作ってくれた瞬間に『あとは全部そちらで』と突き放すのは無責任です。"
+        },
+        {
+          text: "Good, but please make sure your check system does not disrupt our daily routines.",
+          jp: "結構ですが、そのチェック体制が私たちの日常業務の邪魔にならないよう留意してください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 自己都合の罠：協力してくれている監査員や担当者に対し『こちらの手を煩わせるな』と不満をぶつけるのは厳禁です。"
+        }
+      ];
+    }
 
     // パターン A: 相手が提出作業やリードを引き受けてくれた (submission / take charge / take the lead / handle / from here)
     if (rxEn.includes('take charge') || rxEn.includes('take the lead') || rxEn.includes('submission') || rxEn.includes('from here') || target.includes('submission')) {
@@ -8494,6 +8547,37 @@
           is_correct: false,
           tag: "✕ 角が立つ・他責",
           feedback: "✕ 嫌味の罠：『あなたの想像より大変なんだ』と相手の無知を責めるのは、協業の雰囲気を悪化させます。"
+        }
+      ];
+    }
+
+    // パターン I: 相手が自身でタスクや対応を引き受けてくれた一般ケース (i will / i'll / we will / we'll / set up)
+    if (rxEn.includes('i will') || rxEn.includes("i'll") || rxEn.includes('we will') || rxEn.includes("we'll")) {
+      return [
+        {
+          text: counterpartFirstName
+            ? `Thank you, ${counterpartFirstName}. I will coordinate with my team to support your next step.`
+            : "Thank you for taking this on. We will coordinate with our team to support you.",
+          jp: counterpartFirstName
+            ? `${counterpartFirstName}さん、ありがとうございます。次のステップに向けてチームと連携してサポートします。`
+            : "引き受けてくださり感謝します。次のステップに向けてチームと連携してサポートします。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "◎ 完璧です！相手の自発的なアクションに敬意と感謝を示し、自分たちも足並みを揃えて支援する姿勢が信頼を深めます。"
+        },
+        {
+          text: "Sounds great. Please take full responsibility and only let us know once it is done.",
+          jp: "素晴らしいですね。では全責任を持って進めていただき、全て完了したらお知らせください。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "△ 丸投げの罠：相手が引き受けた途端に『あとは全責任を持ってやって』と突き放すのは無責任です。"
+        },
+        {
+          text: "Understood, but please make sure your action does not cause any unexpected delays.",
+          jp: "了解しましたが、そちらの対応が予期せぬ遅延やトラブルを引き起こさないよう注意してください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "✕ 威圧の罠：相手が引き受けてくれた直後に『遅延を起こすな』と警告するのは、相手の自発的な協力を損ねます。"
         }
       ];
     }
