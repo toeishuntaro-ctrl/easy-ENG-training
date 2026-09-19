@@ -60,7 +60,16 @@ class FirebaseSyncService {
     }
     this.syncCode = savedCode.trim().toUpperCase();
 
-    this.init();
+    // Expose initPromise so app startup can await cloud sync
+    let resolveInit;
+    this.initPromise = new Promise((resolve) => {
+      resolveInit = resolve;
+    });
+    window.fbSyncInitPromise = this.initPromise;
+
+    this.init().finally(() => {
+      if (resolveInit) resolveInit();
+    });
   }
 
   getProfileDocRef() {
@@ -387,6 +396,9 @@ class FirebaseSyncService {
       if (typeof window.renderHistory === 'function') window.renderHistory();
       if (typeof window.populateScriptLogSelect === 'function') window.populateScriptLogSelect();
       if (typeof window.populateQuickModeSelect === 'function') window.populateQuickModeSelect();
+      if (typeof window.updateResumeCardUI === 'function') window.updateResumeCardUI();
+      if (typeof window.updateSrsRecommendUI === 'function') window.updateSrsRecommendUI();
+      if (typeof window.initDailyFocusCard === 'function') window.initDailyFocusCard();
 
       this.notifyStatus({ 
         state: 'synced', 
