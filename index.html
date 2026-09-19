@@ -3733,7 +3733,7 @@
 
     if (currentHistoryId) {
       let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-      const idx = history.findIndex(item => item.id === currentHistoryId);
+      const idx = history.findIndex(item => String(item.id) === String(currentHistoryId));
       if (idx !== -1) {
         history[idx].lastStageIndex = currentStageIndex;
         history[idx].mode = trainingMode;
@@ -3959,13 +3959,13 @@
     history.slice(0, 20).forEach(item => {
       const modeLabel = getModeLabel(item.mode || 'quiz');
       const statusStr = item.status === 'completed' ? '🟢 完了' : item.status === 'needs_review' ? '🟡 要復習' : '🔵 未学習';
-      const isSelected = item.id === currentHistoryId ? 'selected' : '';
+      const isSelected = String(item.id) === String(currentHistoryId) ? 'selected' : '';
       optionsHtml += `<option value="${item.id}" ${isSelected}>${modeLabel} - ${item.date} 【${statusStr}】</option>`;
     });
 
     select.innerHTML = optionsHtml;
 
-    const currentItem = history.find(item => item.id === currentHistoryId);
+    const currentItem = history.find(item => String(item.id) === String(currentHistoryId));
     const badgeEl = document.getElementById('logStatusBadgeDisplay');
     if (currentItem && badgeEl) {
       const st = currentItem.status || 'unplayed';
@@ -3995,6 +3995,9 @@
 
       toast(`📌 [${getModeLabel(target.mode)}] STAGE ${currentStageIndex + 1} / ${total} を再開しました`);
       loadStage();
+      populateQuickModeSelect();
+    } else {
+      toast('⚠️ 過去レッスンのデータが見つかりませんでした');
     }
   }
 
@@ -4592,6 +4595,14 @@
     if (tabName === 'library') renderLibrary();
     if (tabName === 'roleplay') initRoleplayIfNeeded();
     if (tabName === 'analytics') renderAnalyticsView();
+    if (tabName === 'play') {
+      if (!scenarios || scenarios.length === 0) {
+        resumeActiveSession();
+      } else {
+        loadStage();
+      }
+      populateQuickModeSelect();
+    }
     
     if (tabName !== 'play') {
       stopSimTimer();
@@ -4968,7 +4979,7 @@
   function updateHistoryStatus(isCorrect) {
     if (!currentHistoryId) return;
     let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    const idx = history.findIndex(item => item.id === currentHistoryId);
+    const idx = history.findIndex(item => String(item.id) === String(currentHistoryId));
     if (idx !== -1) {
       history[idx].answered = (history[idx].answered || 0) + 1;
       history[idx].lastStageIndex = currentStageIndex;
@@ -5052,6 +5063,26 @@
     }
   }
 
+  function refreshSessionFromLatestHistory() {
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    if (history.length > 0 && (!scenarios || scenarios.length === 0 || !currentHistoryId)) {
+      const target = history[0];
+      if (target && target.data && target.data.length > 0) {
+        scenarios = target.data;
+        currentHistoryId = target.id;
+        if (target.mode) setTrainingMode(target.mode);
+        if (target.topic) selectedTopic = target.topic;
+        currentStageIndex = typeof target.lastStageIndex === 'number' ? target.lastStageIndex : 0;
+        if (currentStageIndex >= scenarios.length) currentStageIndex = 0;
+        loadStage();
+      }
+    }
+    populateQuickModeSelect();
+    populateScriptLogSelect();
+    renderHistory();
+    updateResumeCardUI();
+  }
+
   async function initApp() {
     // 1. 旧キャッシュ等によるBoss関連要素の完全パージ
     document.querySelectorAll('.boss-card, [onclick*="launchBoss"], [id*="boss"], [id*="Boss"]').forEach(el => el.remove());
@@ -5128,6 +5159,7 @@
     window.populateQuickModeSelect = populateQuickModeSelect;
     window.initDailyFocusCard = initDailyFocusCard;
     window.renderAnalyticsView = renderAnalyticsView;
+    window.refreshSessionFromLatestHistory = refreshSessionFromLatestHistory;
     window.startLibraryQuiz = startLibraryQuiz;
     window.startSinglePhraseQuiz = startSinglePhraseQuiz;
     window.setLibraryFilterTopic = setLibraryFilterTopic;
@@ -6862,7 +6894,7 @@
     let optionsHtml = '';
     history.slice(0, 20).forEach(item => {
       const modeLabel = getModeLabel(item.mode || 'quiz');
-      const isSelected = item.id === currentHistoryId ? 'selected' : '';
+      const isSelected = String(item.id) === String(currentHistoryId) ? 'selected' : '';
       optionsHtml += `<option value="${item.id}" ${isSelected}>${modeLabel} - ${item.date}</option>`;
     });
 
@@ -7008,10 +7040,10 @@
             <div class="list-sub">${subInfo}</div>
           </div>
           <div style="display:flex; gap:6px; align-items:center;">
-            <button class="btn-action btn-play" onclick="loadHistoryItem(${item.id})" style="${isOngoing ? 'background:#2563eb; color:#fff; font-weight:700;' : ''}">
+            <button class="btn-action btn-play" onclick="loadHistoryItem('${item.id}')" style="${isOngoing ? 'background:#2563eb; color:#fff; font-weight:700;' : ''}">
               ${actionBtnText}
             </button>
-            <button class="btn-action btn-delete" onclick="deleteHistoryItem(${item.id})">削除</button>
+            <button class="btn-action btn-delete" onclick="deleteHistoryItem('${item.id}')">削除</button>
           </div>
         </div>
       `;
@@ -7023,7 +7055,7 @@
     if (typeof migrateAndRepairStoredData === 'function') migrateAndRepairStoredData();
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const target = history.find(item => String(item.id) === String(id));
-    if (target && target.data) {
+    if (target && target.data && target.data.length > 0) {
       scenarios = target.data;
       currentHistoryId = target.id;
       if (target.mode) setTrainingMode(target.mode);
@@ -7038,6 +7070,8 @@
       loadStage();
       populateQuickModeSelect();
       toast(`📌 [${getModeLabel(target.mode)}] STAGE ${currentStageIndex + 1} / ${total} を再開しました`);
+    } else {
+      toast('⚠️ 過去レッスンのデータが見つかりませんでした');
     }
   }
 
@@ -8331,7 +8365,7 @@
     // コース完了処理: 履歴を完了にし、アクティブセッションをリセット
     if (currentHistoryId) {
       let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-      const idx = history.findIndex(item => item.id === currentHistoryId);
+      const idx = history.findIndex(item => String(item.id) === String(currentHistoryId));
       if (idx !== -1) {
         history[idx].status = 'completed';
         history[idx].lastStageIndex = 0;
@@ -9678,9 +9712,12 @@
   window.startDailyFocusSession = startDailyFocusSession;
   window.renderAnalyticsView = renderAnalyticsView;
   window.startFocusTopicTraining = startFocusTopicTraining;
-  window.selectClosingOption = selectClosingOption;
 
-  initApp();
+  try {
+    initApp();
+  } catch (err) {
+    console.error("Critical error during initApp:", err);
+  }
   if (typeof updateTimeAttackUIState === 'function') updateTimeAttackUIState();
   if (typeof updateSrsRecommendUI === 'function') updateSrsRecommendUI();
   if (typeof initDailyFocusCard === 'function') initDailyFocusCard();

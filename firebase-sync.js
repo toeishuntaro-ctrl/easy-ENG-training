@@ -364,14 +364,16 @@ class FirebaseSyncService {
       let localHistory = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
 
       historySnap.forEach(docSnap => {
-        const cloudItem = docSnap.data();
+        const cloudData = docSnap.data();
+        const cloudItem = { id: docSnap.id, ...cloudData };
+        if (cloudData && cloudData.id) cloudItem.id = cloudData.id;
         const existingIdx = localHistory.findIndex(h => String(h.id) === String(cloudItem.id));
         if (existingIdx === -1) {
           localHistory.push(cloudItem);
         } else {
           // Keep the record with higher answered count or completed status
           if ((cloudItem.answered || 0) > (localHistory[existingIdx].answered || 0)) {
-            localHistory[existingIdx] = cloudItem;
+            localHistory[existingIdx] = { ...localHistory[existingIdx], ...cloudItem };
           }
         }
       });
@@ -399,6 +401,7 @@ class FirebaseSyncService {
       if (typeof window.updateResumeCardUI === 'function') window.updateResumeCardUI();
       if (typeof window.updateSrsRecommendUI === 'function') window.updateSrsRecommendUI();
       if (typeof window.initDailyFocusCard === 'function') window.initDailyFocusCard();
+      if (typeof window.refreshSessionFromLatestHistory === 'function') window.refreshSessionFromLatestHistory();
 
       this.notifyStatus({ 
         state: 'synced', 
