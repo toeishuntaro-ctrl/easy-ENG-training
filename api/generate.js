@@ -725,7 +725,8 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 
 [Content & Language Rules]
 1. "ai_name": Counterpart role name (e.g., "Elena (Sponsor Director)", "Rajesh (Regional Lead)", "Marcus (Global VP)", "Dr. Williams (PI)").
-2. "ai_en": Natural, realistic English statement from the counterpart (1-3 sentences).
+2. "ai_en": Natural, realistic English statement from the counterpart (1-3 sentences) raising an inquiry, request, pushback, or problem.
+   * CRITICAL ABSOLUTE MANDATE: "ai_en" MUST NEVER be identical to or copy "target"! It is a critical bug if the counterpart's speech is the same as the user's target answer. The counterpart speaks first with their own problem/question, and the user replies with "target".
 3. "ai_jp": Natural, context-rich Japanese translation of the counterpart's statement.
 4. "key_pattern": The reusable English pattern/formula (e.g., "I see your point, but we need to [verb]...", "We cannot [verb A], but we can [verb B] instead", "Could you clarify what you mean by [noun]?"). MUST BE DISTINCT for each stage!
 5. "key_pattern_jp": Meaning of the pattern in Japanese (e.g., "おっしゃることは分かりますが、〜する必要があります", "〜はできませんが、代わりに…なら可能です").
@@ -932,11 +933,33 @@ ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
             finalVariations = synthesizePatternVariations(sc.key_pattern, sc.key_pattern_jp, target);
           }
 
+          // 相手の発言(ai_en)がユーザーの回答(target)と同じ、またはオウム返しになっていないか厳格チェック＆修復
+          let safeAiEn = (sc.ai_en || "").trim();
+          let safeAiJp = (sc.ai_jp || "").trim();
+          const targetNorm = target.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const aiEnNorm = safeAiEn.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const isParroting = !safeAiEn ||
+            (targetNorm.length > 0 && aiEnNorm === targetNorm) ||
+            (targetNorm.length > 20 && aiEnNorm.includes(targetNorm)) ||
+            (aiEnNorm.length > 20 && targetNorm.includes(aiEnNorm));
+
+          if (isParroting) {
+            console.warn(`[AI Generate] Repaired parroted ai_en in stage ${idx + 1}`);
+            if (safeAiJp && safeAiJp.includes("誰が") && safeAiJp.includes("責任")) {
+              safeAiEn = "There seems to be some confusion regarding the deadline and ownership. Who is actually responsible for leading the final submission?";
+            } else if (safeAiJp) {
+              safeAiEn = "We are receiving conflicting updates regarding this task. Could you clarify our next steps and priorities?";
+            } else {
+              safeAiEn = "Could you give us an urgent update on how we should handle the next steps for this milestone?";
+              safeAiJp = "このマイルストーンの次のステップをどう進めるべきか、至急の状況共有をお願いできますか？";
+            }
+          }
+
           return {
             stage: idx + 1,
             ai_name: sc.ai_name || "Stakeholder",
-            ai_en: sc.ai_en || "",
-            ai_jp: sc.ai_jp || "",
+            ai_en: safeAiEn,
+            ai_jp: safeAiJp,
             key_pattern: sc.key_pattern || "I see your point, but we need to...",
             key_pattern_jp: sc.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります",
             pattern_rationale: sc.pattern_rationale || "相手の立場を尊重しつつ、中学レベルの平易な動詞で制約や次のアクションを明快に伝えることで、非ネイティブ同士でも誤解なく合意形成できます。",

@@ -297,30 +297,53 @@ class FirebaseSyncService {
       weaponsSnap.forEach(docSnap => {
         const item = docSnap.data();
         if (item.target && !localLib.some(l => l.target === item.target)) {
+          // Never assign target to ai_en (prevents question === answer defect)
+          const validAiEn = (item.ai_en && item.ai_en.trim().toLowerCase() !== item.target.trim().toLowerCase())
+            ? item.ai_en : '';
           localLib.push({
             id: Date.now() + Math.random(),
             target: item.target,
             guide: item.guide || '',
             key_pattern: item.key_pattern || '',
             key_pattern_jp: item.key_pattern_jp || '',
+            pattern_rationale: item.pattern_rationale || '',
+            parts_hint: item.parts_hint || '',
             topic: item.topic || '',
-            ai_en: item.target
+            ai_name: item.ai_name || '',
+            ai_en: validAiEn,
+            ai_jp: item.ai_jp || '',
+            email_subject: item.email_subject || ''
           });
+        }
+      });
+
+      // Sanitize any existing corrupted items in localLib where ai_en was set to target
+      localLib.forEach(item => {
+        if (item.ai_en && item.target && item.ai_en.trim().toLowerCase() === item.target.trim().toLowerCase()) {
+          item.ai_en = '';
         }
       });
       localStorage.setItem('english_phrase_library', JSON.stringify(localLib));
 
-      // Push local phrases to cloud
+      // Push local phrases to cloud with full counterpart context
       for (const phrase of localLib) {
         if (!phrase.target) continue;
         const docId = encodeDocId(phrase.target);
+        const safeAiEn = (phrase.ai_en && phrase.ai_en.trim().toLowerCase() !== phrase.target.trim().toLowerCase())
+          ? phrase.ai_en : '';
         await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId), sanitizeForFirestore({
           syncCode: this.syncCode,
           target: phrase.target,
           guide: phrase.guide || '',
           key_pattern: phrase.key_pattern || '',
           key_pattern_jp: phrase.key_pattern_jp || '',
+          pattern_rationale: phrase.pattern_rationale || '',
+          parts_hint: phrase.parts_hint || '',
           topic: phrase.topic || '',
+          ai_name: phrase.ai_name || '',
+          ai_en: safeAiEn,
+          ai_jp: phrase.ai_jp || '',
+          email_subject: phrase.email_subject || '',
           savedAt: new Date().toISOString()
         }), { merge: true });
       }
@@ -450,13 +473,21 @@ class FirebaseSyncService {
     try {
       const docId = encodeDocId(weapon.target);
       const weaponRef = doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId);
+      const safeAiEn = (weapon.ai_en && weapon.ai_en.trim().toLowerCase() !== weapon.target.trim().toLowerCase())
+        ? weapon.ai_en : '';
       await setDoc(weaponRef, sanitizeForFirestore({
         syncCode: this.syncCode,
         target: weapon.target,
         guide: weapon.guide || '',
         key_pattern: weapon.key_pattern || '',
         key_pattern_jp: weapon.key_pattern_jp || '',
+        pattern_rationale: weapon.pattern_rationale || '',
+        parts_hint: weapon.parts_hint || '',
         topic: weapon.topic || '',
+        ai_name: weapon.ai_name || '',
+        ai_en: safeAiEn,
+        ai_jp: weapon.ai_jp || '',
+        email_subject: weapon.email_subject || '',
         savedAt: new Date().toISOString()
       }), { merge: true });
     } catch (e) {

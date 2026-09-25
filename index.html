@@ -6678,6 +6678,15 @@
     const data = scenarios[currentStageIndex];
     if (!data) return;
 
+    // 【問題＝答えそのままバグの完全防止・オンザフライ修復】
+    // 相手の発言(ai_en)がユーザーの回答(target)と同じ、またはオウム返しになっている場合は直ちに修復
+    if (isSameOrParroted(data.ai_en, data.target) || !data.ai_en || data.ai_en === "Let's review this saved business situation.") {
+      const fixedCp = resolveReviewCounterpartData(data.target, data.ai_en, data.ai_jp, data.guide, data.ai_name);
+      data.ai_en = fixedCp.ai_en;
+      data.ai_jp = fixedCp.ai_jp;
+      if (fixedCp.ai_name) data.ai_name = fixedCp.ai_name;
+    }
+
     // 不足・ダミー翻訳や不十分な解説の自動救済・ハイドレーション
     if (!data.ai_jp || data.ai_jp === '保存したビジネス状況の復習です。' || data.ai_jp.includes('保存したビジネス状況')) {
       const orig = findOriginalStageData(data.target, data.ai_en);
@@ -7120,6 +7129,14 @@
       return;
     }
 
+    const cpData = resolveReviewCounterpartData(
+      current.target,
+      current.ai_en,
+      current.ai_jp,
+      current.guide,
+      current.ai_name
+    );
+
     const patternInfo = deriveKeyPatternInfo(
       current.target,
       current.key_pattern,
@@ -7132,9 +7149,9 @@
       id: Date.now(),
       target: current.target,
       guide: current.guide || patternInfo.guide,
-      ai_en: current.ai_en,
-      ai_jp: current.ai_jp || '',
-      ai_name: current.ai_name || '',
+      ai_en: cpData.ai_en,
+      ai_jp: cpData.ai_jp,
+      ai_name: cpData.ai_name,
       email_subject: current.email_subject || '',
       key_pattern: patternInfo.key_pattern,
       key_pattern_jp: patternInfo.key_pattern_jp,
@@ -7162,6 +7179,26 @@
   }
 
   // ==========================================
+  // 相手の発言とユーザー回答の同一性・オウム返し検知エンジン
+  // ==========================================
+  function isSameOrParroted(str1, str2) {
+    if (!str1 || !str2) return false;
+    const c1 = (str1 || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const c2 = (str2 || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!c1 || !c2) return false;
+    if (c1 === c2) return true;
+    if (c1.length >= 20 && c2.includes(c1)) return true;
+    if (c2.length >= 20 && c1.includes(c2)) return true;
+    const w1 = (str1 || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+    const w2 = (str2 || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+    if (w1.length >= 4 && w2.length >= 4) {
+      const common = w1.filter(w => w2.includes(w));
+      if (common.length / Math.min(w1.length, w2.length) >= 0.75) return true;
+    }
+    return false;
+  }
+
+  // ==========================================
   // 過去履歴・バックアップからの完全ステージデータ検索エンジン
   // ==========================================
   function findOriginalStageData(target, aiEn) {
@@ -7169,14 +7206,14 @@
     const cleanAiEn = (aiEn || '').trim().toLowerCase();
     if (!cleanTarget && !cleanAiEn) return null;
 
-    // 1. 履歴データの走査
+    // 1. 履歴データの走査（問題＝答えになっている破損ステージは除外）
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     for (const h of history) {
       for (const s of (h.data || [])) {
         const sTarget = (s.target || '').trim().toLowerCase();
         const sAiEn = (s.ai_en || '').trim().toLowerCase();
-        if ((cleanTarget && sTarget === cleanTarget) || (cleanAiEn && sAiEn === cleanAiEn)) {
-          if (s.ai_jp && s.ai_jp !== '保存したビジネス状況の復習です。') {
+        if (cleanTarget && sTarget === cleanTarget) {
+          if (!isSameOrParroted(s.ai_en, s.target) && s.ai_jp && s.ai_jp !== '保存したビジネス状況の復習です。') {
             return s;
           }
         }
@@ -7187,13 +7224,207 @@
     const fallbackList = [...getFallbackScenarios('speech'), ...getFallbackScenarios('email')];
     for (const s of fallbackList) {
       const sTarget = (s.target || '').trim().toLowerCase();
-      const sAiEn = (s.ai_en || '').trim().toLowerCase();
-      if ((cleanTarget && sTarget === cleanTarget) || (cleanAiEn && sAiEn === cleanAiEn)) {
-        return s;
+      if (cleanTarget && sTarget === cleanTarget) {
+        if (!isSameOrParroted(s.ai_en, s.target)) {
+          return s;
+        }
+      }
+    }
+
+    // 3. ai_en からの補助検索（targetと同一でない場合のみ）
+    if (cleanAiEn && (!cleanTarget || !isSameOrParroted(cleanAiEn, cleanTarget))) {
+      for (const h of history) {
+        for (const s of (h.data || [])) {
+          const sAiEn = (s.ai_en || '').trim().toLowerCase();
+          if (sAiEn === cleanAiEn && !isSameOrParroted(s.ai_en, s.target)) {
+            return s;
+          }
+        }
       }
     }
 
     return null;
+  }
+
+  // ==========================================
+  // 相手の発言（ai_jp）から対応する英語（ai_en）への自然逆翻訳エンジン
+  // ==========================================
+  function translateCounterpartJpToEn(jpText, targetText) {
+    const text = (jpText || '').trim();
+    if (!text) return "We have conflicting information on this matter. Could you clarify our next steps?";
+
+    const jpEnDict = [
+      {
+        match: /改訂.*締め切り.*情報が錯綜.*誰が.*(責任|提出|リード)/i,
+        en: "There seems to be some confusion regarding the amendment deadline and ownership. Who is actually responsible for the final submission?"
+      },
+      {
+        match: /情報が錯綜.*(誰が|責任|提出|役割)/i,
+        en: "We are receiving conflicting updates regarding project ownership. Who is officially responsible for this delivery?"
+      },
+      {
+        match: /リリース期日を変更せずに.*3つの追加機能/i,
+        en: "We really need you to add these three extra features to the current release without moving the launch date. Is that possible?"
+      },
+      {
+        match: /Site 101.*プロトコル逸脱.*是正措置/i,
+        en: "Could you clarify the corrective action plan for the recent protocol deviation at Site 101?"
+      },
+      {
+        match: /修正スケジュール.*進捗状況.*明朝/i,
+        en: "Could you provide a status update on the revised timeline by tomorrow morning?"
+      },
+      {
+        match: /提出の遅延.*スケジュールを挽回/i,
+        en: "We noticed a delay in the submission. What is the plan to recover the schedule?"
+      },
+      {
+        match: /予算超過.*至急ミーティング/i,
+        en: "We need an urgent meeting regarding the budget overrun. When are you free to discuss this?"
+      },
+      {
+        match: /未解決のアクションアイテム.*簡単なコール/i,
+        en: "Could we hop on a quick call to discuss the outstanding action items?"
+      },
+      {
+        match: /このスケジュールで貴チームが進められるか/i,
+        en: "Could you confirm if this timeline works for your team?"
+      },
+      {
+        match: /納期.*間に合|スケジュール.*前倒し|至急.*対応/i,
+        en: "Our leadership is asking if we can expedite this schedule. Can you confirm if this is feasible?"
+      },
+      {
+        match: /優先順位|スコープ.*削|調整/i,
+        en: "We cannot deliver everything under the current constraints. How should we prioritize these deliverables?"
+      },
+      {
+        match: /仕様|要件.*変更|追加/i,
+        en: "The client has requested additional requirements without changing the final deadline. What can we do?"
+      }
+    ];
+
+    for (const item of jpEnDict) {
+      if (item.match.test(text)) {
+        if (!isSameOrParroted(item.en, targetText)) return item.en;
+      }
+    }
+
+    if (/誰が.*(責任|担当|リード)/.test(text)) {
+      return "There is ambiguity regarding ownership on this deliverable. Who is responsible for leading this task?";
+    }
+    if (/至急|緊急|できるだけ早く/.test(text)) {
+      return "This is an urgent request from our stakeholders. Could you give us your immediate assessment?";
+    }
+    if (/可能でしょうか|できますでしょうか/.test(text)) {
+      return "Could you please confirm if this proposal is feasible for your team?";
+    }
+
+    return "We have an urgent question regarding this deliverable and need to align on next steps.";
+  }
+
+  // ==========================================
+  // ターゲットやミッションから相手の自然な発言と役割を自動合成
+  // ==========================================
+  function synthesizeCounterpartSpeechForTarget(targetText, guide) {
+    const text = (targetText || '').toLowerCase();
+    const gText = (guide || '').toLowerCase();
+
+    // 1. 役割や担当の明確化を求めるターゲット
+    if (text.includes('who is') || text.includes('confirm who') || text.includes('ownership') || gText.includes('責任') || gText.includes('役割')) {
+      return {
+        ai_name: "Sarah (Regulatory Affairs Lead)",
+        ai_en: "There seems to be some confusion regarding the amendment deadline and ownership. Who is actually responsible for leading the final submission?",
+        ai_jp: "改訂の締め切りについて情報が錯綜しています。誰が最終的な提出に責任を持っているのでしょうか？"
+      };
+    }
+
+    // 2. 制約や優先順位の調整を伝えるターゲット ("I see your point, but...", "we cannot...")
+    if (text.includes('i see your point') || text.includes('we cannot') || text.includes('limited') || gText.includes('制約') || gText.includes('優先順位')) {
+      return {
+        ai_name: "Michael (Project Sponsor)",
+        ai_en: "Our executive stakeholders are pushing hard to have all requested scope delivered by the end of this sprint. Can your team commit to this?",
+        ai_jp: "役員陣から今スプリント中に全要求スコープを完了するよう強く求められています。貴チームでコミット可能でしょうか？"
+      };
+    }
+
+    // 3. 調査や確認を提案するターゲット ("I am looking into...", "let me check...", "would it be possible")
+    if (text.includes('would it be') || text.includes('let me') || text.includes('i will check') || text.includes('look into') || gText.includes('確認') || gText.includes('提案')) {
+      return {
+        ai_name: "Elena (Global Workstream Lead)",
+        ai_en: "We ran into an unexpected issue with the latest data delivery and need a clear mitigation plan before tomorrow's executive review.",
+        ai_jp: "最新のデータ納品で予期せぬトラブルが発生しました。明日の役員レビュー前に明確な対応策が必要です。"
+      };
+    }
+
+    // 4. 前提条件やすり合わせを求めるターゲット ("could you clarify...", "just to make sure...")
+    if (text.includes('clarify') || text.includes('just to make sure') || text.includes('could you') || gText.includes('確認')) {
+      return {
+        ai_name: "David (Senior CRA / Technical Lead)",
+        ai_en: "The timeline and deliverable scope in the latest draft seem inconsistent with our initial agreement. How are we handling this?",
+        ai_jp: "最新ドラフトの納期と納品スコープが当初の合意と食い違っているようです。どのように対応しますか？"
+      };
+    }
+
+    // 一般的なプロフェッショナル相手発言
+    return {
+      ai_name: "Marcus (Global VP / Delivery Director)",
+      ai_en: "We need an urgent update on our current operational status and next milestones. Could you share your alignment plan?",
+      ai_jp: "現在の運用ステータスと次のマイルストーンについて至急の共有が必要です。整合プランを教えていただけますか？"
+    };
+  }
+
+  // ==========================================
+  // 復習ドリル用 相手発言・文脈の絶対防御・修復エンジン
+  // （問題と答えが同じになる致命的エラーを完全根絶）
+  // ==========================================
+  function resolveReviewCounterpartData(targetText, rawAiEn, rawAiJp, rawGuide, rawAiName) {
+    let aiEn = (rawAiEn || '').trim();
+    let aiJp = (rawAiJp || '').trim();
+    let aiName = (rawAiName || '').trim() || 'Counterpart';
+
+    const isCorruptedAiEn = !aiEn ||
+      aiEn === "Let's review this saved business situation." ||
+      aiEn === "AI Roleplay Session" ||
+      aiEn === "Business Scenario" ||
+      isSameOrParroted(aiEn, targetText);
+
+    if (isCorruptedAiEn) {
+      // 1. 過去履歴やフォールバックから、targetと一致し、かつ問題＝答えになっていない本物のステージデータを探索
+      const orig = findOriginalStageData(targetText, null);
+      if (orig && orig.ai_en && !isSameOrParroted(orig.ai_en, targetText)) {
+        aiEn = orig.ai_en;
+        if (orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。') {
+          aiJp = orig.ai_jp;
+        }
+        if (orig.ai_name) {
+          aiName = orig.ai_name;
+        }
+      }
+    }
+
+    // 2. それでも aiEn がターゲットと同じ、または破損している場合
+    if (!aiEn || isCorruptedAiEn || isSameOrParroted(aiEn, targetText)) {
+      if (aiJp && aiJp !== '保存したビジネス状況の復習です。' && !aiJp.includes('保存したビジネス状況')) {
+        // 日本語の意味に対応する相手の自然な英語発言を合成
+        aiEn = translateCounterpartJpToEn(aiJp, targetText);
+      } else {
+        // コンテキストから相手の役割・発言・日本語訳をワンストップ合成
+        const synthetic = synthesizeCounterpartSpeechForTarget(targetText, rawGuide);
+        aiEn = synthetic.ai_en;
+        aiJp = synthetic.ai_jp;
+        if (!aiName || aiName === 'Counterpart' || aiName === 'Counterpart (Review)' || aiName === 'Colleague') {
+          aiName = synthetic.ai_name;
+        }
+      }
+    }
+
+    // 3. 日本語訳が未設定またはダミーなら補完
+    if (!aiJp || aiJp === '保存したビジネス状況の復習です。' || aiJp.includes('保存したビジネス状況')) {
+      aiJp = resolveCounterpartTranslation(aiEn, rawGuide);
+    }
+
+    return { ai_en: aiEn, ai_jp: aiJp, ai_name: aiName };
   }
 
   // ==========================================
@@ -7500,22 +7731,16 @@
   function buildScenarioFromLibraryItem(item, idx) {
     // 過去履歴やフォールバックから元の完全データを検索
     const original = findOriginalStageData(item.target, item.ai_en);
-
     const targetText = item.target || (original && original.target) || '';
-    const aiEn = item.ai_en || (original && original.ai_en) || "Let's review this saved business situation.";
 
-    // ai_jpの決定:
-    // 1) original に本物の ai_jp があれば最優先
-    // 2) item.ai_jp があり、ダミーでなければ採用
-    // 3) resolveCounterpartTranslation で自然翻訳
-    let resolvedAiJp = '';
-    if (original && original.ai_jp && original.ai_jp !== '保存したビジネス状況の復習です。') {
-      resolvedAiJp = original.ai_jp;
-    } else if (item.ai_jp && item.ai_jp !== '保存したビジネス状況の復習です。') {
-      resolvedAiJp = item.ai_jp;
-    } else {
-      resolvedAiJp = resolveCounterpartTranslation(aiEn, item.guide || (original && original.guide));
-    }
+    // 相手の発言（ai_en, ai_jp, ai_name）を厳格に検証・修復（問題＝答えの重複を絶対防止）
+    const cpData = resolveReviewCounterpartData(
+      targetText,
+      item.ai_en || (original && original.ai_en),
+      item.ai_jp || (original && original.ai_jp),
+      item.guide || (original && original.guide),
+      item.ai_name || (original && original.ai_name)
+    );
 
     const patternInfo = deriveKeyPatternInfo(
       targetText,
@@ -7562,10 +7787,10 @@
 
     return {
       stage: idx + 1,
-      ai_name: item.ai_name || (original && original.ai_name) || "Counterpart (Review)",
+      ai_name: cpData.ai_name || "Counterpart (Review)",
       email_subject: item.email_subject || (original && original.email_subject) || (item.mode === 'email' ? "Re: Discussion & Follow-up" : ""),
-      ai_en: aiEn,
-      ai_jp: resolvedAiJp,
+      ai_en: cpData.ai_en,
+      ai_jp: cpData.ai_jp,
       key_pattern: patternInfo.key_pattern,
       key_pattern_jp: patternInfo.key_pattern_jp,
       pattern_rationale: patternInfo.pattern_rationale,
@@ -8430,14 +8655,21 @@
 
     scenarios.forEach(s => {
       if (s.target && !library.some(item => item.target === s.target)) {
+        const cpData = resolveReviewCounterpartData(
+          s.target,
+          s.ai_en,
+          s.ai_jp,
+          s.guide,
+          s.ai_name
+        );
         const patternInfo = deriveKeyPatternInfo(s.target, s.key_pattern, s.key_pattern_jp, s.pattern_rationale, s.guide);
         const newWeapon = {
           id: Date.now() + Math.random(),
           target: s.target,
           guide: s.guide || patternInfo.guide,
-          ai_en: s.ai_en || 'Business Scenario',
-          ai_jp: s.ai_jp || '',
-          ai_name: s.ai_name || 'Colleague',
+          ai_en: cpData.ai_en,
+          ai_jp: cpData.ai_jp,
+          ai_name: cpData.ai_name,
           email_subject: s.email_subject || '',
           key_pattern: patternInfo.key_pattern,
           key_pattern_jp: patternInfo.key_pattern_jp,
@@ -8503,7 +8735,14 @@
       let historyModified = false;
       history.forEach(h => {
         (h.data || []).forEach(stage => {
-          if (!stage.ai_jp || stage.ai_jp === '保存したビジネス状況の復習です。') {
+          // 相手の発言がユーザー回答と同じ、またはオウム返しの破損を修復
+          if (isSameOrParroted(stage.ai_en, stage.target) || !stage.ai_en || stage.ai_en === "Let's review this saved business situation.") {
+            const fixedCp = resolveReviewCounterpartData(stage.target, stage.ai_en, stage.ai_jp, stage.guide, stage.ai_name);
+            stage.ai_en = fixedCp.ai_en;
+            stage.ai_jp = fixedCp.ai_jp;
+            if (fixedCp.ai_name) stage.ai_name = fixedCp.ai_name;
+            historyModified = true;
+          } else if (!stage.ai_jp || stage.ai_jp === '保存したビジネス状況の復習です。') {
             const orig = findOriginalStageData(stage.target, stage.ai_en);
             stage.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
               ? orig.ai_jp
@@ -8549,8 +8788,14 @@
       let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
       let libModified = false;
       library.forEach(item => {
-        const orig = findOriginalStageData(item.target, item.ai_en);
-        if (!item.ai_jp || item.ai_jp === '保存したビジネス状況の復習です。') {
+        if (isSameOrParroted(item.ai_en, item.target) || !item.ai_en || item.ai_en === "Let's review this saved business situation.") {
+          const fixedCp = resolveReviewCounterpartData(item.target, item.ai_en, item.ai_jp, item.guide, item.ai_name);
+          item.ai_en = fixedCp.ai_en;
+          item.ai_jp = fixedCp.ai_jp;
+          if (fixedCp.ai_name) item.ai_name = fixedCp.ai_name;
+          libModified = true;
+        } else if (!item.ai_jp || item.ai_jp === '保存したビジネス状況の復習です。') {
+          const orig = findOriginalStageData(item.target, item.ai_en);
           item.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
             ? orig.ai_jp
             : resolveCounterpartTranslation(item.ai_en, item.guide);
@@ -8558,9 +8803,9 @@
         }
         const pInfo = deriveKeyPatternInfo(
           item.target,
-          (orig && orig.key_pattern) || item.key_pattern,
-          (orig && orig.key_pattern_jp) || item.key_pattern_jp,
-          (orig && orig.pattern_rationale) || item.pattern_rationale,
+          (item.key_pattern),
+          (item.key_pattern_jp),
+          (item.pattern_rationale),
           item.guide
         );
         if (!item.pattern_rationale || item.pattern_rationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して')) {
@@ -8581,7 +8826,12 @@
       // 3. 現在アクティブなセッション（scenarios）の即時修復
       if (scenarios && scenarios.length > 0) {
         scenarios.forEach(stage => {
-          if (!stage.ai_jp || stage.ai_jp === '保存したビジネス状況の復習です。') {
+          if (isSameOrParroted(stage.ai_en, stage.target) || !stage.ai_en || stage.ai_en === "Let's review this saved business situation.") {
+            const fixedCp = resolveReviewCounterpartData(stage.target, stage.ai_en, stage.ai_jp, stage.guide, stage.ai_name);
+            stage.ai_en = fixedCp.ai_en;
+            stage.ai_jp = fixedCp.ai_jp;
+            if (fixedCp.ai_name) stage.ai_name = fixedCp.ai_name;
+          } else if (!stage.ai_jp || stage.ai_jp === '保存したビジネス状況の復習です。') {
             const orig = findOriginalStageData(stage.target, stage.ai_en);
             stage.ai_jp = (orig && orig.ai_jp && orig.ai_jp !== '保存したビジネス状況の復習です。')
               ? orig.ai_jp
@@ -8639,18 +8889,19 @@
       }
     });
 
-    // 過去の履歴で間違えた問題や要復習の履歴も補完（全ステージプロパティを完全継承）
+    // 過去の履歴で間違えた問題や要復習の履歴も補完（相手発言のオウム返しを完全排除して継承）
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     history.filter(h => h.status === 'needs_review').forEach(h => {
       (h.data || []).forEach(stage => {
         if (stage.target && !dueItems.some(d => d.target === stage.target)) {
+          const cp = resolveReviewCounterpartData(stage.target, stage.ai_en, stage.ai_jp, stage.guide, stage.ai_name);
           dueItems.push({
             id: 'hist_' + (stage.stage || Math.random()),
             target: stage.target,
             guide: stage.guide,
-            ai_name: stage.ai_name,
-            ai_en: stage.ai_en,
-            ai_jp: stage.ai_jp,
+            ai_name: cp.ai_name,
+            ai_en: cp.ai_en,
+            ai_jp: cp.ai_jp,
             email_subject: stage.email_subject,
             key_pattern: stage.key_pattern,
             key_pattern_jp: stage.key_pattern_jp,
@@ -8806,13 +9057,14 @@
           return buildScenarioFromLibraryItem(item, idx);
         } catch (itemErr) {
           console.warn('Error building scenario from item:', item, itemErr);
-          // 最低限のフォールバック
+          // 最低限のフォールバック（問題＝答えの重複を防止）
+          const fallbackCp = resolveReviewCounterpartData(item.target || '', item.ai_en, item.ai_jp, item.guide, item.ai_name);
           return {
             stage: idx + 1,
-            ai_name: item.ai_name || "Counterpart (Review)",
+            ai_name: fallbackCp.ai_name || "Counterpart (Review)",
             email_subject: item.email_subject || "",
-            ai_en: item.ai_en || "Let's review this saved business situation.",
-            ai_jp: item.ai_jp || resolveCounterpartTranslation(item.ai_en, item.guide),
+            ai_en: fallbackCp.ai_en,
+            ai_jp: fallbackCp.ai_jp,
             key_pattern: item.key_pattern || "I will [action] by [time]...",
             key_pattern_jp: item.key_pattern_jp || "〜を行い、〜までに対応します",
             pattern_rationale: item.pattern_rationale || "相手の不安を取り除き、主語＋基本動詞で迷わず言い切る実践的なPlain English構文です。",
@@ -9603,13 +9855,15 @@
     }
 
     const patternInfo = deriveKeyPatternInfo(betterEn, pattern, '', '', '');
+    const cpData = resolveReviewCounterpartData(betterEn, '', '', `AI Coach推奨表現 (${patternInfo.key_pattern})`, 'AI Business Partner');
 
     const newWeapon = {
       id: Date.now() + Math.random(),
       target: betterEn,
       guide: `AI Coach推奨表現 (${patternInfo.key_pattern})`,
-      ai_en: "AI Roleplay Session",
-      ai_jp: "AIコーチとの実践ロールプレイ",
+      ai_name: cpData.ai_name || "AI Business Partner",
+      ai_en: cpData.ai_en,
+      ai_jp: cpData.ai_jp,
       key_pattern: patternInfo.key_pattern,
       key_pattern_jp: patternInfo.key_pattern_jp,
       pattern_rationale: patternInfo.pattern_rationale,
