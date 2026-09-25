@@ -805,6 +805,165 @@
       background: #f8fafc;
     }
 
+    /* Teams Mode: Microsoft Teams Chat Client Frame */
+    .teams-chat-container {
+      display: none;
+      background: #f5f5f7;
+      border: 1.5px solid #d2d2d7;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(91, 95, 199, 0.08);
+      overflow: hidden;
+    }
+    .teams-chat-header-bar {
+      background: #464eb8;
+      color: #ffffff;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .teams-chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .teams-icon-badge {
+      width: 24px;
+      height: 24px;
+      background: #ffffff;
+      color: #464eb8;
+      border-radius: 5px;
+      font-weight: 900;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .teams-chat-header-titles {
+      line-height: 1.25;
+    }
+    .teams-chat-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .teams-chat-status {
+      font-size: 10px;
+      color: #e0e7ff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .teams-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+      display: inline-block;
+    }
+    .teams-chat-body {
+      padding: 12px 14px;
+      background: #f8fafc;
+    }
+    .teams-chat-msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .teams-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #5b5fc7, #7c3aed);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .teams-msg-bubble-wrap {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .teams-msg-author-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .teams-msg-author {
+      font-size: 12px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .teams-msg-time {
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .teams-msg-text-en {
+      font-size: 13.5px;
+      color: #0f172a;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+    .teams-msg-text-jp {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+    .teams-quick-shortcuts-bar {
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-top: 1px dashed #cbd5e1;
+    }
+    .teams-quick-shortcuts-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+    .teams-shortcut-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .teams-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .teams-chip:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: #1d4ed8;
+    }
+    .teams-bottom-actions {
+      padding: 7px 12px;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     /* Enhanced Step 1: Lecture Card */
     .lecture-card {
       background: #f0fdf4;
@@ -2886,8 +3045,9 @@
     </div>
     <div class="mode-pill-group">
       <div class="mode-pill active" id="pill_quiz" onclick="selectMode('quiz')">🎯 口頭即答クイズ</div>
+      <div class="mode-pill" id="pill_teams" onclick="selectMode('teams')">💬 Teamsチャット即答</div>
+      <div class="mode-pill" id="pill_email" onclick="selectMode('email')">✉️ Outlookメール返信</div>
       <div class="mode-pill" id="pill_sim" onclick="selectMode('sim')">🧑‍💼 交渉・会議Sim</div>
-      <div class="mode-pill" id="pill_email" onclick="selectMode('email')">✉️ Email / Teams</div>
     </div>
 
     <button class="btn-targeted-start" id="btnStartTargeted" onclick="startTargetedSession()">
@@ -3010,6 +3170,52 @@
       <div class="email-body-jp" id="emailBodyJp">（...）</div>
       <div class="email-quick-actions">
         <button class="micro-btn" style="padding:3px 8px; font-size:10.5px; background:#ffffff; color:#2563eb; border-color:#bfdbfe;" onclick="copyEmailDraft()">📋 返信メール文面をコピー</button>
+      </div>
+    </div>
+
+    <!-- Teamsチャットモード専用：リアルなMicrosoft Teamsチャットクライアント枠 -->
+    <div class="teams-chat-container" id="teamsChatContainer">
+      <div class="teams-chat-header-bar">
+        <div class="teams-chat-header-left">
+          <div class="teams-icon-badge">T</div>
+          <div class="teams-chat-header-titles">
+            <div class="teams-chat-title" id="teamsChannelTitle">💬 Teams Direct Chat | Project Alignment</div>
+            <div class="teams-chat-status"><span class="teams-status-dot"></span><span id="teamsPartnerNameDisplay">Elena (Sponsor Lead)</span> &bull; <span>Available</span></div>
+          </div>
+        </div>
+        <button class="micro-btn" style="padding:3px 8px; font-size:10.5px; background:#fff; color:#464eb8; border-color:#c7d2fe; font-weight:700;" onclick="speakAiSpeech()">🔊 発言を聴く</button>
+      </div>
+
+      <div class="teams-chat-body">
+        <div class="teams-chat-msg-row">
+          <div class="teams-user-avatar" id="teamsUserAvatar">EL</div>
+          <div class="teams-msg-bubble-wrap">
+            <div class="teams-msg-author-row">
+              <span class="teams-msg-author" id="teamsAuthorName">Elena</span>
+              <span class="teams-msg-time" id="teamsMsgTime">Today 14:28</span>
+            </div>
+            <div class="teams-msg-text-en" id="teamsBodyEn">...</div>
+            <div class="teams-msg-text-jp" id="teamsBodyJp">（...）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teams時短送信バー（実務ワンタップ定石＆時短コピー） -->
+      <div class="teams-quick-shortcuts-bar">
+        <div class="teams-quick-shortcuts-title">⚡ Teams時短送信の鉄則・ワンタップ定石フレーズ:</div>
+        <div class="teams-shortcut-chips">
+          <button class="teams-chip" onclick="previewTeamsShortcut('Thanks for flagging. I am on it and will send an update shortly.')">⚡ Thanks for flagging (受領＆即着手)</button>
+          <button class="teams-chip" onclick="previewTeamsShortcut('Got it, thanks. Let me check with the team and ping you back.')">⚡ Got it, will ping you (確認＆折り返し)</button>
+          <button class="teams-chip" onclick="previewTeamsShortcut('Makes sense. Could we sync briefly on a 5-minute call?')">⚡ Makes sense / Quick call (合意＆5分コール)</button>
+          <button class="teams-chip" onclick="previewTeamsShortcut('Good to go from our side. Proceeding now.')">⚡ Good to go (承認・進行)</button>
+        </div>
+      </div>
+
+      <div class="teams-bottom-actions">
+        <button class="micro-btn" style="padding:5px 12px; font-size:11.5px; background:#5b5fc7; color:#fff; border:none; font-weight:700; border-radius:6px; cursor:pointer;" onclick="copyTeamsDraft()">
+          📋 Teams用チャット文面をコピー
+        </button>
+        <span style="font-size:10.5px; color:#475569;">※社内チャットは冒頭挨拶省略OK・中学英語でETAを明記するのがグローバル標準</span>
       </div>
     </div>
 
@@ -3700,7 +3906,8 @@
     const textEl = document.getElementById('btnStartTargetedText');
     if (textEl) {
       const topicTitle = TOPIC_NAMES[selectedTopic] || '選択トピック';
-      textEl.innerText = `🚀 「${topicTitle}」でレッスン＆アウトプットを開始`;
+      const modeTitle = getModeLabel(selectedMode);
+      textEl.innerText = `🚀 「${topicTitle}」×【${modeTitle}】を開始`;
     }
   }
 
@@ -3937,7 +4144,15 @@
   }
 
   function getModeLabel(mode) {
-    const labels = { quiz: '🎯 口頭クイズ', sim: '🧑‍💼 交渉Sim', email: '✉️ Email/Teams' };
+    const labels = {
+      quiz: '🎯 口頭クイズ',
+      speech: '🎯 口頭クイズ',
+      teams: '💬 Teamsチャット',
+      chat: '💬 Teamsチャット',
+      email: '✉️ Outlookメール',
+      bizmail: '✉️ Outlookメール',
+      sim: '🧑‍💼 交渉Sim'
+    };
     return labels[mode] || '🎯 口頭クイズ';
   }
 
@@ -4624,6 +4839,185 @@
   }
 
   function getFallbackScenarios(mode) {
+    if (mode === 'teams' || mode === 'chat') {
+      return [
+        {
+          stage: 1,
+          ai_name: "Sarah (Project Lead)",
+          email_subject: "Budget file discrepancy",
+          ai_en: "Hey! We just noticed a critical discrepancy in the study budget file. Have you seen this?",
+          ai_jp: "予算管理ファイルに重大な数値のズレが見つかりました。把握されていますか？",
+          key_pattern: "Thanks for flagging; I am on it and will [verb] by [time]...",
+          key_pattern_jp: "教えてくれてありがとう。今対応中なので、[時間]までに〜します…",
+          pattern_rationale: "社内Teamsで最も重宝される即答構文。「Thanks for flagging（共有ありがとう）」＋「I am on it（即着手中）」で相手を安心させ、期限を約束します。",
+          parts_hint: "\"send a quick update\" と \"by 3 PM\" を組み合わせるだけ！",
+          guide: "（Teams即答）共有に感謝し、現在調査対応中であり15時までに状況をチャットで連絡する旨を伝えてください。",
+          target: "Thanks for flagging; I am on it and will send a quick update by 3 PM.",
+          counterpart_reaction_en: "Awesome, thanks for the quick reply! Talk soon.",
+          counterpart_reaction_jp: "迅速な返信ありがとう！また連絡待ってます。",
+          chunks: ["Thanks for flagging;", "I am on it", "and will send a quick update", "by 3 PM."],
+          choices: [
+            { type: "PERFECT", text: "Thanks for flagging; I am on it and will send a quick update by 3 PM.", advice: "完璧です！受領・即時着手・期限（by 3 PM）がテンポ良く伝わるTeamsチャットの模範回答です。" },
+            { type: "TOO_COMPLEX", text: "Thanks for flagging; I shall endeavor to investigate this fiscal discrepancy thoroughly prior to 15:00.", advice: "同じ型ですが、fiscal discrepancy, prior to 15:00 などチャットに不相応な重い言葉遣いです。" },
+            { type: "TOO_DIRECT", text: "Thanks for flagging, but stop messaging me and wait until I finish checking.", advice: "攻撃的で社内チャットのマナーを著しく損ねています。" }
+          ],
+          variations: [
+            {
+              variation_prompt_jp: "【不具合報告への即答】「共有ありがとう。今対応中なので、本日夕方5時までに修正状況をご連絡します」",
+              variation_target: "Thanks for flagging; I am on it and will send a quick update by 5 PM.",
+              variation_hint_parts: '"by 5 PM" に入れ替えるだけ！',
+              variation_chunks: ["Thanks for flagging;", "I am on it", "and will send a quick update", "by 5 PM."]
+            },
+            {
+              variation_prompt_jp: "【データ不整合への即答】「共有ありがとう。今対応中なので、明日朝一番に詳細をご連絡します」",
+              variation_target: "Thanks for flagging; I am on it and will send a quick update by tomorrow morning.",
+              variation_hint_parts: '"by tomorrow morning" に入れ替えるだけ！',
+              variation_chunks: ["Thanks for flagging;", "I am on it", "and will send a quick update", "by tomorrow morning."]
+            }
+          ]
+        },
+        {
+          stage: 2,
+          ai_name: "Rajesh (Tech Lead)",
+          email_subject: "Expediting Release Schedule",
+          ai_en: "Can we pull the build deployment forward to this evening? Client is asking.",
+          ai_jp: "ビルドのデプロイを今晩に前倒しできますか？ クライアントから問い合わせが来ています。",
+          key_pattern: "Got it, thanks. Let me check with [team] and ping you by [time]...",
+          key_pattern_jp: "了解です、ありがとう。〜に確認の上、[時間]までにチャットします…",
+          pattern_rationale: "その場で無理に即答せず、「check with + チーム」と「ping you（Teamsでチャットする）」を使って、安全に確認時間を確保するスマートな社内術です。",
+          parts_hint: "\"the QA team\" と \"by 4 PM\" を組み合わせるだけ！",
+          guide: "（Teams即答）了解した旨を伝え、QAチームに確認のうえ16時までにチャットで折り返す旨を返答してください。",
+          target: "Got it, thanks. Let me check with the QA team and ping you by 4 PM.",
+          counterpart_reaction_en: "Sounds good, thanks! Standing by.",
+          counterpart_reaction_jp: "了解、ありがとう！チャット待ってます。",
+          chunks: ["Got it, thanks.", "Let me check with", "the QA team", "and ping you by 4 PM."],
+          choices: [
+            { type: "PERFECT", text: "Got it, thanks. Let me check with the QA team and ping you by 4 PM.", advice: "完璧です！『Got it, thanks』のスマートな受領と『ping you』の自然なビジネスチャット表現です。" },
+            { type: "TOO_COMPLEX", text: "Got it, thanks. I shall consult with the quality assurance department and communicate our disposition by 16:00.", advice: "硬すぎてチャットのスピード感を損なっています。" },
+            { type: "TOO_DIRECT", text: "Got it, thanks. No way, that is completely impossible today.", advice: "理由や確認プロセスなしに突き放しており、不快感を与えます。" }
+          ],
+          variations: [
+            {
+              variation_prompt_jp: "【リードへの確認】「了解です、ありがとう。リードエンジニアに確認の上、本日15時までにチャットします」",
+              variation_target: "Got it, thanks. Let me check with the lead engineer and ping you by 3 PM.",
+              variation_hint_parts: '"the lead engineer" と "by 3 PM" を当てはめるだけ！',
+              variation_chunks: ["Got it, thanks.", "Let me check with", "the lead engineer", "and ping you by 3 PM."]
+            },
+            {
+              variation_prompt_jp: "【マネージャーへの確認】「了解です、ありがとう。プロジェクトマネージャーに確認の上、1時間以内にチャットします」",
+              variation_target: "Got it, thanks. Let me check with the project manager and ping you in an hour.",
+              variation_hint_parts: '"the project manager" と "in an hour" を当てはめるだけ！',
+              variation_chunks: ["Got it, thanks.", "Let me check with", "the project manager", "and ping you in an hour."]
+            }
+          ]
+        },
+        {
+          stage: 3,
+          ai_name: "David (Senior CRA)",
+          email_subject: "Monitoring Report Alignment",
+          ai_en: "We have multiple conflicting opinions on the report draft. How should we align?",
+          ai_jp: "報告書ドラフトに関して意見が食い違っています。どうすり合わせましょうか？",
+          key_pattern: "Makes sense. Could we sync briefly on a 5-minute call around [time]?",
+          key_pattern_jp: "おっしゃる通りですね。[時間]頃に5分だけサクッとTeams通話できますか？",
+          pattern_rationale: "チャットでの長文ラリーによる時間の浪費を防ぎ、サクッと5分コール（sync briefly）に切り替える時短コミュニケーションの黄金パターンです。",
+          parts_hint: "\"around 2 PM\" を組み合わせるだけ！",
+          guide: "（Teams即答）相手に同意し、14時頃に5分だけクイックに通話ですり合わせできないか打診してください。",
+          target: "Makes sense. Could we sync briefly on a 5-minute call around 2 PM?",
+          counterpart_reaction_en: "Sure, 2 PM works! I'll ring you on Teams.",
+          counterpart_reaction_jp: "いいですね、14時でOKです！Teamsでコールしますね。",
+          chunks: ["Makes sense.", "Could we sync briefly", "on a 5-minute call", "around 2 PM?"],
+          choices: [
+            { type: "PERFECT", text: "Makes sense. Could we sync briefly on a 5-minute call around 2 PM?", advice: "完璧です！『Makes sense』での共感と『sync briefly on a 5-minute call』の時短提案が見事です。" },
+            { type: "TOO_COMPLEX", text: "Makes sense. Might it be convenient to convene a teleconference of five minutes duration at approximately 14:00?", advice: "同じ型ですが、convene a teleconference など格式張りすぎて不自然です。" },
+            { type: "TOO_DIRECT", text: "Makes sense. Stop typing long messages and call me right now.", advice: "命令口調で高圧的です。" }
+          ],
+          variations: [
+            {
+              variation_prompt_jp: "【午前中のクイック通話】「おっしゃる通りですね。午前11時頃に5分だけサクッとTeams通話できますか？」",
+              variation_target: "Makes sense. Could we sync briefly on a 5-minute call around 11 AM?",
+              variation_hint_parts: '"around 11 AM" に入れ替えるだけ！',
+              variation_chunks: ["Makes sense.", "Could we sync briefly", "on a 5-minute call", "around 11 AM?"]
+            },
+            {
+              variation_prompt_jp: "【午後のクイック通話】「おっしゃる通りですね。午後4時半頃に5分だけサクッとTeams通話できますか？」",
+              variation_target: "Makes sense. Could we sync briefly on a 5-minute call around 4:30 PM?",
+              variation_hint_parts: '"around 4:30 PM" に入れ替えるだけ！',
+              variation_chunks: ["Makes sense.", "Could we sync briefly", "on a 5-minute call", "around 4:30 PM?"]
+            }
+          ]
+        },
+        {
+          stage: 4,
+          ai_name: "Elena (Sponsor Manager)",
+          email_subject: "Review Agenda Approval",
+          ai_en: "Here is the revised agenda for tomorrow's review. Does this look good to you?",
+          ai_jp: "明日のレビューのアジェンダ改訂版です。これで問題ないでしょうか？",
+          key_pattern: "Looks great and good to go from our side; I will [verb]...",
+          key_pattern_jp: "バッチリです、こちら側は問題ありません。〜を進めますね…",
+          pattern_rationale: "社内・プロジェクトチャットで大活躍する承認表現「good to go from our side（こちらはOK・準備完了）」。即座に承認し、次アクションを伝えてプロジェクトを加速させます。",
+          parts_hint: "\"share it with the team now\" を組み合わせるだけ！",
+          guide: "（Teams即答）確認して問題ない旨（good to go）を伝え、今すぐチームに共有する旨を返信してください。",
+          target: "Looks great and good to go from our side; I will share it with the team now.",
+          counterpart_reaction_en: "Perfect, thanks for the swift confirmation!",
+          counterpart_reaction_jp: "素晴らしい、迅速な確認ありがとう！",
+          chunks: ["Looks great", "and good to go from our side;", "I will share it", "with the team now."],
+          choices: [
+            { type: "PERFECT", text: "Looks great and good to go from our side; I will share it with the team now.", advice: "完璧です！『good to go from our side』はグローバル社内チャットの超定番フレーズです。" },
+            { type: "TOO_COMPLEX", text: "Looks great and is officially ratified from our sector; I shall distribute it to the personnel immediately.", advice: "ratified, distribute to personnel など大げさで硬すぎます。" },
+            { type: "TOO_DIRECT", text: "Looks great. Fine, I will send it, don't ask again.", advice: "相手を苛立たせる失礼な口調です。" }
+          ],
+          variations: [
+            {
+              variation_prompt_jp: "【資料の確定と送付】「バッチリです、こちら側は問題ありません。今すぐクライアントに共有しますね」",
+              variation_target: "Looks great and good to go from our side; I will share it with the client now.",
+              variation_hint_parts: '"with the client now" に入れ替えるだけ！',
+              variation_chunks: ["Looks great", "and good to go from our side;", "I will share it", "with the client now."]
+            },
+            {
+              variation_prompt_jp: "【資料の確定と保存】「バッチリです、こちら側は問題ありません。共有フォルダに保存しておきますね」",
+              variation_target: "Looks great and good to go from our side; I will save it in the shared folder now.",
+              variation_hint_parts: '"save it in the shared folder now" に入れ替えるだけ！',
+              variation_chunks: ["Looks great", "and good to go from our side;", "I will save it", "in the shared folder now."]
+            }
+          ]
+        },
+        {
+          stage: 5,
+          ai_name: "Kenji (Project Lead)",
+          email_subject: "Dashboard update",
+          ai_en: "I'm finalizing the weekly status dashboard right now.",
+          ai_jp: "今週の進捗ステータスダッシュボードを今仕上げているところです。",
+          key_pattern: "Could you share the link when you get a chance so that [clause]?",
+          key_pattern_jp: "お手すきの際にリンクを共有いただけますか？（〜できるようにするため）",
+          pattern_rationale: "「when you get a chance（お手すきの際に・無理のないタイミングで）」は相手にプレッシャーを与えず、かつ「so that（〜できるように）」で理由を添える品格ある時短依頼です。",
+          parts_hint: "\"I can review it\" を組み合わせるだけ！",
+          guide: "（Teams即答）確認できるように、お手すきの際にリンクをチャットで共有してもらえるよう依頼してください。",
+          target: "Could you share the link when you get a chance so that I can review it?",
+          counterpart_reaction_en: "Will do! Dropping the link here in a minute.",
+          counterpart_reaction_jp: "了解です！あと1分でここにリンク貼りますね。",
+          chunks: ["Could you share the link", "when you get a chance", "so that", "I can review it?"],
+          choices: [
+            { type: "PERFECT", text: "Could you share the link when you get a chance so that I can review it?", advice: "完璧です！『when you get a chance』を添えることで角を立てずに依頼できています。" },
+            { type: "TOO_COMPLEX", text: "Could you share the hyperlink at your earliest convenience in order that I might scrutinize it?", advice: "hyperlink, scrutinize などチャットには不自然な文語表現です。" },
+            { type: "TOO_DIRECT", text: "Send me the link now. I need to see what you are doing.", advice: "相手を監視・命令するような不快なチャットになっています。" }
+          ],
+          variations: [
+            {
+              variation_prompt_jp: "【スライド確認の依頼】「お手すきの際に最新スライドを共有いただけますか？ 私の方で確認できるように」",
+              variation_target: "Could you share the latest slides when you get a chance so that I can review them?",
+              variation_hint_parts: '"the latest slides" と "review them" に入れ替えるだけ！',
+              variation_chunks: ["Could you share the latest slides", "when you get a chance", "so that", "I can review them?"]
+            },
+            {
+              variation_prompt_jp: "【議事録確認の依頼】「お手すきの際に議事録を共有いただけますか？ 私の方で確認できるように」",
+              variation_target: "Could you share the meeting notes when you get a chance so that I can review them?",
+              variation_hint_parts: '"the meeting notes" と "review them" に入れ替えるだけ！',
+              variation_chunks: ["Could you share the meeting notes", "when you get a chance", "so that", "I can review them?"]
+            }
+          ]
+        }
+      ];
+    }
     if (mode === 'email') {
       return [
         {
@@ -6687,6 +7081,12 @@
       if (fixedCp.ai_name) data.ai_name = fixedCp.ai_name;
     }
 
+    // 日本語ガイドがお題ではなくtarget英語のままになっている場合は直ちに修復
+    if (!data.guide || isSameOrParroted(data.guide, data.target) || /^[A-Za-z0-9\s.,?!'"-:;()]+$/.test((data.guide || '').trim())) {
+      const pInfo = deriveKeyPatternInfo(data.target, data.key_pattern, data.key_pattern_jp, data.pattern_rationale, '');
+      data.guide = pInfo.guide || "相手の状況・依頼に対して、学習した型を用いて的確に応答してください。";
+    }
+
     // 不足・ダミー翻訳や不十分な解説の自動救済・ハイドレーション
     if (!data.ai_jp || data.ai_jp === '保存したビジネス状況の復習です。' || data.ai_jp.includes('保存したビジネス状況')) {
       const orig = findOriginalStageData(data.target, data.ai_en);
@@ -6732,16 +7132,47 @@
     const modeSub = document.getElementById('playModeSubText');
     if (modeSub) {
       if (trainingMode === 'sim') modeSub.innerText = '🧑‍💼 現場シミュレーション';
-      else if (trainingMode === 'bizmail') modeSub.innerText = '✉️ メール返信';
-      else modeSub.innerText = '🎯 即答トレーニング';
+      else if (trainingMode === 'teams' || trainingMode === 'chat') modeSub.innerText = '💬 Teamsチャット即答（社内ビジネスカジュアル）';
+      else if (trainingMode === 'bizmail' || trainingMode === 'email') modeSub.innerText = '✉️ Outlookメール返信';
+      else modeSub.innerText = '🎯 口頭即答トレーニング';
     }
 
-    // メール返信モードとチャットモードの表示分岐
+    // メール返信モード・Teamsチャットモード・通常カードの表示分岐
     const emailClientContainer = document.getElementById('emailClientContainer');
+    const teamsChatContainer = document.getElementById('teamsChatContainer');
     const partnerCard = document.getElementById('partnerCard');
     const btnCopyEmailResult = document.getElementById('btnCopyEmailResult');
 
-    if (trainingMode === 'bizmail' || trainingMode === 'email') {
+    if (trainingMode === 'teams' || trainingMode === 'chat') {
+      if (teamsChatContainer) teamsChatContainer.style.display = 'block';
+      if (emailClientContainer) emailClientContainer.style.display = 'none';
+      if (partnerCard) partnerCard.style.display = 'none';
+      if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'none';
+
+      const teamsChannelTitle = document.getElementById('teamsChannelTitle');
+      const teamsPartnerNameDisplay = document.getElementById('teamsPartnerNameDisplay');
+      const teamsAuthorName = document.getElementById('teamsAuthorName');
+      const teamsUserAvatar = document.getElementById('teamsUserAvatar');
+      const teamsBodyEn = document.getElementById('teamsBodyEn');
+      const teamsBodyJp = document.getElementById('teamsBodyJp');
+      const teamsMsgTime = document.getElementById('teamsMsgTime');
+
+      const name = data.ai_name || "Colleague";
+      const shortName = name.split(' ')[0] || "Colleague";
+      const initials = (shortName.substring(0, 2)).toUpperCase();
+
+      if (teamsChannelTitle) teamsChannelTitle.innerText = `💬 Teams Direct Chat | ${selectedTopic ? (TOPIC_NAMES[selectedTopic] || selectedTopic) : 'Project Alignment'}`;
+      if (teamsPartnerNameDisplay) teamsPartnerNameDisplay.innerText = name;
+      if (teamsAuthorName) teamsAuthorName.innerText = name;
+      if (teamsUserAvatar) teamsUserAvatar.innerText = initials;
+      if (teamsBodyEn) teamsBodyEn.innerText = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
+      if (teamsBodyJp) teamsBodyJp.innerText = data.ai_jp ? `（${data.ai_jp.replace(/^件名:.*?\n+/i, '')}）` : '';
+      if (teamsMsgTime) {
+        const now = new Date();
+        teamsMsgTime.innerText = `Today ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+    } else if (trainingMode === 'bizmail' || trainingMode === 'email') {
+      if (teamsChatContainer) teamsChatContainer.style.display = 'none';
       if (emailClientContainer) emailClientContainer.style.display = 'block';
       if (partnerCard) partnerCard.style.display = 'none';
       if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'inline-block';
@@ -6757,6 +7188,7 @@
       if (bodyEnEl) bodyEnEl.innerText = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
       if (bodyJpEl) bodyJpEl.innerText = data.ai_jp ? `（${data.ai_jp.replace(/^件名:.*?\n+/i, '')}）` : '';
     } else {
+      if (teamsChatContainer) teamsChatContainer.style.display = 'none';
       if (emailClientContainer) emailClientContainer.style.display = 'none';
       if (partnerCard) partnerCard.style.display = 'block';
       if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'none';
@@ -7180,21 +7612,50 @@
 
   // ==========================================
   // 相手の発言とユーザー回答の同一性・オウム返し検知エンジン
+  // （完全一致・部分一致・単語重複・文頭文末一致を徹底検出）
   // ==========================================
   function isSameOrParroted(str1, str2) {
     if (!str1 || !str2) return false;
-    const c1 = (str1 || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const c2 = (str2 || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!c1 || !c2) return false;
-    if (c1 === c2) return true;
-    if (c1.length >= 20 && c2.includes(c1)) return true;
-    if (c2.length >= 20 && c1.includes(c2)) return true;
-    const w1 = (str1 || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2);
-    const w2 = (str2 || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2);
-    if (w1.length >= 4 && w2.length >= 4) {
-      const common = w1.filter(w => w2.includes(w));
-      if (common.length / Math.min(w1.length, w2.length) >= 0.75) return true;
+    const s1 = String(str1).trim();
+    const s2 = String(str2).trim();
+    if (!s1 || !s2) return false;
+
+    // 件名や引用符などの不要なプレフィックスを除去
+    const clean1 = s1.replace(/^(subject:|件名:|re:|fwd:)\s*/i, '').replace(/^[“"']+|[”"']+$/g, '').trim();
+    const clean2 = s2.replace(/^(subject:|件名:|re:|fwd:)\s*/i, '').replace(/^[“"']+|[”"']+$/g, '').trim();
+
+    const c1 = clean1.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const c2 = clean2.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // 日本語または非英数字テキストの同一性チェック
+    if (!c1 || !c2) {
+      if (clean1 === clean2) return true;
+      if (clean1.length >= 6 && (clean2.includes(clean1) || clean1.includes(clean2))) return true;
+      return false;
     }
+
+    // 1. 完全一致
+    if (c1 === c2) return true;
+
+    // 2. 部分一致（短縮形や引用など）
+    if (c1.length >= 8 && c2.includes(c1)) return true;
+    if (c2.length >= 8 && c1.includes(c2)) return true;
+    if (c1.length >= 6 && c2.length >= 6) {
+      if (c1.startsWith(c2) || c2.startsWith(c1) || c1.endsWith(c2) || c2.endsWith(c1)) return true;
+    }
+
+    // 3. 実質単語（ストップワード除外）の重複率チェック
+    const stopWords = new Set(['a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'in', 'on', 'at', 'by', 'for', 'with', 'and', 'or', 'it', 'this', 'that', 'we', 'i', 'you']);
+    const w1 = clean1.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+    const w2 = clean2.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+
+    if (w1.length > 0 && w2.length > 0) {
+      const common = w1.filter(w => w2.includes(w));
+      const minLen = Math.min(w1.length, w2.length);
+      if (common.length / minLen >= 0.45) return true;
+      if (common.length >= 3 && minLen <= 5) return true;
+    }
+
     return false;
   }
 
@@ -7220,8 +7681,12 @@
       }
     }
 
-    // 2. バックアップ（フォールバック）コースの走査
-    const fallbackList = [...getFallbackScenarios('speech'), ...getFallbackScenarios('email')];
+    // 2. バックアップ（フォールバック）コースの走査（Teams/Email/Speech）
+    const fallbackList = [
+      ...getFallbackScenarios('teams'),
+      ...getFallbackScenarios('speech'),
+      ...getFallbackScenarios('email')
+    ];
     for (const s of fallbackList) {
       const sTarget = (s.target || '').trim().toLowerCase();
       if (cleanTarget && sTarget === cleanTarget) {
@@ -7348,8 +7813,8 @@
       };
     }
 
-    // 3. 調査や確認を提案するターゲット ("I am looking into...", "let me check...", "would it be possible")
-    if (text.includes('would it be') || text.includes('let me') || text.includes('i will check') || text.includes('look into') || gText.includes('確認') || gText.includes('提案')) {
+    // 3. 調査や確認を提案するターゲット ("I am looking into...", "let me check...", "would it be possible", "thanks for flagging")
+    if (text.includes('thanks for flagging') || text.includes('would it be') || text.includes('let me') || text.includes('i will check') || text.includes('look into') || gText.includes('確認') || gText.includes('提案')) {
       return {
         ai_name: "Elena (Global Workstream Lead)",
         ai_en: "We ran into an unexpected issue with the latest data delivery and need a clear mitigation plan before tomorrow's executive review.",
@@ -7357,8 +7822,8 @@
       };
     }
 
-    // 4. 前提条件やすり合わせを求めるターゲット ("could you clarify...", "just to make sure...")
-    if (text.includes('clarify') || text.includes('just to make sure') || text.includes('could you') || gText.includes('確認')) {
+    // 4. 前提条件やすり合わせを求めるターゲット ("could you clarify...", "just to make sure...", "sync briefly")
+    if (text.includes('clarify') || text.includes('just to make sure') || text.includes('could you') || text.includes('sync') || gText.includes('確認')) {
       return {
         ai_name: "David (Senior CRA / Technical Lead)",
         ai_en: "The timeline and deliverable scope in the latest draft seem inconsistent with our initial agreement. How are we handling this?",
@@ -7368,7 +7833,7 @@
 
     // 一般的なプロフェッショナル相手発言
     return {
-      ai_name: "Marcus (Global VP / Delivery Director)",
+      ai_name: "Marcus (Global Delivery Lead)",
       ai_en: "We need an urgent update on our current operational status and next milestones. Could you share your alignment plan?",
       ai_jp: "現在の運用ステータスと次のマイルストーンについて至急の共有が必要です。整合プランを教えていただけますか？"
     };
@@ -7383,14 +7848,16 @@
     let aiJp = (rawAiJp || '').trim();
     let aiName = (rawAiName || '').trim() || 'Counterpart';
 
-    const isCorruptedAiEn = !aiEn ||
+    // 1. 相手の発言が空、またはユーザーの回答と同一/オウム返しになっているか判定
+    let isCorrupted = !aiEn ||
+      aiEn === "..." ||
       aiEn === "Let's review this saved business situation." ||
       aiEn === "AI Roleplay Session" ||
       aiEn === "Business Scenario" ||
       isSameOrParroted(aiEn, targetText);
 
-    if (isCorruptedAiEn) {
-      // 1. 過去履歴やフォールバックから、targetと一致し、かつ問題＝答えになっていない本物のステージデータを探索
+    if (isCorrupted) {
+      // 過去履歴やフォールバックから、targetと一致し、かつ問題＝答えになっていない本物のステージデータを探索
       const orig = findOriginalStageData(targetText, null);
       if (orig && orig.ai_en && !isSameOrParroted(orig.ai_en, targetText)) {
         aiEn = orig.ai_en;
@@ -7400,16 +7867,19 @@
         if (orig.ai_name) {
           aiName = orig.ai_name;
         }
+        isCorrupted = false; // 正常に復元完了
       }
     }
 
     // 2. それでも aiEn がターゲットと同じ、または破損している場合
-    if (!aiEn || isCorruptedAiEn || isSameOrParroted(aiEn, targetText)) {
-      if (aiJp && aiJp !== '保存したビジネス状況の復習です。' && !aiJp.includes('保存したビジネス状況')) {
+    if (isCorrupted || !aiEn || isSameOrParroted(aiEn, targetText)) {
+      if (aiJp && aiJp !== '保存したビジネス状況の復習です。' && !aiJp.includes('保存したビジネス状況') && !isSameOrParroted(aiJp, rawGuide)) {
         // 日本語の意味に対応する相手の自然な英語発言を合成
         aiEn = translateCounterpartJpToEn(aiJp, targetText);
-      } else {
-        // コンテキストから相手の役割・発言・日本語訳をワンストップ合成
+      }
+      
+      // それでも未解決、またはターゲットと同じ場合はターゲットから文脈を合成
+      if (!aiEn || isSameOrParroted(aiEn, targetText)) {
         const synthetic = synthesizeCounterpartSpeechForTarget(targetText, rawGuide);
         aiEn = synthetic.ai_en;
         aiJp = synthetic.ai_jp;
@@ -7419,7 +7889,37 @@
       }
     }
 
-    // 3. 日本語訳が未設定またはダミーなら補完
+    // 3. 【絶対防壁フェイルセーフ】いかなる場合も相手の発言が回答ターゲットと同じになってはならない
+    if (isSameOrParroted(aiEn, targetText) || !aiEn || aiEn.trim().length < 5) {
+      const guaranteedDistinct = [
+        {
+          name: "Marcus (Global Delivery Lead)",
+          en: "We need an urgent alignment on this deliverable timeline and owner. Could you share your current plan?",
+          jp: "この成果物のスケジュールと担当者について至急のすり合わせが必要です。現在のプランを共有いただけますか？"
+        },
+        {
+          name: "Elena (Sponsor Lead)",
+          en: "Could you please give us an update on how your team plans to resolve the outstanding items?",
+          jp: "残存タスクについて貴チームでどのように解決予定か、進捗を教えていただけますでしょうか？"
+        },
+        {
+          name: "David (Senior CRA / Technical Manager)",
+          en: "Our stakeholders are requesting clarification on next steps and feasibility for this schedule.",
+          jp: "ステークホルダーから今後のステップと本スケジュールの実現性について確認が入っています。"
+        },
+        {
+          name: "Sarah (Quality Assurance Lead)",
+          en: "We noticed conflicting information regarding this delivery. How should we proceed?",
+          jp: "この納品に関して情報が食い違っているようです。どのように進めるべきでしょうか？"
+        }
+      ];
+      const safe = guaranteedDistinct.find(g => !isSameOrParroted(g.en, targetText)) || guaranteedDistinct[0];
+      aiEn = safe.en;
+      aiJp = safe.jp;
+      aiName = safe.name;
+    }
+
+    // 4. 日本語訳が未設定またはダミーなら補完
     if (!aiJp || aiJp === '保存したビジネス状況の復習です。' || aiJp.includes('保存したビジネス状況')) {
       aiJp = resolveCounterpartTranslation(aiEn, rawGuide);
     }
@@ -7795,7 +8295,7 @@
       key_pattern_jp: patternInfo.key_pattern_jp,
       pattern_rationale: patternInfo.pattern_rationale,
       parts_hint: patternInfo.parts_hint,
-      guide: item.guide || (original && original.guide) || patternInfo.guide,
+      guide: safeGuide,
       target: targetText,
       counterpart_reaction_en: item.counterpart_reaction_en || (original && original.counterpart_reaction_en) || "Understood. Thank you for the clear communication.",
       counterpart_reaction_jp: item.counterpart_reaction_jp || (original && original.counterpart_reaction_jp) || "了解しました。明確なご対応ありがとうございます。",
@@ -7805,8 +8305,58 @@
     };
   }
 
+  // ==========================================
+  // 保存済みフレーズライブラリの自動修復・サニタイズ（問題＝答えバグの根絶）
+  // ==========================================
+  function sanitizePhraseLibrary() {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    let changed = false;
+    library = library.map(item => {
+      if (item && item.target) {
+        if (isSameOrParroted(item.ai_en, item.target) || !item.ai_en || item.ai_en === "Let's review this saved business situation.") {
+          const healed = resolveReviewCounterpartData(item.target, item.ai_en, item.ai_jp, item.guide, item.ai_name);
+          item.ai_en = healed.ai_en;
+          item.ai_jp = healed.ai_jp;
+          item.ai_name = healed.ai_name;
+          changed = true;
+        }
+        if (!item.guide || isSameOrParroted(item.guide, item.target) || /^[A-Za-z0-9\s.,?!'"-:;()]+$/.test((item.guide || '').trim())) {
+          const pInfo = deriveKeyPatternInfo(item.target, item.key_pattern, item.key_pattern_jp, item.pattern_rationale, '');
+          item.guide = pInfo.guide || "相手の状況・依頼に対して、学習した型を用いて的確に応答してください。";
+          changed = true;
+        }
+      }
+      return item;
+    });
+    if (changed) {
+      localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    }
+  }
+
+  function copyTeamsDraft() {
+    const current = scenarios[currentStageIndex];
+    if (!current || !current.target) return;
+    const text = current.target;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        toast("📋 Teams用チャット文面をコピーしました！そのまま貼り付けて送信できます。");
+      }).catch(() => {
+        toast("📋 コピー: " + text);
+      });
+    } else {
+      toast("📋 " + text);
+    }
+  }
+
+  function previewTeamsShortcut(phrase) {
+    if (!phrase) return;
+    speakText(phrase);
+    toast(`⚡ Teams定石フレーズ: "${phrase}"`);
+  }
+
   // ライブラリ一覧描画
   function renderLibrary() {
+    sanitizePhraseLibrary();
     const container = document.getElementById('libraryListContainer');
     const badge = document.getElementById('libraryCountBadge');
     const clearBtn = document.getElementById('btnClearAllLibrary');
@@ -9040,6 +9590,9 @@
         btn.style.opacity = '0.7';
       }
 
+      // ライブラリの事前サニタイズ（問題＝答え重複や英語ガイドの破損を完全修復）
+      sanitizePhraseLibrary();
+
       const dueItems = getDueSrsItems();
       if (!dueItems || dueItems.length === 0) {
         toast('✨ 現在、復習期日に達したフレーズはありません（本日の復習はすべて完了しています）');
@@ -9059,6 +9612,11 @@
           console.warn('Error building scenario from item:', item, itemErr);
           // 最低限のフォールバック（問題＝答えの重複を防止）
           const fallbackCp = resolveReviewCounterpartData(item.target || '', item.ai_en, item.ai_jp, item.guide, item.ai_name);
+          const pInfo = deriveKeyPatternInfo(item.target || '', item.key_pattern, item.key_pattern_jp, item.pattern_rationale, item.guide);
+          let safeGuide = item.guide || pInfo.guide;
+          if (!safeGuide || isSameOrParroted(safeGuide, item.target) || /^[A-Za-z0-9\s.,?!'"-:;()]+$/.test((safeGuide || '').trim())) {
+            safeGuide = pInfo.guide || "保存した重要フレーズを型を活用してアウトプットしてください。";
+          }
           return {
             stage: idx + 1,
             ai_name: fallbackCp.ai_name || "Counterpart (Review)",
@@ -9069,7 +9627,7 @@
             key_pattern_jp: item.key_pattern_jp || "〜を行い、〜までに対応します",
             pattern_rationale: item.pattern_rationale || "相手の不安を取り除き、主語＋基本動詞で迷わず言い切る実践的なPlain English構文です。",
             parts_hint: item.parts_hint || "基本パーツ（動詞句・目的語・期限）を意識して組み立てましょう！",
-            guide: item.guide || "保存した重要フレーズをアウトプットしてください。",
+            guide: safeGuide,
             target: item.target || "",
             counterpart_reaction_en: item.counterpart_reaction_en || "Understood. Thank you for the clear communication.",
             counterpart_reaction_jp: item.counterpart_reaction_jp || "了解しました。明確なご対応ありがとうございます。",

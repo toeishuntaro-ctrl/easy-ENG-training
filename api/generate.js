@@ -681,8 +681,10 @@ export default async function handler(req, res) {
 
   // Tailor instructions by training mode
   let modeDescription = "";
-  if (mode === 'email') {
-    modeDescription = "【Email / Teamsチャット通信モード】外資系企業の多国籍チーム、海外クライアント、ベンダーとの緊急・重要メールやTeamsでのやり取り。相手の発言には件名(Subject:)やコンテキストを含め、非ネイティブ同士でも誤解なく即座に意図が伝わる、簡潔で礼儀正しいPlain Englishビジネス文章を作成させてください。";
+  if (mode === 'teams') {
+    modeDescription = "【Microsoft Teamsチャット即答・社内ビジネスカジュアル・時短送信モード】社内の多国籍同僚、海外PM、CRA、テックリード等とのTeamsダイレクトチャット/プロジェクトチャンネルでのリアルタイムやり取り。不要な長文挨拶（Dear, Hope you are well等）を省き、相手を不安にさせない受領確認（Thanks for flagging / Got it, on it）と、中学英単語（check, send, ping, confirm, share, sync）を使った迅速・簡潔・失礼のないスマートなビジネスカジュアル（時短送信スタイル）を徹底してください。過度にスラング的な表現は避け、社内コミュニケーションとして品格とスピードを両立する表現を扱ってください。";
+  } else if (mode === 'email') {
+    modeDescription = "【Outlookビジネスメール返信モード】外資系企業の多国籍チーム、海外クライアント、ベンダーとの緊急・重要メールでのやり取り。相手の発言には件名(Subject:)やコンテキストを含め、非ネイティブ同士でも誤解なく即座に意図が伝わる、簡潔で礼儀正しいPlain Englishビジネス文章を作成させてください。";
   } else if (mode === 'sim') {
     modeDescription = "【高圧ミーティング・交渉シミュレーション】海外のディレクター、クライアント、ステークホルダーとのWeb会議/電話会議での切迫した交渉。理不尽な締め切り、予期せぬトラブル、リソース不足、予算交渉のプレッシャーに対し、角を立てずに毅然と切り返すPlain Englishで交渉するシナリオにしてください。";
   } else {
