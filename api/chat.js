@@ -12,6 +12,7 @@ export default async function handler(req, res) {
     topic = 'Negotiating deadline and scope', 
     turn = 1, 
     maxTurns = 4,
+    chatStyle = 'teams',
     // Legacy support
     targetPhrase, 
     japaneseGuide, 
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
 
   // If no API key, return intelligent fallback roleplay response
   if (!apiKey) {
-    return res.status(200).json(getFallbackRallyResponse(character, topic, turn, userText || (messages[messages.length - 1]?.text || '')));
+    return res.status(200).json(getFallbackRallyResponse(character, topic, turn, userText || (messages[messages.length - 1]?.text || ''), chatStyle));
   }
 
   const ai = new GoogleGenAI({
@@ -39,6 +40,16 @@ export default async function handler(req, res) {
     : `User: ${userText}`;
 
   const isFinalTurn = turn >= maxTurns;
+  const isTeams = chatStyle === 'teams';
+
+  const styleContext = isTeams 
+    ? `# COMMUNICATION CHANNEL: Microsoft Teams Chat / Internal Business Casual
+- Tone: Realistic internal chat between colleagues/stakeholders. Concise, responsive, polite yet business-casual (avoiding overly stiff greetings or essay-length text).
+- Objective: Fast alignment, clear next steps, and concrete ETAs.
+- Coach Focus: Specifically evaluate "Teamsチャット時短・明瞭さ" (clarity, brevity, middle school verbs like check/ping/send/get/confirm, actionable closing).`
+    : `# COMMUNICATION CHANNEL: Live Online Meeting / Negotiation
+- Tone: Natural spoken business conversation.
+- Coach Focus: Spoken Plain English fluency, rhythm, and clear consensus building.`;
 
   const prompt = `You are playing the role of "${character}" in a realistic global business negotiation simulation.
 You are also an expert Plain English coach for global non-native business professionals.
@@ -46,19 +57,21 @@ You are also an expert Plain English coach for global non-native business profes
 # TOPIC / SITUATION:
 ${topic || scenario || "Negotiating deadline and priorities in a clinical project"}
 
+${styleContext}
+
 # CONVERSATION SO FAR:
 ${conversationHistoryText}
 
 # CURRENT TURN:
-Turn ${turn} of ${maxTurns} ${isFinalTurn ? "(Final turn to conclude the negotiation)" : ""}
+Turn ${turn} of ${maxTurns} ${isFinalTurn ? "(Final turn to conclude the negotiation/chat)" : ""}
 
 # YOUR DUAL TASK:
-1. Respond in-character as ${character}. Be realistic, constructive, professional, and slightly challenging if the user is vague. If this is the final turn (${isFinalTurn}), aim to reach an agreeable alignment.
+1. Respond in-character as ${character}. Be realistic, constructive, professional, and concise. If this is the final turn (${isFinalTurn}), aim to reach an agreeable alignment.
 2. Act as a Plain English Coach:
-   - Provide feedback in Japanese on the user's latest message.
+   - Provide feedback in Japanese on the user's latest message (highlighting chat conciseness, clarity, tone).
    - Suggest a "Better Plain English" alternative that uses simple, high-impact middle school verbs (get, take, check, put, keep, send) and cushion phrases instead of stiff bureaucratic jargon.
    - Suggest a "Recommended Key Pattern" (型) for the next step.
-   - Suggest 3 quick reply options for the user.
+   - Suggest 3 quick reply options for the user that are concise, realistic chat messages matching this exact context.
 
 Output strictly JSON adhering to the schema.`;
 
@@ -113,11 +126,12 @@ Output strictly JSON adhering to the schema.`;
 
   // Fallback if API call failed
   console.warn("Falling back to local simulation response due to API error:", lastError?.message);
-  return res.status(200).json(getFallbackRallyResponse(character, topic, turn, userText));
+  return res.status(200).json(getFallbackRallyResponse(character, topic, turn, userText, chatStyle));
 }
 
-function getFallbackRallyResponse(character, topic, turn, userText) {
+function getFallbackRallyResponse(character, topic, turn, userText, chatStyle = 'teams') {
   const isConcluded = turn >= 4;
+  const isTeams = chatStyle === 'teams';
   const fallbacks = [
     {
       ai_reply_en: "I see your point, but we have a strict commitment with the executive committee. What is your concrete mitigation plan if we adjust the timeline?",

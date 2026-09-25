@@ -559,6 +559,77 @@
       margin-top: 4px;
       line-height: 1.3;
     }
+
+    /* トピックサマリーカード（基本おまかせランダム表示用） */
+    .topic-summary-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .topic-toggle-btn {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .topic-toggle-btn:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* 広がる実践フレーズカード (類義・言い換え表現) */
+    .related-phrase-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .related-phrase-item:last-child {
+      margin-bottom: 0;
+    }
+    .related-phrase-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+    .related-phrase-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .related-phrase-en {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.35;
+    }
+    .related-phrase-jp {
+      font-size: 11px;
+      color: #475569;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
     .mode-pill-group {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -2422,6 +2493,66 @@
       color: #0f172a;
     }
 
+    /* Teams Style in AI Roleplay */
+    .roleplay-teams-banner {
+      background: #464eb8;
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 10px 10px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0;
+      box-shadow: 0 2px 6px rgba(70, 78, 184, 0.2);
+    }
+    .roleplay-style-tab {
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .roleplay-style-tab.active {
+      background: #464eb8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 5px rgba(70, 78, 184, 0.25);
+    }
+    .teams-mode.roleplay-chat-timeline {
+      background: #f5f5f7;
+      border: 1.5px solid #d2d2d7;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      padding: 12px;
+      min-height: 240px;
+    }
+    .teams-mode .chat-msg-row {
+      max-width: 95%;
+    }
+    .teams-mode .chat-msg-row.ai .chat-bubble {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .teams-mode .chat-msg-row.user .chat-bubble {
+      background: #eef2ff;
+      border: 1.5px solid #c7d2fe;
+      color: #1e1b4b;
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(99, 102, 241, 0.1);
+    }
+    .teams-mode .chat-msg-row.ai .chat-msg-avatar {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 11px;
+    }
+    .teams-mode .chat-msg-row.user .chat-msg-avatar {
+      background: #0ea5e9;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
     /* 入力エリア */
     .roleplay-input-bar {
       display: flex;
@@ -2938,26 +3069,27 @@
       </div>
     </div>
 
-    <!-- AI連続ラリー会話 (フリースタイル・ロールプレイ) クイック起動バナー -->
+    <!-- AI連続ラリー会話 (Teamsチャット＆社内会話 実践) クイック起動バナー -->
     <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 14px; margin-top: 12px; margin-bottom: 12px; color: #fff; box-shadow: 0 3px 8px rgba(30, 27, 75, 0.15);">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
         <div>
           <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="background: #4f46e5; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">NEW 機能</span>
-            <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">フリースタイル実践</span>
+            <span style="background: #4f46e5; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">Teams / 会議実践</span>
+            <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">社内ビジネスカジュアル</span>
           </div>
-          <div style="font-size: 14px; font-weight: 800; margin-top: 3px; color: #ffffff;">💬 AIと連続ラリー対話（ロールプレイ）</div>
+          <div style="font-size: 14px; font-weight: 800; margin-top: 3px; color: #ffffff;">💬 AI連続ラリー対話（Teamsチャット＆社内会話 実践）</div>
           <div style="font-size: 11.5px; color: #e0e7ff; margin-top: 2px; line-height: 1.4;">
-            AI相手と3〜4往復の会話で合意形成。リアルタイムに中学生英語での洗練アドバイスを提供！
+            Teamsチャットでの時短送信や会議での即答！3〜4往復の会話で合意形成。中学動詞で即レス＆Teams時短度アドバイス！
           </div>
         </div>
       </div>
       <div style="display: flex; gap: 8px; margin-top: 10px;">
-        <button onclick="startRandomRoleplay()" style="flex: 1; background: #fbbf24; color: #78350f; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(251,191,36,0.3);">
-          🎲 おまかせランダム開始
+        <button onclick="startTeamsRoleplayFromHome()" style="flex: 1.2; background: #6366f1; color: #ffffff; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(99,102,241,0.3);">
+          <span style="background: #fff; color: #4338ca; width: 17px; height: 17px; border-radius: 4px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center;">T</span>
+          Teamsチャット即答ラリー ➔
         </button>
-        <button onclick="switchTab('roleplay')" style="flex: 1; background: #4338ca; color: #ffffff; border: 1px solid #6366f1; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
-          💬 設定を選んで開始 ➔
+        <button onclick="startRandomRoleplay()" style="flex: 1; background: #fbbf24; color: #78350f; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(251,191,36,0.3);">
+          🎲 おまかせ即興
         </button>
       </div>
     </div>
@@ -2979,79 +3111,105 @@
       </div>
     </div>
 
-    <div class="topic-selector-title">
-      <span>🎯 集中トレーニングするトピックを選択</span>
+    <!-- 出題トピック（基本ランダム・おまかせ出題、必要時のみ個別指定展開） -->
+    <div class="topic-summary-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <div>
+          <div style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:0.5px; display:flex; align-items:center; gap:4px;">
+            <span>出題トピック</span>
+            <span style="background:#dbeafe; color:#1e40af; font-size:9.5px; padding:1px 5px; border-radius:4px; font-weight:700;">基本ランダム</span>
+          </div>
+          <div style="font-size:15px; font-weight:800; color:#0f172a; margin-top:3px;" id="selectedTopicDisplayName">🎲 おまかせランダム（全分野から総合出題）</div>
+        </div>
+        <button class="topic-toggle-btn" id="btnToggleTopicPicker" onclick="toggleTopicPicker()">
+          <span id="topicToggleBtnText">⚙️ 個別指定 ▾</span>
+        </button>
+      </div>
+      <div style="font-size:11.5px; color:#64748b; margin-top:5px; line-height:1.45;" id="selectedTopicDesc">
+        納期交渉・曖昧指示確認・トラブル対応・臨床実務・タフな交渉など、全カテゴリからAIがバランスよく出題します。
+      </div>
+
+      <!-- 折りたたみ式のトピック一覧（必要なときのみ展開） -->
+      <div id="topicAccordion" style="display: none; margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+        <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 8px;">集中特訓したいトピックを1つ選択:</div>
+        <div class="topic-chip-grid" id="topicChipGrid" style="margin-bottom: 0;">
+          <div class="topic-chip active" id="chip_all" onclick="selectTopic('all')" style="grid-column: span 2;">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">🎲</span>
+              <span class="topic-chip-title">おまかせ選定（全トピックからランダム出題・推奨）</span>
+            </div>
+            <div class="topic-chip-desc">日々の総合力トレーニング。全カテゴリからAIがバランスよく出題</div>
+          </div>
+
+          <div class="topic-chip" id="chip_pushback" onclick="selectTopic('pushback')">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">🚀</span>
+              <span class="topic-chip-title">納期・スコープ交渉</span>
+            </div>
+            <div class="topic-chip-desc">理不尽な短納期や追加業務へ角を立てずに切り返す</div>
+          </div>
+
+          <div class="topic-chip" id="chip_clarify" onclick="selectTopic('clarify')">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">🔍</span>
+              <span class="topic-chip-title">曖昧な指示の確認</span>
+            </div>
+            <div class="topic-chip-desc">手戻りを防ぐための明確化・リフレーズ・期日のすり合わせ</div>
+          </div>
+
+          <div class="topic-chip" id="chip_issue" onclick="selectTopic('issue')">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">🛡️</span>
+              <span class="topic-chip-title">トラブル対応・持ち帰り</span>
+            </div>
+            <div class="topic-chip-desc">予期せぬトラブル時に即答せず、信頼を保ち期日を約束</div>
+          </div>
+
+          <div class="topic-chip" id="chip_meeting" onclick="selectTopic('meeting')">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">🤝</span>
+              <span class="topic-chip-title">会議進行・議論整理</span>
+            </div>
+            <div class="topic-chip-desc">脱線の軌道修正、発言の要約、決定事項の取り付け</div>
+          </div>
+
+          <div class="topic-chip" id="chip_clinical" onclick="selectTopic('clinical')">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">💊</span>
+              <span class="topic-chip-title">臨床開発・製薬実務</span>
+            </div>
+            <div class="topic-chip-desc">プロトコル改訂、症例登録、SAE報告、監査CAPA対応</div>
+          </div>
+
+          <div class="topic-chip" id="chip_negotiation" onclick="selectTopic('negotiation')">
+            <div class="topic-chip-head">
+              <span class="topic-chip-icon">⚖️</span>
+              <span class="topic-chip-title">タフな交渉・利害調整</span>
+            </div>
+            <div class="topic-chip-desc">妥協案（Give & Take）、決断を先延ばしする上長へのプッシュ</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="topic-chip-grid" id="topicChipGrid">
-      <div class="topic-chip active" id="chip_pushback" onclick="selectTopic('pushback')">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">🚀</span>
-          <span class="topic-chip-title">納期・スコープ交渉</span>
-        </div>
-        <div class="topic-chip-desc">理不尽な短納期や追加業務へ角を立てずに切り返す</div>
-      </div>
 
-      <div class="topic-chip" id="chip_clarify" onclick="selectTopic('clarify')">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">🔍</span>
-          <span class="topic-chip-title">曖昧な指示の確認</span>
-        </div>
-        <div class="topic-chip-desc">手戻りを防ぐための明確化・リフレーズ・期日のすり合わせ</div>
+    <!-- トレーニング形式（口頭即答クイズに完全集約） -->
+    <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-top: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:0.5px;">トレーニング形式</div>
+        <span style="background:#eff6ff; color:#1d4ed8; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; border:1px solid #bfdbfe;">口頭即答特化</span>
       </div>
-
-      <div class="topic-chip" id="chip_issue" onclick="selectTopic('issue')">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">🛡️</span>
-          <span class="topic-chip-title">トラブル対応・持ち帰り</span>
-        </div>
-        <div class="topic-chip-desc">予期せぬトラブル時に即答せず、信頼を保ち期日を約束</div>
-      </div>
-
-      <div class="topic-chip" id="chip_meeting" onclick="selectTopic('meeting')">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">🤝</span>
-          <span class="topic-chip-title">会議進行・議論整理</span>
-        </div>
-        <div class="topic-chip-desc">脱線の軌道修正、発言の要約、決定事項の取り付け</div>
-      </div>
-
-      <div class="topic-chip" id="chip_clinical" onclick="selectTopic('clinical')">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">💊</span>
-          <span class="topic-chip-title">臨床開発・製薬実務</span>
-        </div>
-        <div class="topic-chip-desc">プロトコル改訂、症例登録、SAE報告、監査CAPA対応</div>
-      </div>
-
-      <div class="topic-chip" id="chip_negotiation" onclick="selectTopic('negotiation')">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">⚖️</span>
-          <span class="topic-chip-title">タフな交渉・利害調整</span>
-        </div>
-        <div class="topic-chip-desc">妥協案（Give & Take）、決断を先延ばしする上長へのプッシュ</div>
-      </div>
-
-      <div class="topic-chip" id="chip_all" onclick="selectTopic('all')" style="grid-column: span 2;">
-        <div class="topic-chip-head">
-          <span class="topic-chip-icon">🎲</span>
-          <span class="topic-chip-title">おまかせ選定（全トピックからランダム出題）</span>
-        </div>
-        <div class="topic-chip-desc">日々の総合力トレーニング。全カテゴリからAIがバランスよく出題</div>
+      <div style="font-size:14.5px; font-weight:800; color:#0f172a; margin-top:4px;">🎯 口頭即答クイズ（3ステップ集中学習）</div>
+      <div style="font-size:11.5px; color:#64748b; margin-top:4px; line-height:1.45;">
+        <b>💡 型習得</b> ➔ <b>🔄 スロット変形ドリル</b> ➔ <b>🎯 実戦テスト（想起）</b> の3段階で、ビジネス現場で瞬時に口から英語が出る反射神経を鍛えます。
       </div>
     </div>
 
-    <div class="topic-selector-title">
-      <span>⚙️ トレーニング形式</span>
-    </div>
-    <div class="mode-pill-group">
-      <div class="mode-pill active" id="pill_quiz" onclick="selectMode('quiz')">🎯 口頭即答クイズ</div>
-      <div class="mode-pill" id="pill_teams" onclick="selectMode('teams')">💬 Teamsチャット即答</div>
-      <div class="mode-pill" id="pill_email" onclick="selectMode('email')">✉️ Outlookメール返信</div>
-      <div class="mode-pill" id="pill_sim" onclick="selectMode('sim')">🧑‍💼 交渉・会議Sim</div>
+    <div style="font-size: 11px; color: #475569; margin-top: -4px; margin-bottom: 12px; line-height: 1.4; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
+      💬 <b>Teamsチャットや社内会話のラリー実践</b>は、下の「<a href="javascript:void(0)" onclick="startTeamsRoleplayFromHome()" style="color: #4f46e5; font-weight: 700; text-decoration: underline;">💬 AIラリー</a>」タブで3〜4往復の対話形式で行えます。
     </div>
 
     <button class="btn-targeted-start" id="btnStartTargeted" onclick="startTargetedSession()">
-      <span id="btnStartTargetedText">🚀 「納期・スコープ交渉」でレッスン＆アウトプットを開始</span>
+      <span id="btnStartTargetedText">🎲 おまかせランダムで開始 (全トピックから即答トレーニング)</span>
       <span class="btn-targeted-start-sub">型インプット ➔ 中学単語の組み合わせで実践 (全5問)</span>
     </button>
 
@@ -3173,52 +3331,6 @@
       </div>
     </div>
 
-    <!-- Teamsチャットモード専用：リアルなMicrosoft Teamsチャットクライアント枠 -->
-    <div class="teams-chat-container" id="teamsChatContainer">
-      <div class="teams-chat-header-bar">
-        <div class="teams-chat-header-left">
-          <div class="teams-icon-badge">T</div>
-          <div class="teams-chat-header-titles">
-            <div class="teams-chat-title" id="teamsChannelTitle">💬 Teams Direct Chat | Project Alignment</div>
-            <div class="teams-chat-status"><span class="teams-status-dot"></span><span id="teamsPartnerNameDisplay">Elena (Sponsor Lead)</span> &bull; <span>Available</span></div>
-          </div>
-        </div>
-        <button class="micro-btn" style="padding:3px 8px; font-size:10.5px; background:#fff; color:#464eb8; border-color:#c7d2fe; font-weight:700;" onclick="speakAiSpeech()">🔊 発言を聴く</button>
-      </div>
-
-      <div class="teams-chat-body">
-        <div class="teams-chat-msg-row">
-          <div class="teams-user-avatar" id="teamsUserAvatar">EL</div>
-          <div class="teams-msg-bubble-wrap">
-            <div class="teams-msg-author-row">
-              <span class="teams-msg-author" id="teamsAuthorName">Elena</span>
-              <span class="teams-msg-time" id="teamsMsgTime">Today 14:28</span>
-            </div>
-            <div class="teams-msg-text-en" id="teamsBodyEn">...</div>
-            <div class="teams-msg-text-jp" id="teamsBodyJp">（...）</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Teams時短送信バー（実務ワンタップ定石＆時短コピー） -->
-      <div class="teams-quick-shortcuts-bar">
-        <div class="teams-quick-shortcuts-title">⚡ Teams時短送信の鉄則・ワンタップ定石フレーズ:</div>
-        <div class="teams-shortcut-chips">
-          <button class="teams-chip" onclick="previewTeamsShortcut('Thanks for flagging. I am on it and will send an update shortly.')">⚡ Thanks for flagging (受領＆即着手)</button>
-          <button class="teams-chip" onclick="previewTeamsShortcut('Got it, thanks. Let me check with the team and ping you back.')">⚡ Got it, will ping you (確認＆折り返し)</button>
-          <button class="teams-chip" onclick="previewTeamsShortcut('Makes sense. Could we sync briefly on a 5-minute call?')">⚡ Makes sense / Quick call (合意＆5分コール)</button>
-          <button class="teams-chip" onclick="previewTeamsShortcut('Good to go from our side. Proceeding now.')">⚡ Good to go (承認・進行)</button>
-        </div>
-      </div>
-
-      <div class="teams-bottom-actions">
-        <button class="micro-btn" style="padding:5px 12px; font-size:11.5px; background:#5b5fc7; color:#fff; border:none; font-weight:700; border-radius:6px; cursor:pointer;" onclick="copyTeamsDraft()">
-          📋 Teams用チャット文面をコピー
-        </button>
-        <span style="font-size:10.5px; color:#475569;">※社内チャットは冒頭挨拶省略OK・中学英語でETAを明記するのがグローバル標準</span>
-      </div>
-    </div>
-
     <!-- PHASE 1: レクチャー＆型インストール (厚い解説・パーツ術・声出し練習) -->
     <div id="lecturePhaseSection" class="lecture-card">
       <div class="lecture-header-row">
@@ -3253,6 +3365,19 @@
           </div>
         </div>
         <div class="word-feedback-box" id="wordFeedbackBox" style="display:none; margin-top:4px;"></div>
+      </div>
+
+      <!-- 広がる実践フレーズ集 (現場で使える同類表現・類義パターン) -->
+      <div class="lecture-related-box" id="lectureRelatedBox" style="margin-top: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div style="font-size:11.5px; font-weight:800; color:#1e293b;">
+            💡 広がる実践フレーズ集 (状況に応じた言い換え表現)
+          </div>
+          <span style="font-size:10px; color:#64748b;">タップして聴く / 武器庫に保存</span>
+        </div>
+        <div id="lectureRelatedPhrasesList">
+          <!-- JSで動的に同類フレーズカードを挿入 -->
+        </div>
       </div>
 
       <button class="btn-proceed-challenge" onclick="switchStagePhase('drill')">
@@ -3400,8 +3525,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span class="status-tag" id="statusBadge">PERFECT</span>
         <div style="display:flex; gap:4px;">
-          <button class="micro-btn" id="btnCopyEmailResult" style="display:none; padding:4px 8px; font-size:11px; background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;" onclick="copyEmailDraft()">📋 メール文面コピー</button>
-          <button class="micro-btn" style="padding:4px 8px; font-size:11px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="saveCurrentPhrase()">⭐ 保存</button>
+          <button class="micro-btn" style="padding:4px 8px; font-size:11px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="saveCurrentPhrase()">⭐ 武器庫に保存</button>
         </div>
       </div>
 
@@ -3417,6 +3541,14 @@
       
       <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-top: 8px; padding: 6px 8px; background:#fff; border-radius:6px; border:1px solid #cbd5e1;" id="resultFullSentence"></div>
       <p style="font-size: 13px; margin: 8px 0; color: #334155; line-height: 1.45;" id="adviceText"></p>
+
+      <!-- 結果カード内の広がる実践フレーズ集 (現場で使える同類表現) -->
+      <div id="resultRelatedPhrasesBox" style="margin: 10px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+        <div style="font-size:11.5px; font-weight:800; color:#334155; margin-bottom:6px;">
+          🌟 同じ状況で使える別のPlain English表現:
+        </div>
+        <div id="resultRelatedPhrasesList"></div>
+      </div>
 
       <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
     </div>
@@ -3599,6 +3731,17 @@
 
   <!-- 6. AI連続ラリー対話（フリースタイル・ロールプレイ）ビュー -->
   <div id="viewRoleplay" style="display: none; padding-bottom: 90px;">
+    <!-- 対話形式切り替えバー (Teams社内チャット風 / オンライン会議風) -->
+    <div style="display: flex; gap: 6px; margin-bottom: 10px; background: #e2e8f0; padding: 3px; border-radius: 9px;">
+      <button id="btnRoleplayStyleTeams" class="roleplay-style-tab active" onclick="setRoleplayChatStyle('teams')" style="flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 800; border: none; border-radius: 7px; cursor: pointer; transition: all 0.2s; background: #464eb8; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <span style="background: #fff; color: #464eb8; font-size: 11px; font-weight: 900; width: 18px; height: 18px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.2);">T</span>
+        Teams社内チャット風（時短・即答）
+      </button>
+      <button id="btnRoleplayStyleMeeting" class="roleplay-style-tab" onclick="setRoleplayChatStyle('meeting')" style="flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 700; border: none; border-radius: 7px; cursor: pointer; transition: all 0.2s; background: transparent; color: #475569; display: flex; align-items: center; justify-content: center; gap: 5px;">
+        🎙️ 会議・口頭ラリー風
+      </button>
+    </div>
+
     <div class="roleplay-header-box">
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;">
         <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
@@ -3610,8 +3753,8 @@
           <button class="ctrl-btn" onclick="resetRoleplaySession()" title="現在のラリーを最初からやり直す" style="font-size: 11px; padding: 4px 8px; font-weight: 700;">↺ 最初から</button>
         </div>
       </div>
-      <div style="font-size: 11.5px; color: #64748b; margin-top: 4px; line-height: 1.45;">
-        相手の発言に対し、自分の言葉で返答して合意を着地させます。「🎲 おまかせランダム」で瞬時に即興マッチが可能です。
+      <div style="font-size: 11.5px; color: #64748b; margin-top: 4px; line-height: 1.45;" id="roleplayHeaderDesc">
+        社内Teamsチャットや会議を想定し、3〜4往復のラリーで合意形成。中学英単語を使った時短・簡潔な表現をAIがフィードバックします。
       </div>
 
       <!-- キャラクター＆シナリオ選択 -->
@@ -3655,8 +3798,25 @@
       </div>
     </div>
 
+    <!-- Teams風チャットヘッダーバナー -->
+    <div id="roleplayTeamsBanner" class="roleplay-teams-banner">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 26px; height: 26px; background: #ffffff; color: #464eb8; font-weight: 900; font-size: 14px; border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">T</div>
+        <div>
+          <div style="font-size: 12px; font-weight: 800;" id="roleplayTeamsHeaderTitle">💬 Teams Direct Chat | Sarah</div>
+          <div style="font-size: 10px; color: #e0e7ff; display: flex; align-items: center; gap: 4px;">
+            <span style="width: 6px; height: 6px; background: #34d399; border-radius: 50%; display: inline-block;"></span>
+            <span id="roleplayTeamsHeaderStatus">Available • 社内チャット即答モード</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 10.5px; background: rgba(255,255,255,0.18); padding: 3px 8px; border-radius: 6px; color: #ffffff; font-weight: 700;">
+        ⚡ 時短チャット実践
+      </div>
+    </div>
+
     <!-- チャットログタイムライン -->
-    <div class="roleplay-chat-timeline" id="roleplayTimeline">
+    <div class="roleplay-chat-timeline teams-mode" id="roleplayTimeline">
       <!-- メッセージが動的に挿入される -->
     </div>
 
@@ -3668,7 +3828,7 @@
     <!-- おすすめクイック返答ピル（迷ったとき用） -->
     <div id="roleplayQuickRepliesSection" style="display: none;">
       <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-        <span>💡 おすすめの返信候補（タップして即送信）:</span>
+        <span id="roleplayQuickRepliesTitle">💡 おすすめの即答候補（タップして即送信 / 編集）:</span>
         <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">ワンタップでラリー進行</span>
       </div>
       <div class="roleplay-quick-replies" id="roleplayQuickRepliesContainer"></div>
@@ -3871,20 +4031,53 @@
   let handsFreeIndex = 0;
   let speechRate = 1.0;
 
-  // トピック＆レッスン選択ステート
-  let selectedTopic = 'pushback';
+  // トピック＆レッスン選択ステート（基本おまかせランダム出題）
+  let selectedTopic = 'all';
   let selectedMode = 'quiz';
+  let isTopicPickerOpen = false;
   let choicesRevealed = false;
 
   const TOPIC_NAMES = {
+    all: 'おまかせ選定',
     pushback: '納期・スコープ交渉',
     clarify: '曖昧な指示の確認',
     issue: 'トラブル対応・持ち帰り',
     meeting: '会議進行・議論整理',
     clinical: '臨床開発・製薬実務',
-    negotiation: 'タフな交渉・利害調整',
-    all: 'おまかせ選定'
+    negotiation: 'タフな交渉・利害調整'
   };
+
+  const TOPIC_DESCRIPTIONS = {
+    all: '納期交渉・曖昧指示確認・トラブル対応・臨床実務・タフな交渉など、全カテゴリからAIがバランスよく出題します（基本はおまかせ推奨）。',
+    pushback: '理不尽な短納期や追加業務へ角を立てずに切り返す',
+    clarify: '手戻りを防ぐための明確化・リフレーズ・期日のすり合わせ',
+    issue: '予期せぬトラブル時に即答せず、信頼を保ち期日を約束',
+    meeting: '脱線の軌道修正、発言の要約、決定事項の取り付け',
+    clinical: 'プロトコル改訂、症例登録、SAE報告、監査CAPA対応',
+    negotiation: '妥協案（Give & Take）、決断を先延ばしする上長へのプッシュ'
+  };
+
+  const TOPIC_ICONS = {
+    all: '🎲',
+    pushback: '🚀',
+    clarify: '🔍',
+    issue: '🛡️',
+    meeting: '🤝',
+    clinical: '💊',
+    negotiation: '⚖️'
+  };
+
+  function toggleTopicPicker() {
+    isTopicPickerOpen = !isTopicPickerOpen;
+    const accordion = document.getElementById('topicAccordion');
+    const btnText = document.getElementById('topicToggleBtnText');
+    if (accordion) {
+      accordion.style.display = isTopicPickerOpen ? 'block' : 'none';
+    }
+    if (btnText) {
+      btnText.innerText = isTopicPickerOpen ? '⚙️ 個別指定 ▴' : '⚙️ 個別指定 ▾';
+    }
+  }
 
   function selectTopic(topicKey) {
     selectedTopic = topicKey;
@@ -3895,6 +4088,7 @@
   }
 
   function selectMode(modeKey) {
+    if (modeKey === 'teams' || modeKey === 'chat') modeKey = 'quiz';
     selectedMode = modeKey;
     document.querySelectorAll('.mode-pill').forEach(el => el.classList.remove('active'));
     const pill = document.getElementById(`pill_${modeKey}`);
@@ -3902,13 +4096,171 @@
     updateHomeActionPreview();
   }
 
+  function startTeamsRoleplayFromHome() {
+    roleplayState.chatStyle = 'teams';
+    switchTab('roleplay');
+    setRoleplayChatStyle('teams');
+    toast('💬 Teams社内チャット即答ラリーを開始しました！');
+  }
+
   function updateHomeActionPreview() {
     const textEl = document.getElementById('btnStartTargetedText');
-    if (textEl) {
-      const topicTitle = TOPIC_NAMES[selectedTopic] || '選択トピック';
-      const modeTitle = getModeLabel(selectedMode);
-      textEl.innerText = `🚀 「${topicTitle}」×【${modeTitle}】を開始`;
+    const nameEl = document.getElementById('selectedTopicDisplayName');
+    const descEl = document.getElementById('selectedTopicDesc');
+
+    const icon = TOPIC_ICONS[selectedTopic] || '🎯';
+    const topicTitle = TOPIC_NAMES[selectedTopic] || 'おまかせ選定';
+    const modeTitle = getModeLabel(selectedMode);
+
+    if (nameEl) {
+      nameEl.innerText = `${icon} ${topicTitle}${selectedTopic === 'all' ? '（全分野から総合出題）' : ''}`;
     }
+    if (descEl) {
+      descEl.innerText = TOPIC_DESCRIPTIONS[selectedTopic] || '日々の総合力トレーニング。全カテゴリからAIが出題します。';
+    }
+    if (textEl) {
+      if (selectedTopic === 'all') {
+        textEl.innerText = `🎲 おまかせランダムで開始 (全トピックから即答トレーニング)`;
+      } else {
+        textEl.innerText = `🚀 「${topicTitle}」×【${modeTitle}】を開始`;
+      }
+    }
+  }
+
+  // ==========================================
+  // 広がる実践フレーズ集 (現場で使える同類表現・類義パターン) エンジン
+  // ==========================================
+  function synthesizeClientRelatedPhrases(target, keyPattern, keyPatternJp) {
+    const p = (keyPattern || '').toLowerCase();
+    const t = (target || '').toLowerCase();
+
+    if (p.includes('see your point') || p.includes('understand') || p.includes('hear you') || p.includes('fair point')) {
+      return [
+        { phrase_en: "I hear what you're saying, but our priority is to protect deliverable quality.", phrase_jp: "言わんとすることは分かりますが、成果物の品質確保が最優先です。", nuance_tag: "率直・要点明確" },
+        { phrase_en: "That makes sense, but we should make sure we have all the facts first.", phrase_jp: "ごもっともですが、まずは全容と事実関係を確認しておくべきです。", nuance_tag: "クッション＋客観的" },
+        { phrase_en: "I agree in principle, but we have to work within our current resource limits.", phrase_jp: "大筋では賛同しますが、現行のリソースの範囲内で進める必要があります。", nuance_tag: "大人の外交的合意" }
+      ];
+    } else if (p.includes('check with') || p.includes('get back') || p.includes('looking into') || p.includes('double-check')) {
+      return [
+        { phrase_en: "Let me verify the details and ping you back by this afternoon.", phrase_jp: "詳細を確認し、本日の午後までにチャットで折り返します。", nuance_tag: "口頭・即レス向き" },
+        { phrase_en: "I will look into the root cause and share an update within two hours.", phrase_jp: "根本原因を調査の上、2時間以内に最新状況を共有します。", nuance_tag: "コミット・安心感付与" },
+        { phrase_en: "Give me a short window to confirm with our team leads before we decide.", phrase_jp: "決定する前に、リーダー陣に確認する少しの時間をください。", nuance_tag: "角を立てずに時間確保" }
+      ];
+    } else if (p.includes('would it be') || p.includes('possible to') || p.includes('could we') || p.includes('can we')) {
+      return [
+        { phrase_en: "Would it make sense to deliver the critical parts first?", phrase_jp: "まずは重要パーツだけ先行して納品するのはいかがでしょうか？", nuance_tag: "よりソフト・問いかけ型" },
+        { phrase_en: "A practical workaround is to split the milestone into two phases.", phrase_jp: "現実的な回避策として、マイルストーンを2段階に分ける手があります。", nuance_tag: "プロフェッショナル提案" },
+        { phrase_en: "Could we agree on the essential scope first and defer the rest?", phrase_jp: "まずは必須範囲を確定させ、残りは後回しにすることは可能でしょうか？", nuance_tag: "合意形成・スコープ調整" }
+      ];
+    } else if (p.includes('need to') || p.includes('have to') || p.includes('should')) {
+      return [
+        { phrase_en: "To keep our commitments, let's take a practical step forward together.", phrase_jp: "約束を守るため、現実的な一歩を踏み出しましょう。", nuance_tag: "合意重視・推進" },
+        { phrase_en: "We need to align on the core requirements before we proceed with development.", phrase_jp: "開発に着手する前に、コア要件の認識を合わせる必要があります。", nuance_tag: "手戻り防止・着実" },
+        { phrase_en: "Our safest path forward is to freeze specs by end of day today.", phrase_jp: "最も安全な進め方は、本日中に仕様を確定させることです。", nuance_tag: "リスク回避・断定" }
+      ];
+    } else if (p.includes('could you please') || p.includes('would you be able') || p.includes('please let us know')) {
+      return [
+        { phrase_en: "Could you send across the latest deck so we can review it before the call?", phrase_jp: "コールの前に確認できるよう、最新資料をお送りいただけますか？", nuance_tag: "事前準備・丁寧" },
+        { phrase_en: "Would you be able to give us a green light by 3 PM today?", phrase_jp: "本日15時までにゴーサインをいただくことは可能でしょうか？", nuance_tag: "期日明示・プッシュ" },
+        { phrase_en: "Please keep us in the loop once the decision is finalized.", phrase_jp: "決定が下り次第、情報共有をいただけますと幸いです。", nuance_tag: "フォロー依頼" }
+      ];
+    } else if (p.includes('concern') || p.includes('risk') || p.includes('avoid') || p.includes('prevent')) {
+      return [
+        { phrase_en: "My main concern is timeline slippage, so let's set an interim checkpoint.", phrase_jp: "一番の懸念はスケジュールの遅延なので、中間チェックポイントを設けましょう。", nuance_tag: "先回り防止" },
+        { phrase_en: "To avoid any misunderstanding, let's summarize the key takeaways in writing.", phrase_jp: "誤解を防ぐため、要点を書面でまとめておきましょう。", nuance_tag: "透明性・手戻り防止" },
+        { phrase_en: "There is a slight risk on capacity, so let's prepare a fallback option.", phrase_jp: "稼働に若干のリスクがあるため、代替プランを準備しておきましょう。", nuance_tag: "リスク管理・備え" }
+      ];
+    } else if (p.includes('lock in') || p.includes('stick to') || p.includes('focus on') || p.includes('same page')) {
+      return [
+        { phrase_en: "Let's stick to the agreed scope to make sure we hit the hard deadline.", phrase_jp: "厳格な納期を守るため、合意済みのスコープを維持しましょう。", nuance_tag: "スコープ死守" },
+        { phrase_en: "I want to make sure we stay aligned before taking the next step.", phrase_jp: "次のステップに進む前に、認識のズレがないことを確認したいです。", nuance_tag: "丁寧・すり合わせ" },
+        { phrase_en: "Let's lock in Friday noon as our cutoff for all final feedback.", phrase_jp: "最終フィードバックの締め切りを金曜正午として確定させましょう。", nuance_tag: "期日固定・明快" }
+      ];
+    } else if (p.includes('thank you') || p.includes('thanks') || p.includes('appreciate')) {
+      return [
+        { phrase_en: "Thank you for the prompt turnaround; this really helps keep us on track.", phrase_jp: "迅速にご対応いただきありがとうございます。予定通りの進行に大変助かります。", nuance_tag: "感謝・信頼構築" },
+        { phrase_en: "Thanks for your flexibility on adjusting to these new requirements.", phrase_jp: "新たな要件への柔軟なご調整、誠にありがとうございます。", nuance_tag: "協調姿勢への感謝" },
+        { phrase_en: "I appreciate your partnership in finding a practical compromise.", phrase_jp: "現実的な落としどころを一緒に見出してくださり感謝いたします。", nuance_tag: "パートナーシップ強化" }
+      ];
+    } else {
+      return [
+        { phrase_en: "To keep our commitments, let's take a practical step forward together.", phrase_jp: "約束を守るため、現実的な一歩を踏み出しましょう。", nuance_tag: "合意重視・前向き" },
+        { phrase_en: "I want to make sure we stay aligned before taking the next step.", phrase_jp: "次のステップに進む前に、認識のズレがないことを確認したいです。", nuance_tag: "丁寧・手戻り防止" },
+        { phrase_en: "Let me follow up with a clear action plan shortly.", phrase_jp: "まもなく明確なアクションプランをもってフォローします。", nuance_tag: "スピード・信頼獲得" }
+      ];
+    }
+  }
+
+  function renderRelatedPhrases(stageData) {
+    const lectureList = document.getElementById('lectureRelatedPhrasesList');
+    const resultList = document.getElementById('resultRelatedPhrasesList');
+    const resultBox = document.getElementById('resultRelatedPhrasesBox');
+
+    let phrases = stageData.related_phrases;
+    if (!Array.isArray(phrases) || phrases.length === 0) {
+      phrases = synthesizeClientRelatedPhrases(stageData.target, stageData.key_pattern, stageData.key_pattern_jp);
+    }
+
+    if (!Array.isArray(phrases) || phrases.length === 0) {
+      if (lectureList) lectureList.innerHTML = '<div style="font-size:11px; color:#94a3b8;">この型をマスターして次のステージへ進みましょう！</div>';
+      if (resultBox) resultBox.style.display = 'none';
+      return;
+    }
+
+    if (resultBox) resultBox.style.display = 'block';
+
+    const html = phrases.map((item, idx) => `
+      <div class="related-phrase-item">
+        <div class="related-phrase-head">
+          <span class="related-phrase-tag">${escapeHtml(item.nuance_tag || 'Plain English')}</span>
+          <div style="display:flex; gap:4px;">
+            <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#f8fafc;" onclick="speakText('${escapeHtml(item.phrase_en).replace(/'/g, "\\'")}')" title="発音を聴く">🔊 聴く</button>
+            <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="savePhraseCustom('${escapeHtml(item.phrase_en).replace(/'/g, "\\'")}', '${escapeHtml(item.phrase_jp).replace(/'/g, "\\'")}', '${escapeHtml(item.nuance_tag || '').replace(/'/g, "\\'")}')" title="フレーズ帳に追加">⭐ 保存</button>
+          </div>
+        </div>
+        <div class="related-phrase-en">${escapeHtml(item.phrase_en)}</div>
+        <div class="related-phrase-jp">（${escapeHtml(item.phrase_jp)}）</div>
+      </div>
+    `).join('');
+
+    if (lectureList) lectureList.innerHTML = html;
+    if (resultList) resultList.innerHTML = html;
+  }
+
+  function savePhraseCustom(en, jp, tag) {
+    if (!en) return;
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.some(item => item.target && item.target.toLowerCase() === en.toLowerCase())) {
+      toast("⚠️ 既にフレーズ帳に登録されています");
+      return;
+    }
+    const current = scenarios[currentStageIndex] || {};
+    const newWeapon = {
+      id: Date.now(),
+      target: en,
+      guide: jp || '学習した実践表現',
+      ai_en: current.ai_en || '',
+      ai_jp: current.ai_jp || '',
+      ai_name: current.ai_name || '',
+      key_pattern: tag ? `[${tag}] ${en}` : en,
+      key_pattern_jp: jp,
+      pattern_rationale: `状況に応じた実践Plain English表現（${tag || '類義フレーズ'}）。`,
+      parts_hint: '声に出して自然に口から出るように練習しましょう！',
+      chunks: splitTargetIntoChunks(en),
+      choices: buildDefaultChoices(en),
+      topic: selectedTopic || 'all',
+      mode: 'quiz',
+      srsLevel: 1,
+      lastReviewedAt: Date.now(),
+      nextReviewAt: Date.now() + 86400000,
+      addedDate: new Date().toLocaleDateString('ja-JP')
+    };
+    library.unshift(newWeapon);
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+    if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
+    toast("⭐ フレーズ帳に追加しました！");
+    renderLibrary();
+    updateSrsRecommendUI();
   }
 
   function startTargetedSession() {
@@ -4135,6 +4487,7 @@
   }
 
   function setTrainingMode(mode) {
+    if (mode === 'teams' || mode === 'chat') mode = 'quiz';
     trainingMode = mode;
     document.getElementById('simHeader').style.display = mode === 'sim' ? 'block' : 'none';
     if (mode === 'sim') startSimTimer();
@@ -7132,47 +7485,16 @@
     const modeSub = document.getElementById('playModeSubText');
     if (modeSub) {
       if (trainingMode === 'sim') modeSub.innerText = '🧑‍💼 現場シミュレーション';
-      else if (trainingMode === 'teams' || trainingMode === 'chat') modeSub.innerText = '💬 Teamsチャット即答（社内ビジネスカジュアル）';
       else if (trainingMode === 'bizmail' || trainingMode === 'email') modeSub.innerText = '✉️ Outlookメール返信';
       else modeSub.innerText = '🎯 口頭即答トレーニング';
     }
 
-    // メール返信モード・Teamsチャットモード・通常カードの表示分岐
+    // メール返信モード・通常カードの表示分岐
     const emailClientContainer = document.getElementById('emailClientContainer');
-    const teamsChatContainer = document.getElementById('teamsChatContainer');
     const partnerCard = document.getElementById('partnerCard');
     const btnCopyEmailResult = document.getElementById('btnCopyEmailResult');
 
-    if (trainingMode === 'teams' || trainingMode === 'chat') {
-      if (teamsChatContainer) teamsChatContainer.style.display = 'block';
-      if (emailClientContainer) emailClientContainer.style.display = 'none';
-      if (partnerCard) partnerCard.style.display = 'none';
-      if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'none';
-
-      const teamsChannelTitle = document.getElementById('teamsChannelTitle');
-      const teamsPartnerNameDisplay = document.getElementById('teamsPartnerNameDisplay');
-      const teamsAuthorName = document.getElementById('teamsAuthorName');
-      const teamsUserAvatar = document.getElementById('teamsUserAvatar');
-      const teamsBodyEn = document.getElementById('teamsBodyEn');
-      const teamsBodyJp = document.getElementById('teamsBodyJp');
-      const teamsMsgTime = document.getElementById('teamsMsgTime');
-
-      const name = data.ai_name || "Colleague";
-      const shortName = name.split(' ')[0] || "Colleague";
-      const initials = (shortName.substring(0, 2)).toUpperCase();
-
-      if (teamsChannelTitle) teamsChannelTitle.innerText = `💬 Teams Direct Chat | ${selectedTopic ? (TOPIC_NAMES[selectedTopic] || selectedTopic) : 'Project Alignment'}`;
-      if (teamsPartnerNameDisplay) teamsPartnerNameDisplay.innerText = name;
-      if (teamsAuthorName) teamsAuthorName.innerText = name;
-      if (teamsUserAvatar) teamsUserAvatar.innerText = initials;
-      if (teamsBodyEn) teamsBodyEn.innerText = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
-      if (teamsBodyJp) teamsBodyJp.innerText = data.ai_jp ? `（${data.ai_jp.replace(/^件名:.*?\n+/i, '')}）` : '';
-      if (teamsMsgTime) {
-        const now = new Date();
-        teamsMsgTime.innerText = `Today ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      }
-    } else if (trainingMode === 'bizmail' || trainingMode === 'email') {
-      if (teamsChatContainer) teamsChatContainer.style.display = 'none';
+    if (trainingMode === 'bizmail' || trainingMode === 'email') {
       if (emailClientContainer) emailClientContainer.style.display = 'block';
       if (partnerCard) partnerCard.style.display = 'none';
       if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'inline-block';
@@ -7188,7 +7510,6 @@
       if (bodyEnEl) bodyEnEl.innerText = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
       if (bodyJpEl) bodyJpEl.innerText = data.ai_jp ? `（${data.ai_jp.replace(/^件名:.*?\n+/i, '')}）` : '';
     } else {
-      if (teamsChatContainer) teamsChatContainer.style.display = 'none';
       if (emailClientContainer) emailClientContainer.style.display = 'none';
       if (partnerCard) partnerCard.style.display = 'block';
       if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'none';
@@ -7251,6 +7572,9 @@
 
     // チャンクビルダー初期化
     initChunkBuilder(data);
+
+    // 広がる実践フレーズ集の描画
+    renderRelatedPhrases(data);
 
     // 3択の準備
     currentChoices = [...(data.choices || [])];
@@ -9797,6 +10121,7 @@
     topicKey: 'pushback',
     turn: 1,
     maxTurns: 4,
+    chatStyle: 'teams', // 'teams' or 'meeting'
     messages: [],
     isListening: false,
     recognition: null,
@@ -9812,6 +10137,7 @@
         topicKey: roleplayState.topicKey,
         turn: roleplayState.turn,
         maxTurns: roleplayState.maxTurns,
+        chatStyle: roleplayState.chatStyle || 'teams',
         messages: roleplayState.messages,
         isConcluded: roleplayState.isConcluded,
         savedAt: Date.now()
@@ -9832,6 +10158,7 @@
         roleplayState.topicKey = parsed.topicKey || 'pushback';
         roleplayState.turn = parsed.turn || 1;
         roleplayState.maxTurns = parsed.maxTurns || 4;
+        roleplayState.chatStyle = parsed.chatStyle || 'teams';
         roleplayState.messages = parsed.messages;
         roleplayState.isConcluded = !!parsed.isConcluded;
 
@@ -9841,6 +10168,7 @@
         const topicSelect = document.getElementById('roleplayTopicSelect');
         if (topicSelect) topicSelect.value = roleplayState.topicKey;
 
+        setRoleplayChatStyle(roleplayState.chatStyle || 'teams', false);
         updateRoleplayHeaderUI();
         renderRoleplayTimeline();
 
@@ -9863,6 +10191,55 @@
     return false;
   }
 
+  function setRoleplayChatStyle(style, showToast = true) {
+    roleplayState.chatStyle = style;
+    const btnTeams = document.getElementById('btnRoleplayStyleTeams');
+    const btnMeeting = document.getElementById('btnRoleplayStyleMeeting');
+    const banner = document.getElementById('roleplayTeamsBanner');
+    const timeline = document.getElementById('roleplayTimeline');
+    const desc = document.getElementById('roleplayHeaderDesc');
+    const quickTitle = document.getElementById('roleplayQuickRepliesTitle');
+
+    if (style === 'teams') {
+      if (btnTeams) {
+        btnTeams.style.background = '#464eb8';
+        btnTeams.style.color = '#ffffff';
+        btnTeams.classList.add('active');
+      }
+      if (btnMeeting) {
+        btnMeeting.style.background = 'transparent';
+        btnMeeting.style.color = '#475569';
+        btnMeeting.classList.remove('active');
+      }
+      if (banner) banner.style.display = 'flex';
+      if (timeline) timeline.classList.add('teams-mode');
+      if (desc) desc.innerText = '社内Teamsチャットを想定し、要点即答と納期・ETA明示で3〜4往復のラリー。中学英単語を使った時短ビジネスカジュアルを特訓！';
+      if (quickTitle) quickTitle.innerText = '⚡ Teams時短即答のおすすめ候補（タップして即送信 / 編集）:';
+    } else {
+      if (btnTeams) {
+        btnTeams.style.background = 'transparent';
+        btnTeams.style.color = '#475569';
+        btnTeams.classList.remove('active');
+      }
+      if (btnMeeting) {
+        btnMeeting.style.background = '#2563eb';
+        btnMeeting.style.color = '#ffffff';
+        btnMeeting.classList.add('active');
+      }
+      if (banner) banner.style.display = 'none';
+      if (timeline) timeline.classList.remove('teams-mode');
+      if (desc) desc.innerText = 'オンライン会議・交渉の対話を想定し、3〜4往復の口頭ラリーで合意形成。中学英単語の Plain English で反論・提案！';
+      if (quickTitle) quickTitle.innerText = '💡 おすすめの返信候補（タップして即送信 / 編集）:';
+    }
+
+    updateRoleplayHeaderUI();
+    renderRoleplayTimeline();
+    saveRoleplaySession();
+    if (showToast) {
+      toast(style === 'teams' ? '💬 Teams社内チャット風（時短・即答モード）に切り替えました' : '🎙️ 会議・口頭ラリー風に切り替えました');
+    }
+  }
+
   function initRoleplayIfNeeded() {
     if (roleplayState.messages.length === 0) {
       const restored = loadRoleplaySession();
@@ -9875,6 +10252,7 @@
       if (charSelect) charSelect.value = roleplayState.characterKey;
       const topicSelect = document.getElementById('roleplayTopicSelect');
       if (topicSelect) topicSelect.value = roleplayState.topicKey;
+      setRoleplayChatStyle(roleplayState.chatStyle || 'teams', false);
       updateRoleplayHeaderUI();
       renderRoleplayTimeline();
     }
@@ -10023,6 +10401,13 @@
         return `<div class="${cls}"></div>`;
       }).join('');
     }
+
+    const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
+    const teamsHeaderTitle = document.getElementById('roleplayTeamsHeaderTitle');
+    if (teamsHeaderTitle) {
+      const shortName = (char.name || '').split(' ')[0] || "Colleague";
+      teamsHeaderTitle.innerText = `💬 Teams Direct Chat | ${shortName} (${char.name})`;
+    }
   }
 
   function renderRoleplayTimeline() {
@@ -10030,17 +10415,26 @@
     if (!container) return;
 
     const char = ROLEPLAY_CHARACTERS[roleplayState.characterKey] || ROLEPLAY_CHARACTERS.sarah;
+    const isTeams = roleplayState.chatStyle === 'teams';
+    container.classList.toggle('teams-mode', isTeams);
 
     container.innerHTML = roleplayState.messages.map((msg, idx) => {
       if (msg.role === 'ai') {
         const jpId = `rp_jp_${idx}`;
+        const shortName = (msg.name || char.name).split(' ')[0] || "Partner";
+        const initials = shortName.substring(0, 2).toUpperCase();
+        const avatarDisplay = isTeams ? initials : (msg.avatar || char.avatar);
+
         return `
           <div class="chat-msg-row ai">
-            <div class="chat-msg-avatar">${msg.avatar || char.avatar}</div>
+            <div class="chat-msg-avatar" title="${escapeHtml(msg.name || char.name)}">${avatarDisplay}</div>
             <div style="flex: 1;">
               <div class="chat-bubble">
-                <div style="font-size: 11px; font-weight: 800; color: #475569; margin-bottom: 2px;">${escapeHtml(msg.name || char.name)}</div>
-                <div>${escapeHtml(msg.text)}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span style="font-size: 11px; font-weight: 800; color: #475569;">${escapeHtml(msg.name || char.name)}</span>
+                  ${isTeams ? `<span style="font-size: 10px; color: #94a3b8;">Today</span>` : ''}
+                </div>
+                <div style="font-size: 13px; font-weight: 600; line-height: 1.45; color: #0f172a;">${escapeHtml(msg.text)}</div>
                 ${msg.textJp ? `
                   <div style="margin-top: 4px;">
                     <button class="micro-btn" style="padding: 1px 6px; font-size: 10px; background: transparent; border: 1px solid #cbd5e1; color: #64748b;" onclick="toggleElementDisplay('${jpId}')">和訳の表示</button>
@@ -10056,25 +10450,29 @@
         `;
       } else {
         // User message & Coach feedback
+        const avatarDisplay = isTeams ? 'YOU' : '👤';
         return `
           <div class="chat-msg-row user">
-            <div class="chat-msg-avatar">👤</div>
+            <div class="chat-msg-avatar">${avatarDisplay}</div>
             <div style="max-width: 85%;">
               <div class="chat-bubble">
-                <div style="font-size: 10.5px; opacity: 0.85; margin-bottom: 1px;">You (Plain English)</div>
+                <div style="font-size: 10.5px; opacity: 0.85; margin-bottom: 1px;">${isTeams ? 'You (Teams即答)' : 'You (Plain English)'}</div>
                 <div>${escapeHtml(msg.text)}</div>
               </div>
               ${msg.coach ? `
                 <div class="coach-feedback-box">
                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                    <span class="coach-badge">💡 Plain English Coach</span>
+                    <span class="coach-badge">${isTeams ? '⚡ Teamsチャット評価' : '💡 Plain English Coach'}</span>
                     <button class="micro-btn" style="font-size: 9.5px; padding: 1px 5px;" onclick="savePhraseFromCoach('${escapeHtml(msg.coach.better_plain_english || '').replace(/'/g, "\\'")}', '${escapeHtml(msg.coach.key_pattern_suggested || '').replace(/'/g, "\\'")}')">⭐ 武器庫に保存</button>
                   </div>
                   <div style="font-size: 11.5px; color: #166534; line-height: 1.4;">${escapeHtml(msg.coach.coach_feedback_jp || '')}</div>
                   ${msg.coach.better_plain_english ? `
                     <div class="coach-plain-tag">
-                      <div style="font-size: 10px; font-weight: 800; color: #047857;">🎯 中学動詞でより簡潔に言うなら:</div>
-                      <div style="font-size: 12px; font-weight: 700; color: #065f46; margin-top: 2px;">"${escapeHtml(msg.coach.better_plain_english)}"</div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px; font-weight: 800; color: #047857;">🎯 ${isTeams ? 'Teams時短・中学動詞で簡潔に言うなら:' : '中学動詞でより簡潔に言うなら:'}</span>
+                        <button class="micro-btn" style="font-size: 9px; padding: 1px 5px; background:#059669; color:#fff; border:none; font-weight:700;" onclick="speakText('${escapeHtml(msg.coach.better_plain_english).replace(/'/g, "\\'")}')">🔊 音声を聴く</button>
+                      </div>
+                      <div style="font-size: 12px; font-weight: 700; color: #065f46; margin-top: 3px;">"${escapeHtml(msg.coach.better_plain_english)}"</div>
                     </div>
                   ` : ''}
                   ${msg.coach.key_pattern_suggested ? `
@@ -10110,15 +10508,18 @@
 
     currentQuickRepliesList = replies;
     section.style.display = 'block';
+    const isTeams = roleplayState.chatStyle === 'teams';
+
     container.innerHTML = replies.map((r, idx) => `
-      <div class="quick-reply-pill" onclick="selectAndSendQuickReply(${idx})">
-        <div class="quick-reply-pill-main">
-          <span style="color: #2563eb; font-weight: 800; font-size: 14px;">💬</span>
+      <div class="quick-reply-pill">
+        <div class="quick-reply-pill-main" onclick="selectAndSendQuickReply(${idx})">
+          <span style="color: ${isTeams ? '#464eb8' : '#2563eb'}; font-weight: 800; font-size: 14px;">${isTeams ? '⚡' : '💬'}</span>
           <span style="font-weight: 600; line-height: 1.4;">${escapeHtml(r)}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span class="quick-reply-send-badge">🚀 送信</span>
-          <button class="quick-reply-edit-btn" onclick="event.stopPropagation(); fillQuickReplyForEdit(${idx})" title="入力欄にコピーして編集">📝 編集</button>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <button class="quick-reply-send-badge" onclick="selectAndSendQuickReply(${idx})" title="この返信を送信">🚀 送信</button>
+          <button class="quick-reply-edit-btn" onclick="fillQuickReplyForEdit(${idx})" title="入力欄にセットして編集">📝 編集</button>
+          <button class="quick-reply-edit-btn" style="background:#f8fafc; color:#475569; border-color:#cbd5e1;" onclick="speakText('${escapeHtml(r).replace(/'/g, "\\'")}')" title="発音・音声を聴く">🔊 聴く</button>
         </div>
       </div>
     `).join('');
@@ -10198,7 +10599,8 @@
           character: char.name,
           topic: topic.title,
           turn: roleplayState.turn,
-          maxTurns: roleplayState.maxTurns
+          maxTurns: roleplayState.maxTurns,
+          chatStyle: roleplayState.chatStyle || 'teams'
         })
       });
 
@@ -10515,6 +10917,9 @@
   window.selectRoleplayQuickReply = selectRoleplayQuickReply;
   window.selectAndSendQuickReply = selectAndSendQuickReply;
   window.fillQuickReplyForEdit = fillQuickReplyForEdit;
+  window.setRoleplayChatStyle = setRoleplayChatStyle;
+  window.startTeamsRoleplayFromHome = startTeamsRoleplayFromHome;
+  window.copyRoleplayTextToClipboard = copyRoleplayTextToClipboard;
   window.savePhraseFromCoach = savePhraseFromCoach;
   window.toggleElementDisplay = toggleElementDisplay;
   window.startSrsReviewSession = startSrsReviewSession;
