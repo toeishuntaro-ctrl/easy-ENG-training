@@ -590,46 +590,6 @@
       color: #1e293b;
     }
 
-    /* 広がる実践フレーズカード (類義・言い換え表現) */
-    .related-phrase-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 7px;
-      padding: 8px 10px;
-      margin-bottom: 6px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .related-phrase-item:last-child {
-      margin-bottom: 0;
-    }
-    .related-phrase-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 3px;
-    }
-    .related-phrase-tag {
-      font-size: 10px;
-      font-weight: 800;
-      padding: 1px 6px;
-      border-radius: 4px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-    }
-    .related-phrase-en {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: #0f172a;
-      line-height: 1.35;
-    }
-    .related-phrase-jp {
-      font-size: 11px;
-      color: #475569;
-      margin-top: 2px;
-      line-height: 1.3;
-    }
-
     .mode-pill-group {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -2917,12 +2877,12 @@
 
 <div class="container">
   <!-- クラウド同期ステータスバー (Firebase Firestore連携) -->
-  <div class="cloud-sync-bar" id="cloudSyncBar">
+  <div class="cloud-sync-bar" id="cloudSyncBar" onclick="openSyncModal()" style="cursor: pointer;" title="クリックして端末同期設定を開く">
     <div class="sync-status-indicator">
       <span class="sync-dot" id="cloudSyncDot"></span>
       <span id="cloudSyncText">☁️ クラウド同期準備中</span>
     </div>
-    <button class="btn-cloud-auth" id="btnCloudAuth" onclick="openSyncModal()">
+    <button class="btn-cloud-auth" id="btnCloudAuth" onclick="event.stopPropagation(); openSyncModal()" type="button" title="端末連携コード・Googleログイン設定">
       📱 端末同期 (コード/Google)
     </button>
   </div>
@@ -3367,19 +3327,6 @@
         <div class="word-feedback-box" id="wordFeedbackBox" style="display:none; margin-top:4px;"></div>
       </div>
 
-      <!-- 広がる実践フレーズ集 (現場で使える同類表現・類義パターン) -->
-      <div class="lecture-related-box" id="lectureRelatedBox" style="margin-top: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <div style="font-size:11.5px; font-weight:800; color:#1e293b;">
-            💡 広がる実践フレーズ集 (状況に応じた言い換え表現)
-          </div>
-          <span style="font-size:10px; color:#64748b;">タップして聴く / 武器庫に保存</span>
-        </div>
-        <div id="lectureRelatedPhrasesList">
-          <!-- JSで動的に同類フレーズカードを挿入 -->
-        </div>
-      </div>
-
       <button class="btn-proceed-challenge" onclick="switchStagePhase('drill')">
         🔄 型を応用！スロット変形ドリルに進む ➔
       </button>
@@ -3541,14 +3488,6 @@
       
       <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-top: 8px; padding: 6px 8px; background:#fff; border-radius:6px; border:1px solid #cbd5e1;" id="resultFullSentence"></div>
       <p style="font-size: 13px; margin: 8px 0; color: #334155; line-height: 1.45;" id="adviceText"></p>
-
-      <!-- 結果カード内の広がる実践フレーズ集 (現場で使える同類表現) -->
-      <div id="resultRelatedPhrasesBox" style="margin: 10px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
-        <div style="font-size:11.5px; font-weight:800; color:#334155; margin-bottom:6px;">
-          🌟 同じ状況で使える別のPlain English表現:
-        </div>
-        <div id="resultRelatedPhrasesList"></div>
-      </div>
 
       <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
     </div>
@@ -4127,105 +4066,7 @@
     }
   }
 
-  // ==========================================
-  // 広がる実践フレーズ集 (現場で使える同類表現・類義パターン) エンジン
-  // ==========================================
-  function synthesizeClientRelatedPhrases(target, keyPattern, keyPatternJp) {
-    const p = (keyPattern || '').toLowerCase();
-    const t = (target || '').toLowerCase();
 
-    if (p.includes('see your point') || p.includes('understand') || p.includes('hear you') || p.includes('fair point')) {
-      return [
-        { phrase_en: "I hear what you're saying, but our priority is to protect deliverable quality.", phrase_jp: "言わんとすることは分かりますが、成果物の品質確保が最優先です。", nuance_tag: "率直・要点明確" },
-        { phrase_en: "That makes sense, but we should make sure we have all the facts first.", phrase_jp: "ごもっともですが、まずは全容と事実関係を確認しておくべきです。", nuance_tag: "クッション＋客観的" },
-        { phrase_en: "I agree in principle, but we have to work within our current resource limits.", phrase_jp: "大筋では賛同しますが、現行のリソースの範囲内で進める必要があります。", nuance_tag: "大人の外交的合意" }
-      ];
-    } else if (p.includes('check with') || p.includes('get back') || p.includes('looking into') || p.includes('double-check')) {
-      return [
-        { phrase_en: "Let me verify the details and ping you back by this afternoon.", phrase_jp: "詳細を確認し、本日の午後までにチャットで折り返します。", nuance_tag: "口頭・即レス向き" },
-        { phrase_en: "I will look into the root cause and share an update within two hours.", phrase_jp: "根本原因を調査の上、2時間以内に最新状況を共有します。", nuance_tag: "コミット・安心感付与" },
-        { phrase_en: "Give me a short window to confirm with our team leads before we decide.", phrase_jp: "決定する前に、リーダー陣に確認する少しの時間をください。", nuance_tag: "角を立てずに時間確保" }
-      ];
-    } else if (p.includes('would it be') || p.includes('possible to') || p.includes('could we') || p.includes('can we')) {
-      return [
-        { phrase_en: "Would it make sense to deliver the critical parts first?", phrase_jp: "まずは重要パーツだけ先行して納品するのはいかがでしょうか？", nuance_tag: "よりソフト・問いかけ型" },
-        { phrase_en: "A practical workaround is to split the milestone into two phases.", phrase_jp: "現実的な回避策として、マイルストーンを2段階に分ける手があります。", nuance_tag: "プロフェッショナル提案" },
-        { phrase_en: "Could we agree on the essential scope first and defer the rest?", phrase_jp: "まずは必須範囲を確定させ、残りは後回しにすることは可能でしょうか？", nuance_tag: "合意形成・スコープ調整" }
-      ];
-    } else if (p.includes('need to') || p.includes('have to') || p.includes('should')) {
-      return [
-        { phrase_en: "To keep our commitments, let's take a practical step forward together.", phrase_jp: "約束を守るため、現実的な一歩を踏み出しましょう。", nuance_tag: "合意重視・推進" },
-        { phrase_en: "We need to align on the core requirements before we proceed with development.", phrase_jp: "開発に着手する前に、コア要件の認識を合わせる必要があります。", nuance_tag: "手戻り防止・着実" },
-        { phrase_en: "Our safest path forward is to freeze specs by end of day today.", phrase_jp: "最も安全な進め方は、本日中に仕様を確定させることです。", nuance_tag: "リスク回避・断定" }
-      ];
-    } else if (p.includes('could you please') || p.includes('would you be able') || p.includes('please let us know')) {
-      return [
-        { phrase_en: "Could you send across the latest deck so we can review it before the call?", phrase_jp: "コールの前に確認できるよう、最新資料をお送りいただけますか？", nuance_tag: "事前準備・丁寧" },
-        { phrase_en: "Would you be able to give us a green light by 3 PM today?", phrase_jp: "本日15時までにゴーサインをいただくことは可能でしょうか？", nuance_tag: "期日明示・プッシュ" },
-        { phrase_en: "Please keep us in the loop once the decision is finalized.", phrase_jp: "決定が下り次第、情報共有をいただけますと幸いです。", nuance_tag: "フォロー依頼" }
-      ];
-    } else if (p.includes('concern') || p.includes('risk') || p.includes('avoid') || p.includes('prevent')) {
-      return [
-        { phrase_en: "My main concern is timeline slippage, so let's set an interim checkpoint.", phrase_jp: "一番の懸念はスケジュールの遅延なので、中間チェックポイントを設けましょう。", nuance_tag: "先回り防止" },
-        { phrase_en: "To avoid any misunderstanding, let's summarize the key takeaways in writing.", phrase_jp: "誤解を防ぐため、要点を書面でまとめておきましょう。", nuance_tag: "透明性・手戻り防止" },
-        { phrase_en: "There is a slight risk on capacity, so let's prepare a fallback option.", phrase_jp: "稼働に若干のリスクがあるため、代替プランを準備しておきましょう。", nuance_tag: "リスク管理・備え" }
-      ];
-    } else if (p.includes('lock in') || p.includes('stick to') || p.includes('focus on') || p.includes('same page')) {
-      return [
-        { phrase_en: "Let's stick to the agreed scope to make sure we hit the hard deadline.", phrase_jp: "厳格な納期を守るため、合意済みのスコープを維持しましょう。", nuance_tag: "スコープ死守" },
-        { phrase_en: "I want to make sure we stay aligned before taking the next step.", phrase_jp: "次のステップに進む前に、認識のズレがないことを確認したいです。", nuance_tag: "丁寧・すり合わせ" },
-        { phrase_en: "Let's lock in Friday noon as our cutoff for all final feedback.", phrase_jp: "最終フィードバックの締め切りを金曜正午として確定させましょう。", nuance_tag: "期日固定・明快" }
-      ];
-    } else if (p.includes('thank you') || p.includes('thanks') || p.includes('appreciate')) {
-      return [
-        { phrase_en: "Thank you for the prompt turnaround; this really helps keep us on track.", phrase_jp: "迅速にご対応いただきありがとうございます。予定通りの進行に大変助かります。", nuance_tag: "感謝・信頼構築" },
-        { phrase_en: "Thanks for your flexibility on adjusting to these new requirements.", phrase_jp: "新たな要件への柔軟なご調整、誠にありがとうございます。", nuance_tag: "協調姿勢への感謝" },
-        { phrase_en: "I appreciate your partnership in finding a practical compromise.", phrase_jp: "現実的な落としどころを一緒に見出してくださり感謝いたします。", nuance_tag: "パートナーシップ強化" }
-      ];
-    } else {
-      return [
-        { phrase_en: "To keep our commitments, let's take a practical step forward together.", phrase_jp: "約束を守るため、現実的な一歩を踏み出しましょう。", nuance_tag: "合意重視・前向き" },
-        { phrase_en: "I want to make sure we stay aligned before taking the next step.", phrase_jp: "次のステップに進む前に、認識のズレがないことを確認したいです。", nuance_tag: "丁寧・手戻り防止" },
-        { phrase_en: "Let me follow up with a clear action plan shortly.", phrase_jp: "まもなく明確なアクションプランをもってフォローします。", nuance_tag: "スピード・信頼獲得" }
-      ];
-    }
-  }
-
-  function renderRelatedPhrases(stageData) {
-    const lectureList = document.getElementById('lectureRelatedPhrasesList');
-    const resultList = document.getElementById('resultRelatedPhrasesList');
-    const resultBox = document.getElementById('resultRelatedPhrasesBox');
-
-    let phrases = stageData.related_phrases;
-    if (!Array.isArray(phrases) || phrases.length === 0) {
-      phrases = synthesizeClientRelatedPhrases(stageData.target, stageData.key_pattern, stageData.key_pattern_jp);
-    }
-
-    if (!Array.isArray(phrases) || phrases.length === 0) {
-      if (lectureList) lectureList.innerHTML = '<div style="font-size:11px; color:#94a3b8;">この型をマスターして次のステージへ進みましょう！</div>';
-      if (resultBox) resultBox.style.display = 'none';
-      return;
-    }
-
-    if (resultBox) resultBox.style.display = 'block';
-
-    const html = phrases.map((item, idx) => `
-      <div class="related-phrase-item">
-        <div class="related-phrase-head">
-          <span class="related-phrase-tag">${escapeHtml(item.nuance_tag || 'Plain English')}</span>
-          <div style="display:flex; gap:4px;">
-            <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#f8fafc;" onclick="speakText('${escapeHtml(item.phrase_en).replace(/'/g, "\\'")}')" title="発音を聴く">🔊 聴く</button>
-            <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#fef3c7; color:#92400e; border-color:#fde68a;" onclick="savePhraseCustom('${escapeHtml(item.phrase_en).replace(/'/g, "\\'")}', '${escapeHtml(item.phrase_jp).replace(/'/g, "\\'")}', '${escapeHtml(item.nuance_tag || '').replace(/'/g, "\\'")}')" title="フレーズ帳に追加">⭐ 保存</button>
-          </div>
-        </div>
-        <div class="related-phrase-en">${escapeHtml(item.phrase_en)}</div>
-        <div class="related-phrase-jp">（${escapeHtml(item.phrase_jp)}）</div>
-      </div>
-    `).join('');
-
-    if (lectureList) lectureList.innerHTML = html;
-    if (resultList) resultList.innerHTML = html;
-  }
 
   function savePhraseCustom(en, jp, tag) {
     if (!en) return;
@@ -5897,222 +5738,257 @@
     populateQuickModeSelect();
     populateScriptLogSelect();
     renderHistory();
+  }
 
-    // Global exposure for Firebase Sync callbacks
-    window.updateDashboard = updateDashboard;
-    window.renderLibrary = renderLibrary;
-    window.renderHistory = renderHistory;
-    window.populateScriptLogSelect = populateScriptLogSelect;
-    window.populateQuickModeSelect = populateQuickModeSelect;
-    window.initDailyFocusCard = initDailyFocusCard;
-    window.renderAnalyticsView = renderAnalyticsView;
-    window.refreshSessionFromLatestHistory = refreshSessionFromLatestHistory;
-    window.startLibraryQuiz = startLibraryQuiz;
-    window.startSinglePhraseQuiz = startSinglePhraseQuiz;
-    window.setLibraryFilterTopic = setLibraryFilterTopic;
-    window.openFlashcardModal = openFlashcardModal;
-    window.flipFlashcard = flipFlashcard;
-    window.nextFlashcard = nextFlashcard;
-    window.prevFlashcard = prevFlashcard;
-    window.closeFlashcardModal = closeFlashcardModal;
-    window.speakFlashcardTarget = speakFlashcardTarget;
-    window.saveCurrentPhrase = saveCurrentPhrase;
-    window.deleteLibraryItem = deleteLibraryItem;
+  // Global exposure for Firebase Sync callbacks
+  window.updateDashboard = updateDashboard;
+  window.renderLibrary = renderLibrary;
+  window.renderHistory = renderHistory;
+  window.populateScriptLogSelect = populateScriptLogSelect;
+  window.populateQuickModeSelect = populateQuickModeSelect;
+  window.initDailyFocusCard = initDailyFocusCard;
+  window.renderAnalyticsView = renderAnalyticsView;
+  window.refreshSessionFromLatestHistory = refreshSessionFromLatestHistory;
+  window.startLibraryQuiz = startLibraryQuiz;
+  window.startSinglePhraseQuiz = startSinglePhraseQuiz;
+  window.setLibraryFilterTopic = setLibraryFilterTopic;
+  window.openFlashcardModal = openFlashcardModal;
+  window.flipFlashcard = flipFlashcard;
+  window.nextFlashcard = nextFlashcard;
+  window.prevFlashcard = prevFlashcard;
+  window.closeFlashcardModal = closeFlashcardModal;
+  window.speakFlashcardTarget = speakFlashcardTarget;
+  window.saveCurrentPhrase = saveCurrentPhrase;
+  window.deleteLibraryItem = deleteLibraryItem;
 
-    // --- 端末同期モーダル操作関数 ---
-    function openSyncModal() {
-      const modal = document.getElementById('syncModal');
-      if (!modal) {
-        console.warn("syncModal not found");
-        return;
-      }
-      modal.style.display = 'flex';
-      
-      const currentCode = window.fbSync?.syncCode || localStorage.getItem('english_sync_code') || '';
-      const codeDisplay = document.getElementById('mySyncCodeDisplay');
-      if (codeDisplay && currentCode) {
-        codeDisplay.value = currentCode;
-      }
-      
-      const statusText = document.getElementById('modalSyncStatusText');
-      const dot = document.getElementById('modalSyncDot');
-      if (statusText) {
-        statusText.innerText = currentCode ? `クラウド連携中 (コード: ${currentCode})` : 'クラウド接続準備中';
-      }
-      if (dot) dot.style.background = '#10b981';
-
-      const errorBox = document.getElementById('googleAuthErrorBox');
-      if (errorBox) errorBox.style.display = 'none';
-
-      const codeMsg = document.getElementById('syncCodeMsg');
-      if (codeMsg) codeMsg.style.display = 'none';
-
-      const syncResultMsg = document.getElementById('manualSyncResultMsg');
-      if (syncResultMsg) syncResultMsg.style.display = 'none';
+  // --- 端末同期モーダル操作関数 (トップレベル公開) ---
+  function openSyncModal() {
+    const modal = document.getElementById('syncModal');
+    if (!modal) {
+      console.warn("syncModal not found");
+      return;
+    }
+    modal.style.display = 'flex';
+    
+    let currentCode = window.fbSync?.syncCode || localStorage.getItem('english_sync_code') || '';
+    if (!currentCode || currentCode.trim().length < 4) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let p1 = '', p2 = '';
+      for (let i = 0; i < 4; i++) p1 += chars[Math.floor(Math.random() * chars.length)];
+      for (let i = 0; i < 4; i++) p2 += chars[Math.floor(Math.random() * chars.length)];
+      currentCode = `PE-${p1}-${p2}`;
+      localStorage.setItem('english_sync_code', currentCode);
+      if (window.fbSync) window.fbSync.syncCode = currentCode;
     }
 
-    function closeSyncModal() {
-      const modal = document.getElementById('syncModal');
-      if (modal) modal.style.display = 'none';
+    const codeDisplay = document.getElementById('mySyncCodeDisplay');
+    if (codeDisplay) {
+      codeDisplay.value = currentCode;
     }
+    
+    const statusText = document.getElementById('modalSyncStatusText');
+    const dot = document.getElementById('modalSyncDot');
+    if (statusText) {
+      statusText.innerText = currentCode ? `クラウド連携中 (コード: ${currentCode})` : 'クラウド接続中';
+    }
+    if (dot) dot.style.background = '#10b981';
 
-    function copySyncCode() {
-      const code = window.fbSync?.syncCode || document.getElementById('mySyncCodeDisplay')?.value || localStorage.getItem('english_sync_code') || '';
-      if (!code) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(code).then(() => {
-          toast(`📋 連携コード [${code}] をコピーしました！`);
-        }).catch(() => {
-          prompt('以下のコードをコピーしてください:', code);
-        });
-      } else {
+    const errorBox = document.getElementById('googleAuthErrorBox');
+    if (errorBox) errorBox.style.display = 'none';
+
+    const codeMsg = document.getElementById('syncCodeMsg');
+    if (codeMsg) codeMsg.style.display = 'none';
+
+    const syncResultMsg = document.getElementById('manualSyncResultMsg');
+    if (syncResultMsg) syncResultMsg.style.display = 'none';
+  }
+
+  function closeSyncModal() {
+    const modal = document.getElementById('syncModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function copySyncCode() {
+    const code = window.fbSync?.syncCode || document.getElementById('mySyncCodeDisplay')?.value || localStorage.getItem('english_sync_code') || '';
+    if (!code) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(() => {
+        toast(`📋 連携コード [${code}] をコピーしました！`);
+      }).catch(() => {
         prompt('以下のコードをコピーしてください:', code);
-      }
+      });
+    } else {
+      prompt('以下のコードをコピーしてください:', code);
     }
+  }
 
-    async function applySyncCode() {
-      const input = document.getElementById('targetSyncCodeInput');
-      const msg = document.getElementById('syncCodeMsg');
-      if (!input || !msg) return;
-      const val = input.value.trim().toUpperCase();
-      if (!val) {
-        msg.style.display = 'block';
-        msg.style.color = '#dc2626';
-        msg.innerText = '⚠️ 同期コードを入力してください';
-        return;
-      }
-
+  async function applySyncCode() {
+    const input = document.getElementById('targetSyncCodeInput');
+    const msg = document.getElementById('syncCodeMsg');
+    if (!input || !msg) return;
+    const val = input.value.trim().toUpperCase();
+    if (!val) {
       msg.style.display = 'block';
-      msg.style.color = '#2563eb';
-      msg.innerText = '🔄 クラウドに接続してデータを同期中...';
-
-      if (window.fbSync) {
-        const res = await window.fbSync.connectSyncCode(val);
-        if (res && res.success) {
-          msg.style.color = '#16a34a';
-          msg.innerText = `✅ ${res.message}`;
-          const codeDisplay = document.getElementById('mySyncCodeDisplay');
-          if (codeDisplay) codeDisplay.value = window.fbSync.syncCode;
-          const statusText = document.getElementById('modalSyncStatusText');
-          if (statusText) statusText.innerText = `クラウド連携中 (コード: ${window.fbSync.syncCode})`;
-          toast('✅ 端末同期が完了しました！過去問・単語帳・XPが更新されました');
-        } else {
-          msg.style.color = '#dc2626';
-          msg.innerText = `⚠️ ${res?.message || '同期に失敗しました'}`;
-        }
-      } else {
-        localStorage.setItem('english_sync_code', val);
-        msg.style.color = '#16a34a';
-        msg.innerText = '✅ 端末連携コードを保存しました。再読み込み後に同期されます。';
-        toast('✅ 端末連携コードを保存しました');
-      }
+      msg.style.color = '#dc2626';
+      msg.innerText = '⚠️ 同期コードを入力してください';
+      return;
     }
 
-    async function doGoogleSignIn() {
-      const errorBox = document.getElementById('googleAuthErrorBox');
-      if (errorBox) errorBox.style.display = 'none';
+    msg.style.display = 'block';
+    msg.style.color = '#2563eb';
+    msg.innerText = '🔄 クラウドに接続してデータを同期中...';
 
-      if (!window.fbSync) {
-        if (errorBox) {
-          errorBox.style.display = 'block';
-          errorBox.innerText = 'Firebaseが初期化されていません。再読み込みしてください。';
-        }
-        return;
-      }
-
-      const res = await window.fbSync.signInWithGoogle();
+    if (window.fbSync) {
+      const res = await window.fbSync.connectSyncCode(val);
       if (res && res.success) {
-        const btnText = document.getElementById('googleLoginBtnText');
-        if (btnText) btnText.innerText = '✅ ログイン中 (クリックで切替)';
-        toast(`✅ Google連携が完了しました (${res.user?.displayName || res.user?.email})`);
+        msg.style.color = '#16a34a';
+        msg.innerText = `✅ ${res.message}`;
+        const codeDisplay = document.getElementById('mySyncCodeDisplay');
+        if (codeDisplay) codeDisplay.value = window.fbSync.syncCode;
         const statusText = document.getElementById('modalSyncStatusText');
-        if (statusText) statusText.innerText = `Googleログイン連携済 (${res.user?.email})`;
+        if (statusText) statusText.innerText = `クラウド連携中 (コード: ${window.fbSync.syncCode})`;
+        toast('✅ 端末同期が完了しました！過去問・単語帳・XPが更新されました');
       } else {
-        if (errorBox) {
-          errorBox.style.display = 'block';
-          errorBox.innerText = res?.message || 'ログインに失敗しました。';
-        }
+        msg.style.color = '#dc2626';
+        msg.innerText = `⚠️ ${res?.message || '同期に失敗しました'}`;
       }
+    } else {
+      localStorage.setItem('english_sync_code', val);
+      msg.style.color = '#16a34a';
+      msg.innerText = '✅ 端末連携コードを保存しました。再読み込み後に同期されます。';
+      toast('✅ 端末連携コードを保存しました');
+    }
+  }
+
+  async function doGoogleSignIn() {
+    const errorBox = document.getElementById('googleAuthErrorBox');
+    if (errorBox) errorBox.style.display = 'none';
+
+    if (!window.fbSync) {
+      if (errorBox) {
+        errorBox.style.display = 'block';
+        errorBox.innerText = 'Firebaseが初期化されていません。再読み込みしてください。';
+      }
+      return;
     }
 
-    async function forcePullData() {
-      const resultBox = document.getElementById('manualSyncResultMsg');
-      const btn = document.getElementById('btnForcePullAction');
-      if (btn) btn.innerText = '🔄 同期中...';
-
-      if (window.fbSync) {
-        toast('🔄 クラウドから最新データを同期中...');
-        const stats = await window.fbSync.pullAllData();
-        if (btn) btn.innerText = '🔄 今すぐクラウドから最新データを手動取得';
-        if (resultBox) {
-          resultBox.style.display = 'block';
-          resultBox.style.background = '#f0fdf4';
-          resultBox.style.border = '1px solid #bbf7d0';
-          resultBox.style.color = '#15803d';
-          resultBox.innerHTML = `✅ <strong>最新同期完了:</strong> クイズ履歴 ${stats?.quizzesCount || 0}件、武器 ${stats?.weaponsCount || 0}件、XP ${stats?.xp || 0} を同期しました。`;
-        }
-        toast('✅ 全データの最新同期が完了しました');
-      } else {
-        if (btn) btn.innerText = '🔄 今すぐクラウドから最新データを手動取得';
-        toast('⚠️ クラウド同期サービスの準備中です。少し待ってから再度お試しください');
+    const res = await window.fbSync.signInWithGoogle();
+    if (res && res.success) {
+      const btnText = document.getElementById('googleLoginBtnText');
+      if (btnText) btnText.innerText = '✅ ログイン中 (クリックで切替)';
+      toast(`✅ Google連携が完了しました (${res.user?.displayName || res.user?.email})`);
+      const statusText = document.getElementById('modalSyncStatusText');
+      if (statusText) statusText.innerText = `Googleログイン連携済 (${res.user?.email})`;
+    } else {
+      if (errorBox) {
+        errorBox.style.display = 'block';
+        errorBox.innerText = res?.message || 'ログインに失敗しました。';
       }
     }
+  }
 
-    window.openSyncModal = openSyncModal;
-    window.closeSyncModal = closeSyncModal;
-    window.copySyncCode = copySyncCode;
-    window.applySyncCode = applySyncCode;
-    window.doGoogleSignIn = doGoogleSignIn;
-    window.forcePullData = forcePullData;
+  async function forcePullData() {
+    const resultBox = document.getElementById('manualSyncResultMsg');
+    const btn = document.getElementById('btnForcePullAction');
+    if (btn) btn.innerText = '🔄 同期中...';
 
-    // Firebase Cloud Sync 状態リスナーの登録
-    const checkFbSync = () => {
-      if (window.fbSync) {
-        window.fbSync.onStatusChange((status) => {
-          const textEl = document.getElementById('cloudSyncText');
-          const dotEl = document.getElementById('cloudSyncDot');
-          const authBtn = document.getElementById('btnCloudAuth');
-          const modalDot = document.getElementById('modalSyncDot');
-          const modalText = document.getElementById('modalSyncStatusText');
-
-          if (textEl && status.message) textEl.innerText = status.message;
-          if (modalText && status.message) modalText.innerText = status.message;
-
-          const color = status.state === 'synced' ? '#10b981' 
-            : status.state === 'syncing' ? '#3b82f6'
-            : status.state === 'offline' ? '#94a3b8' : '#f59e0b';
-
-          if (dotEl) dotEl.style.background = color;
-          if (modalDot) modalDot.style.background = color;
-
-          if (authBtn) {
-            if (status.isAnonymous === false) {
-              authBtn.innerText = '✅ ログイン中 (同期設定)';
-              authBtn.title = status.displayName || '';
-            } else {
-              authBtn.innerText = '📱 端末同期 (コード/Google)';
-            }
-          }
-
-          const myCode = document.getElementById('mySyncCodeDisplay');
-          if (myCode && status.syncCode) myCode.value = status.syncCode;
-        });
-      } else {
-        setTimeout(checkFbSync, 300);
+    if (window.fbSync) {
+      toast('🔄 クラウドから最新データを同期中...');
+      const stats = await window.fbSync.pullAllData();
+      if (btn) btn.innerText = '🔄 今すぐクラウドから最新データを手動取得';
+      if (resultBox) {
+        resultBox.style.display = 'block';
+        resultBox.style.background = '#f0fdf4';
+        resultBox.style.border = '1px solid #bbf7d0';
+        resultBox.style.color = '#15803d';
+        resultBox.innerHTML = `✅ <strong>最新同期完了:</strong> クイズ履歴 ${stats?.quizzesCount || 0}件、武器 ${stats?.weaponsCount || 0}件、XP ${stats?.xp || 0} を同期しました。`;
       }
-    };
-    checkFbSync();
+      toast('✅ 全データの最新同期が完了しました');
+    } else {
+      if (btn) btn.innerText = '🔄 今すぐクラウドから最新データを手動取得';
+      toast('⚠️ クラウド同期サービスの準備中です。少し待ってから再度お試しください');
+    }
+  }
 
-    // PWA Service Worker のブラウザ登録処理
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(reg => {
-          console.log('SW registered:', reg);
-        }).catch(err => {
-          console.log('SW reg failed:', err);
-        });
+  window.openSyncModal = openSyncModal;
+  window.closeSyncModal = closeSyncModal;
+  window.copySyncCode = copySyncCode;
+  window.applySyncCode = applySyncCode;
+  window.doGoogleSignIn = doGoogleSignIn;
+  window.forcePullData = forcePullData;
+
+  // Immediate event listener binding for btnCloudAuth & cloudSyncBar
+  const bindSyncButton = () => {
+    const btn = document.getElementById('btnCloudAuth');
+    if (btn) {
+      btn.onclick = (e) => {
+        if (e) e.stopPropagation();
+        openSyncModal();
+      };
+      btn.addEventListener('click', (e) => {
+        if (e) e.stopPropagation();
+        openSyncModal();
       });
     }
+    const bar = document.getElementById('cloudSyncBar');
+    if (bar) {
+      bar.onclick = openSyncModal;
+      bar.addEventListener('click', openSyncModal);
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindSyncButton);
+  } else {
+    bindSyncButton();
+  }
+
+  // Firebase Cloud Sync 状態リスナーの登録
+  const checkFbSync = () => {
+    if (window.fbSync) {
+      window.fbSync.onStatusChange((status) => {
+        const textEl = document.getElementById('cloudSyncText');
+        const dotEl = document.getElementById('cloudSyncDot');
+        const authBtn = document.getElementById('btnCloudAuth');
+        const modalDot = document.getElementById('modalSyncDot');
+        const modalText = document.getElementById('modalSyncStatusText');
+
+        if (textEl && status.message) textEl.innerText = status.message;
+        if (modalText && status.message) modalText.innerText = status.message;
+
+        const color = status.state === 'synced' ? '#10b981' 
+          : status.state === 'syncing' ? '#3b82f6'
+          : status.state === 'offline' ? '#94a3b8' : '#f59e0b';
+
+        if (dotEl) dotEl.style.background = color;
+        if (modalDot) modalDot.style.background = color;
+
+        if (authBtn) {
+          if (status.isAnonymous === false) {
+            authBtn.innerText = '✅ ログイン中 (同期設定)';
+            authBtn.title = status.displayName || '';
+          } else {
+            authBtn.innerText = '📱 端末同期 (コード/Google)';
+          }
+        }
+
+        const myCode = document.getElementById('mySyncCodeDisplay');
+        if (myCode && status.syncCode) myCode.value = status.syncCode;
+      });
+    } else {
+      setTimeout(checkFbSync, 300);
+    }
+  };
+  checkFbSync();
+
+  // PWA Service Worker のブラウザ登録処理
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        console.log('SW registered:', reg);
+      }).catch(err => {
+        console.log('SW reg failed:', err);
+      });
+    });
   }
 
   // HTMLエスケープ関数（安全なチップレンダリング用）
@@ -7590,9 +7466,6 @@
 
     // チャンクビルダー初期化
     initChunkBuilder(data);
-
-    // 広がる実践フレーズ集の描画
-    renderRelatedPhrases(data);
 
     // 3択の準備
     currentChoices = [...(data.choices || [])];
