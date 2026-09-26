@@ -5920,9 +5920,12 @@
     window.deleteLibraryItem = deleteLibraryItem;
 
     // --- 端末同期モーダル操作関数 ---
-    window.openSyncModal = function() {
+    function openSyncModal() {
       const modal = document.getElementById('syncModal');
-      if (!modal) return;
+      if (!modal) {
+        console.warn("syncModal not found");
+        return;
+      }
       modal.style.display = 'flex';
       
       const currentCode = window.fbSync?.syncCode || localStorage.getItem('english_sync_code') || '';
@@ -5933,8 +5936,8 @@
       
       const statusText = document.getElementById('modalSyncStatusText');
       const dot = document.getElementById('modalSyncDot');
-      if (statusText && currentCode) {
-        statusText.innerText = `クラウド連携中 (コード: ${currentCode})`;
+      if (statusText) {
+        statusText.innerText = currentCode ? `クラウド連携中 (コード: ${currentCode})` : 'クラウド接続準備中';
       }
       if (dot) dot.style.background = '#10b981';
 
@@ -5946,15 +5949,15 @@
 
       const syncResultMsg = document.getElementById('manualSyncResultMsg');
       if (syncResultMsg) syncResultMsg.style.display = 'none';
-    };
+    }
 
-    window.closeSyncModal = function() {
+    function closeSyncModal() {
       const modal = document.getElementById('syncModal');
       if (modal) modal.style.display = 'none';
-    };
+    }
 
-    window.copySyncCode = function() {
-      const code = window.fbSync?.syncCode || document.getElementById('mySyncCodeDisplay')?.value;
+    function copySyncCode() {
+      const code = window.fbSync?.syncCode || document.getElementById('mySyncCodeDisplay')?.value || localStorage.getItem('english_sync_code') || '';
       if (!code) return;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(code).then(() => {
@@ -5965,13 +5968,13 @@
       } else {
         prompt('以下のコードをコピーしてください:', code);
       }
-    };
+    }
 
-    window.applySyncCode = async function() {
+    async function applySyncCode() {
       const input = document.getElementById('targetSyncCodeInput');
       const msg = document.getElementById('syncCodeMsg');
       if (!input || !msg) return;
-      const val = input.value.trim();
+      const val = input.value.trim().toUpperCase();
       if (!val) {
         msg.style.display = 'block';
         msg.style.color = '#dc2626';
@@ -5985,7 +5988,7 @@
 
       if (window.fbSync) {
         const res = await window.fbSync.connectSyncCode(val);
-        if (res.success) {
+        if (res && res.success) {
           msg.style.color = '#16a34a';
           msg.innerText = `✅ ${res.message}`;
           const codeDisplay = document.getElementById('mySyncCodeDisplay');
@@ -5995,12 +5998,17 @@
           toast('✅ 端末同期が完了しました！過去問・単語帳・XPが更新されました');
         } else {
           msg.style.color = '#dc2626';
-          msg.innerText = `⚠️ ${res.message}`;
+          msg.innerText = `⚠️ ${res?.message || '同期に失敗しました'}`;
         }
+      } else {
+        localStorage.setItem('english_sync_code', val);
+        msg.style.color = '#16a34a';
+        msg.innerText = '✅ 端末連携コードを保存しました。再読み込み後に同期されます。';
+        toast('✅ 端末連携コードを保存しました');
       }
-    };
+    }
 
-    window.doGoogleSignIn = async function() {
+    async function doGoogleSignIn() {
       const errorBox = document.getElementById('googleAuthErrorBox');
       if (errorBox) errorBox.style.display = 'none';
 
@@ -6013,21 +6021,21 @@
       }
 
       const res = await window.fbSync.signInWithGoogle();
-      if (res.success) {
+      if (res && res.success) {
         const btnText = document.getElementById('googleLoginBtnText');
         if (btnText) btnText.innerText = '✅ ログイン中 (クリックで切替)';
-        toast(`✅ Google連携が完了しました (${res.user.displayName || res.user.email})`);
+        toast(`✅ Google連携が完了しました (${res.user?.displayName || res.user?.email})`);
         const statusText = document.getElementById('modalSyncStatusText');
-        if (statusText) statusText.innerText = `Googleログイン連携済 (${res.user.email})`;
+        if (statusText) statusText.innerText = `Googleログイン連携済 (${res.user?.email})`;
       } else {
         if (errorBox) {
           errorBox.style.display = 'block';
-          errorBox.innerText = res.message || 'ログインに失敗しました。';
+          errorBox.innerText = res?.message || 'ログインに失敗しました。';
         }
       }
-    };
+    }
 
-    window.forcePullData = async function() {
+    async function forcePullData() {
       const resultBox = document.getElementById('manualSyncResultMsg');
       const btn = document.getElementById('btnForcePullAction');
       if (btn) btn.innerText = '🔄 同期中...';
@@ -6044,8 +6052,18 @@
           resultBox.innerHTML = `✅ <strong>最新同期完了:</strong> クイズ履歴 ${stats?.quizzesCount || 0}件、武器 ${stats?.weaponsCount || 0}件、XP ${stats?.xp || 0} を同期しました。`;
         }
         toast('✅ 全データの最新同期が完了しました');
+      } else {
+        if (btn) btn.innerText = '🔄 今すぐクラウドから最新データを手動取得';
+        toast('⚠️ クラウド同期サービスの準備中です。少し待ってから再度お試しください');
       }
-    };
+    }
+
+    window.openSyncModal = openSyncModal;
+    window.closeSyncModal = closeSyncModal;
+    window.copySyncCode = copySyncCode;
+    window.applySyncCode = applySyncCode;
+    window.doGoogleSignIn = doGoogleSignIn;
+    window.forcePullData = forcePullData;
 
     // Firebase Cloud Sync 状態リスナーの登録
     const checkFbSync = () => {
@@ -10919,7 +10937,6 @@
   window.fillQuickReplyForEdit = fillQuickReplyForEdit;
   window.setRoleplayChatStyle = setRoleplayChatStyle;
   window.startTeamsRoleplayFromHome = startTeamsRoleplayFromHome;
-  window.copyRoleplayTextToClipboard = copyRoleplayTextToClipboard;
   window.savePhraseFromCoach = savePhraseFromCoach;
   window.toggleElementDisplay = toggleElementDisplay;
   window.startSrsReviewSession = startSrsReviewSession;
