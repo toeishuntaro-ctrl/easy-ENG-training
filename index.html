@@ -1919,7 +1919,7 @@
     }
     .library-action-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 8px;
       margin-bottom: 14px;
     }
@@ -1947,6 +1947,14 @@
     }
     .library-action-card.primary:hover {
       border-color: #2563eb;
+    }
+    .library-action-card.accent {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-color: #86efac;
+    }
+    .library-action-card.accent:hover {
+      border-color: #16a34a;
+      box-shadow: 0 3px 8px rgba(22,163,74,0.15);
     }
     .lib-act-title {
       font-size: 13px;
@@ -2043,6 +2051,13 @@
       border-top: 1px solid #f1f5f9;
       padding-top: 8px;
       margin-top: 4px;
+    }
+    .lib-item-card.playing-active {
+      border: 2px solid #2563eb !important;
+      background: #eff6ff !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
+      transform: scale(1.01);
+      transition: all 0.2s ease;
     }
 
     /* フラッシュカードモーダル */
@@ -3585,7 +3600,13 @@
   </div>
 
   <!-- 3. 耳トレ・音読特化ビュー -->
-  <div id="viewScript" style="display: none;">
+  <div id="viewScript" style="display: none; padding-bottom: 90px;">
+    <!-- 戻るナビゲーションバー -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 8px;">
+      <button class="micro-btn" onclick="switchTab('analytics')" style="background: #fff; font-weight: 700; color: #334155; padding: 4px 10px;">← カルテに戻る</button>
+      <span style="font-size: 11px; font-weight: 800; color: #64748b;">🎧 耳トレ・音読特化</span>
+      <button class="micro-btn" onclick="switchTab('home')" style="background: #fff; font-weight: 700; color: #2563eb; padding: 4px 10px;">🏠 ホーム</button>
+    </div>
     
     <!-- 過去ログ呼び出しバー -->
     <div class="mode-switcher-bar">
@@ -3612,7 +3633,13 @@
   </div>
 
   <!-- 4. 過去ログ（履歴）管理ビュー -->
-  <div id="viewHistory" style="display: none;">
+  <div id="viewHistory" style="display: none; padding-bottom: 90px;">
+    <!-- 戻るナビゲーションバー -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 8px;">
+      <button class="micro-btn" onclick="switchTab('analytics')" style="background: #fff; font-weight: 700; color: #334155; padding: 4px 10px;">← カルテに戻る</button>
+      <span style="font-size: 11px; font-weight: 800; color: #64748b;">📁 過去ログ履歴</span>
+      <button class="micro-btn" onclick="switchTab('home')" style="background: #fff; font-weight: 700; color: #2563eb; padding: 4px 10px;">🏠 ホーム</button>
+    </div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <div style="font-size: 14px; font-weight: bold; color: #334155;">📁 過去生成分の履歴</div>
       <button class="btn-action" id="btnClearAllHistory" onclick="clearAllHistory()" style="font-size: 11px; padding: 4px 8px; color: #ef4444; border-color: #fca5a5; display: none;">
@@ -3623,20 +3650,28 @@
   </div>
 
   <!-- 5. 重要フレーズライブラリビュー -->
-  <div id="viewLibrary" style="display: none;">
+  <div id="viewLibrary" style="display: none; padding-bottom: 90px;">
     <div class="library-header-box">
-      <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
-        <span>📚</span> 保存した重要フレーズ (武器庫)
-      </div>
-      <div style="display: flex; gap: 6px; align-items: center;">
-        <span class="library-count-badge" id="libraryCountBadge">0件 保存</span>
-        <button class="btn-action" id="btnClearAllLibrary" onclick="clearAllLibraryPhrases()" style="font-size: 11px; padding: 4px 8px; color: #ef4444; border-color: #fca5a5; display: none;">
-          🗑 全削除
-        </button>
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+          <span>📚</span> 保存した重要フレーズ (武器庫)
+          <span class="library-count-badge" id="libraryCountBadge">0件 保存</span>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button class="btn-action" onclick="openAddCustomPhraseModal()" style="font-size: 11px; padding: 5px 9px; background: #2563eb; color: #fff; font-weight: 700; border: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">
+            ➕ 独自フレーズ追加
+          </button>
+          <button class="btn-action" onclick="openExportImportModal()" style="font-size: 11px; padding: 5px 9px; background: #ffffff; color: #334155; border: 1px solid #cbd5e1; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">
+            📤 CSV共有・入出力
+          </button>
+          <button class="btn-action" id="btnClearAllLibrary" onclick="clearAllLibraryPhrases()" style="font-size: 11px; padding: 4px 8px; color: #ef4444; border-color: #fca5a5; display: none;">
+            🗑 全削除
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 復習アクションカード（特訓クイズ & 瞬間想起フラッシュカード） -->
+    <!-- 復習アクションカード（特訓クイズ & 瞬間想起フラッシュカード & 連続オートリスニング） -->
     <div class="library-action-grid">
       <div class="library-action-card primary" onclick="startLibraryQuiz()">
         <div>
@@ -3652,6 +3687,50 @@
             <span>⚡</span> 瞬間想起カード
           </div>
           <div class="lib-act-sub">日本語を見て英語がパッと出るかめくって確認</div>
+        </div>
+      </div>
+      <div class="library-action-card accent" onclick="toggleContinuousPlayer()" id="btnCardContinuousPlayer">
+        <div>
+          <div class="lib-act-title">
+            <span>🎧</span> 耳学シャドーイング
+          </div>
+          <div class="lib-act-sub">日本語 ➔ 英語 ➔ リピートの連続自動再生プレイヤー</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 連続オートリスニング プレイヤーコンソール（表示切替） -->
+    <div id="libraryAutoPlayerCard" style="display: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(15,23,42,0.18);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="background: #3b82f6; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">🎧 耳学シャドーイング</span>
+          <span id="playerProgressText" style="font-size: 11px; color: #94a3b8; font-weight: 700;">1 / 10</span>
+        </div>
+        <button onclick="stopContinuousPlayer()" style="background: transparent; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 2px 6px;">✕</button>
+      </div>
+
+      <!-- 再生中フェーズバッジ -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <span id="playerPhaseBadge" style="font-size: 11px; font-weight: 800; background: #22c55e; color: #ffffff; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+          🗣️ 日本語想起
+        </span>
+        <span id="playerTopicBadge" style="font-size: 10.5px; color: #93c5fd; font-weight: 600;"></span>
+      </div>
+
+      <!-- 現在のフレーズテキスト -->
+      <div id="playerGuideText" style="font-size: 13.5px; font-weight: 700; color: #f8fafc; line-height: 1.4; min-height: 38px;"></div>
+      <div id="playerTargetText" style="font-size: 14.5px; font-weight: 800; color: #60a5fa; line-height: 1.4; margin-top: 4px; min-height: 22px;"></div>
+
+      <!-- コントローラーボタン列 -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.12);">
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="micro-btn" onclick="prevContinuousPhrase()" style="background: rgba(255,255,255,0.12); color: #fff; border: none; padding: 5px 9px; font-size: 12px;">⏮️ 前へ</button>
+          <button class="micro-btn" id="btnContinuousPlayPause" onclick="toggleContinuousPlayPause()" style="background: #2563eb; color: #fff; border: none; padding: 5px 14px; font-size: 13px; font-weight: 800;">⏸️ 一時停止</button>
+          <button class="micro-btn" onclick="nextContinuousPhrase()" style="background: rgba(255,255,255,0.12); color: #fff; border: none; padding: 5px 9px; font-size: 12px;">次へ ⏭️</button>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="micro-btn" id="btnContinuousSpeed" onclick="cycleContinuousSpeed()" style="background: rgba(255,255,255,0.12); color: #93c5fd; border: none; padding: 4px 7px; font-size: 11px; font-weight: 700;">⚡ 1.0x</button>
+          <button class="micro-btn" id="btnContinuousLoop" onclick="toggleContinuousLoop()" style="background: rgba(255,255,255,0.12); color: #fff; border: none; padding: 4px 7px; font-size: 11px;">🔁 全件</button>
         </div>
       </div>
     </div>
@@ -3921,6 +4000,110 @@
     <button class="btn-action" style="width: 100%; padding: 8px; font-size: 12px; color: #64748b;" onclick="closeFlashcardModal()">
       閉じる
     </button>
+  </div>
+</div>
+
+<!-- 独自フレーズ追加モーダル -->
+<div id="customPhraseModal" class="flashcard-overlay" style="display: none;" onclick="if(event.target===this) closeAddCustomPhraseModal()">
+  <div class="flashcard-box" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div style="font-weight: 800; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+        <span>➕</span> 独自フレーズを武器庫に登録
+      </div>
+      <button onclick="closeAddCustomPhraseModal()" style="border: none; background: transparent; font-size: 18px; color: #64748b; cursor: pointer;">✕</button>
+    </div>
+    <div style="font-size: 11.5px; color: #64748b; margin-bottom: 12px; line-height: 1.45;">
+      現場や会議で使いたいフレーズを直接登録できます。登録したフレーズは特訓クイズ、瞬間想起カード、耳学シャドーイング、クラウド同期ですぐに活用できます。
+    </div>
+    <div style="margin-bottom: 10px;">
+      <label style="display: block; font-size: 11.5px; font-weight: 700; color: #334155; margin-bottom: 4px;">英文フレーズ (English) <span style="color: #ef4444;">*</span></label>
+      <input type="text" id="customPhraseTargetInput" placeholder="例: I see your point, but we need to verify the timeline." style="width: 100%; padding: 8px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+    </div>
+    <div style="margin-bottom: 10px;">
+      <label style="display: block; font-size: 11.5px; font-weight: 700; color: #334155; margin-bottom: 4px;">日本語の意味・状況 (Japanese Guide) <span style="color: #ef4444;">*</span></label>
+      <input type="text" id="customPhraseGuideInput" placeholder="例: おっしゃることは分かりますが、日程を確認する必要があります。" style="width: 100%; padding: 8px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+      <div>
+        <label style="display: block; font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 4px;">キーとなる型 (任意)</label>
+        <input type="text" id="customPhrasePatternInput" placeholder="例: I see your point, but [文]" style="width: 100%; padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label style="display: block; font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 4px;">カテゴリ (トピック)</label>
+        <select id="customPhraseTopicSelect" style="width: 100%; padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; background: #fff;">
+          <option value="pushback">納期・スコープ交渉</option>
+          <option value="clarify">曖昧な指示の確認</option>
+          <option value="issue">トラブル対応・持ち帰り</option>
+          <option value="meeting">会議進行・議論整理</option>
+          <option value="clinical">臨床開発・製薬実務</option>
+          <option value="negotiation">タフな交渉・利害調整</option>
+          <option value="chat">社内チャット即答</option>
+          <option value="other">その他・実務表現</option>
+        </select>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-action" onclick="closeAddCustomPhraseModal()" style="flex: 1; padding: 10px; font-size: 12.5px; font-weight: 700; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">キャンセル</button>
+      <button class="btn-action" onclick="saveCustomPhraseFromModal()" style="flex: 2; padding: 10px; font-size: 12.5px; font-weight: 800; background: #2563eb; color: #ffffff; border: none; border-radius: 8px; cursor: pointer;">💾 武器庫に保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV/テキスト共有・インポート/エクスポートモーダル -->
+<div id="exportImportModal" class="flashcard-overlay" style="display: none;" onclick="if(event.target===this) closeExportImportModal()">
+  <div class="flashcard-box" style="max-width: 520px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div style="font-weight: 800; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+        <span>📤</span> フレーズ武器庫の入出力・共有
+      </div>
+      <button onclick="closeExportImportModal()" style="border: none; background: transparent; font-size: 18px; color: #64748b; cursor: pointer;">✕</button>
+    </div>
+
+    <!-- タブ切り替え -->
+    <div style="display: flex; gap: 6px; margin-bottom: 12px; background: #e2e8f0; padding: 3px; border-radius: 8px;">
+      <button id="tabBtnExport" onclick="switchExportImportTab('export')" style="flex: 1; padding: 7px; font-size: 12px; font-weight: 800; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer;">
+        📥 エクスポート (保存・出力)
+      </button>
+      <button id="tabBtnImport" onclick="switchExportImportTab('import')" style="flex: 1; padding: 7px; font-size: 12px; font-weight: 700; border: none; border-radius: 6px; background: transparent; color: #475569; cursor: pointer;">
+        📥 インポート (一括取り込み)
+      </button>
+    </div>
+
+    <!-- エクスポートペイン -->
+    <div id="paneExport">
+      <div style="font-size: 12px; color: #475569; margin-bottom: 10px; line-height: 1.45;">
+        武器庫に保存されたすべての重要フレーズを、ExcelやGoogleスプレッドシート、Ankiなどで使える形式で出力します。
+      </div>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 11.5px; color: #1e293b; margin-bottom: 12px;" id="exportSummaryText">
+        対象フレーズ: 0件
+      </div>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <button class="btn-action" onclick="downloadPhrasesCsv()" style="flex: 1; padding: 10px; background: #2563eb; color: #fff; font-weight: 800; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer;">
+          <span>💾</span> CSVファイルを保存
+        </button>
+        <button class="btn-action" onclick="copyPhrasesToClipboard()" style="flex: 1; padding: 10px; background: #f1f5f9; color: #334155; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer;">
+          <span>📋</span> テキスト一括コピー
+        </button>
+      </div>
+      <div style="font-size: 10.5px; color: #64748b; line-height: 1.4;">
+        ※ CSVファイルは日本語文字化け防止（BOM付きUTF-8）処理を行っています。Excelでそのまま開けます。
+      </div>
+    </div>
+
+    <!-- インポートペイン -->
+    <div id="paneImport" style="display: none;">
+      <div style="font-size: 12px; color: #475569; margin-bottom: 8px; line-height: 1.45;">
+        他のファイルや共有されたフレーズを貼り付けて、一括で武器庫に取り込みます。<br>
+        1行につき <b>「英文 [タブ または カンマ] 日本語訳」</b> の形式で貼り付けてください。
+      </div>
+      <textarea id="importPhrasesTextarea" placeholder="例:&#10;I see your point, but the deadline is Friday.	おっしゃることは分かりますが、納期は金曜日です。&#10;Just to make sure, who is taking the lead?	念のための確認ですが、誰がリードしますか？" style="width: 100%; height: 130px; padding: 8px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 11.5px; box-sizing: border-box; font-family: monospace;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+        <span style="font-size: 11px; color: #64748b;">※ 重複フレーズは自動スキップされます</span>
+        <button class="btn-action" onclick="executePhrasesImport()" style="padding: 9px 18px; background: #16a34a; color: #fff; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;">
+          🚀 一括インポート実行
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5013,6 +5196,10 @@
       populateQuickModeSelect();
     }
     
+    if (tabName !== 'library' && typeof stopContinuousPlayer === 'function') {
+      stopContinuousPlayer();
+    }
+    
     if (tabName !== 'play') {
       stopSimTimer();
       saveActiveSession(); // 他のタブに移動した際も現在のクイズ進捗を確実に保存
@@ -5916,6 +6103,25 @@
   window.applySyncCode = applySyncCode;
   window.doGoogleSignIn = doGoogleSignIn;
   window.forcePullData = forcePullData;
+
+  // Global exports for library extensions
+  window.openAddCustomPhraseModal = openAddCustomPhraseModal;
+  window.closeAddCustomPhraseModal = closeAddCustomPhraseModal;
+  window.saveCustomPhraseFromModal = saveCustomPhraseFromModal;
+  window.openExportImportModal = openExportImportModal;
+  window.closeExportImportModal = closeExportImportModal;
+  window.switchExportImportTab = switchExportImportTab;
+  window.downloadPhrasesCsv = downloadPhrasesCsv;
+  window.copyPhrasesToClipboard = copyPhrasesToClipboard;
+  window.executePhrasesImport = executePhrasesImport;
+  window.toggleContinuousPlayer = toggleContinuousPlayer;
+  window.startContinuousPlayer = startContinuousPlayer;
+  window.stopContinuousPlayer = stopContinuousPlayer;
+  window.toggleContinuousPlayPause = toggleContinuousPlayPause;
+  window.prevContinuousPhrase = prevContinuousPhrase;
+  window.nextContinuousPhrase = nextContinuousPhrase;
+  window.cycleContinuousSpeed = cycleContinuousSpeed;
+  window.toggleContinuousLoop = toggleContinuousLoop;
 
   // Immediate event listener binding for btnCloudAuth & cloudSyncBar
   const bindSyncButton = () => {
@@ -8609,18 +8815,7 @@
     }
 
     // 2. 検索 & トピック絞り込み
-    const q = (document.getElementById('librarySearch')?.value || '').toLowerCase().trim();
-    let filtered = library;
-
-    if (currentLibraryFilterTopic !== 'ALL') {
-      filtered = filtered.filter(item => (item.topic || 'OTHER') === currentLibraryFilterTopic);
-    }
-
-    if (q) {
-      filtered = filtered.filter(item => 
-        `${item.target} ${item.guide} ${item.ai_en} ${item.key_pattern || ''} ${item.key_pattern_jp || ''}`.toLowerCase().includes(q)
-      );
-    }
+    const filtered = getFilteredLibraryPhrases();
 
     if (filtered.length === 0) {
       if (library.length === 0) {
@@ -8628,7 +8823,7 @@
           <div style="text-align:center; padding:32px 16px; color:#64748b; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
             <div style="font-size:32px; margin-bottom:8px;">📚</div>
             <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:4px;">保存したフレーズがまだありません</div>
-            <div style="font-size:12px; line-height:1.5;">クイズを解いた後に「⭐ このフレーズを保存」を押すと、ここに武器としてストックされ、いつでも復習特訓ができます！</div>
+            <div style="font-size:12px; line-height:1.5;">クイズを解いた後に「⭐ このフレーズを保存」を押すか、右上の「➕ 独自フレーズ追加」から登録してください。</div>
           </div>
         `;
       } else {
@@ -8641,11 +8836,15 @@
       const topicName = TOPIC_NAMES[item.topic] || (item.topic ? item.topic : 'ビジネス共通');
       const patternInfo = deriveKeyPatternInfo(item.target, item.key_pattern, item.key_pattern_jp, item.pattern_rationale, item.guide);
       const patternHtml = `<div class="lib-item-pattern">🔑 <strong>型:</strong> ${escapeHtml(patternInfo.key_pattern)} <span style="color:#64748b; font-size:10px;">(${escapeHtml(patternInfo.key_pattern_jp)})</span></div>`;
+      const isCurrentlyPlaying = isContinuousPlaying && continuousPhrases[continuousPlayerIndex]?.id === item.id;
+      const customBadge = item.custom 
+        ? `<span style="background:#e0e7ff; color:#3730a3; font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:4px;">自作</span>` 
+        : '';
 
       return `
-        <div class="lib-item-card">
+        <div class="lib-item-card ${isCurrentlyPlaying ? 'playing-active' : ''}" id="libItem_${item.id}">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <span class="lib-item-topic">🎯 ${topicName}</span>
+            <span class="lib-item-topic">🎯 ${topicName} ${customBadge}</span>
             <span style="font-size:10px; color:#94a3b8;">${item.addedDate || ''}</span>
           </div>
           <div class="lib-item-target">${escapeHtml(item.target)}</div>
@@ -8910,6 +9109,490 @@
     const modal = document.getElementById('flashcardModal');
     if (modal) modal.style.display = 'none';
     window.speechSynthesis?.cancel();
+  }
+
+  // --- 武器庫フレーズ取得（フィルター＆検索適用共通ヘルパー） ---
+  function getFilteredLibraryPhrases() {
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const q = (document.getElementById('librarySearch')?.value || '').toLowerCase().trim();
+    let filtered = library;
+
+    if (currentLibraryFilterTopic !== 'ALL') {
+      filtered = filtered.filter(item => (item.topic || 'OTHER') === currentLibraryFilterTopic);
+    }
+    if (q) {
+      filtered = filtered.filter(item => 
+        `${item.target} ${item.guide} ${item.ai_en || ''} ${item.key_pattern || ''} ${item.key_pattern_jp || ''}`.toLowerCase().includes(q)
+      );
+    }
+    return filtered;
+  }
+
+  // --- 🎧 連続オートリスニング（耳学シャドーイング・プレイヤー） ---
+  let isContinuousPlaying = false;
+  let continuousPhrases = [];
+  let continuousPlayerIndex = 0;
+  let continuousPlayerTimer = null;
+  let continuousRepeatMode = 'all'; // 'all' or 'one'
+  let continuousSpeed = 1.0;
+  let continuousPhase = 'idle'; // 'guide', 'gap', 'target', 'repeat'
+
+  function toggleContinuousPlayer() {
+    if (isContinuousPlaying) {
+      stopContinuousPlayer();
+      return;
+    }
+    startContinuousPlayer();
+  }
+
+  function startContinuousPlayer() {
+    const phrases = getFilteredLibraryPhrases();
+    if (!phrases || phrases.length === 0) {
+      toast("⚠️ 再生対象のフレーズがありません。まずはフレーズを保存してください。");
+      return;
+    }
+    continuousPhrases = phrases;
+    continuousPlayerIndex = 0;
+    isContinuousPlaying = true;
+
+    const playerCard = document.getElementById('libraryAutoPlayerCard');
+    if (playerCard) playerCard.style.display = 'block';
+
+    const cardBtn = document.getElementById('btnCardContinuousPlayer');
+    if (cardBtn) cardBtn.classList.add('playing');
+
+    const playPauseBtn = document.getElementById('btnContinuousPlayPause');
+    if (playPauseBtn) playPauseBtn.innerText = '⏸️ 一時停止';
+
+    toast(`🎧 連続オートリスニング開始（全${phrases.length}件）`);
+    playCurrentContinuousPhrase();
+  }
+
+  function stopContinuousPlayer() {
+    isContinuousPlaying = false;
+    continuousPhase = 'idle';
+    if (continuousPlayerTimer) {
+      clearTimeout(continuousPlayerTimer);
+      continuousPlayerTimer = null;
+    }
+    window.speechSynthesis?.cancel();
+
+    const playerCard = document.getElementById('libraryAutoPlayerCard');
+    if (playerCard) playerCard.style.display = 'none';
+
+    const cardBtn = document.getElementById('btnCardContinuousPlayer');
+    if (cardBtn) cardBtn.classList.remove('playing');
+
+    // ハイライト解除
+    document.querySelectorAll('.lib-item-card.playing-active').forEach(el => el.classList.remove('playing-active'));
+  }
+
+  function toggleContinuousPlayPause() {
+    if (!isContinuousPlaying) {
+      if (continuousPhrases.length === 0) {
+        startContinuousPlayer();
+        return;
+      }
+      isContinuousPlaying = true;
+      const playPauseBtn = document.getElementById('btnContinuousPlayPause');
+      if (playPauseBtn) playPauseBtn.innerText = '⏸️ 一時停止';
+      playCurrentContinuousPhrase();
+    } else {
+      isContinuousPlaying = false;
+      if (continuousPlayerTimer) clearTimeout(continuousPlayerTimer);
+      window.speechSynthesis?.cancel();
+      const playPauseBtn = document.getElementById('btnContinuousPlayPause');
+      if (playPauseBtn) playPauseBtn.innerText = '▶️ 再開';
+      updateContinuousPlayerUI('pause', '⏸️ 一時停止中', '#94a3b8');
+    }
+  }
+
+  function updateContinuousPlayerUI(phase, badgeText, statusColor = '#3b82f6') {
+    continuousPhase = phase;
+    const item = continuousPhrases[continuousPlayerIndex];
+    if (!item) return;
+
+    const progressEl = document.getElementById('playerProgressText');
+    const phaseBadgeEl = document.getElementById('playerPhaseBadge');
+    const topicBadgeEl = document.getElementById('playerTopicBadge');
+    const guideEl = document.getElementById('playerGuideText');
+    const targetEl = document.getElementById('playerTargetText');
+
+    if (progressEl) progressEl.innerText = `${continuousPlayerIndex + 1} / ${continuousPhrases.length}`;
+    if (phaseBadgeEl) {
+      phaseBadgeEl.innerText = badgeText;
+      phaseBadgeEl.style.background = statusColor;
+    }
+    if (topicBadgeEl) {
+      const topName = TOPIC_NAMES[item.topic] || (item.topic ? item.topic : 'ビジネス共通');
+      topicBadgeEl.innerText = `🎯 ${topName}`;
+    }
+    if (guideEl) guideEl.innerText = item.guide || item.key_pattern_jp || 'ビジネス表現';
+    if (targetEl) {
+      if (phase === 'guide' || phase === 'gap') {
+        targetEl.innerText = '❓ （英語をパッと思い浮かべてください）';
+        targetEl.style.color = '#94a3b8';
+      } else {
+        targetEl.innerText = item.target || '';
+        targetEl.style.color = '#60a5fa';
+      }
+    }
+
+    // 一覧上のカードをハイライト
+    document.querySelectorAll('.lib-item-card.playing-active').forEach(el => el.classList.remove('playing-active'));
+    const targetCard = document.getElementById(`libItem_${item.id}`);
+    if (targetCard) {
+      targetCard.classList.add('playing-active');
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  function playCurrentContinuousPhrase() {
+    if (!isContinuousPlaying || continuousPhrases.length === 0) return;
+    if (continuousPlayerIndex >= continuousPhrases.length) continuousPlayerIndex = 0;
+    if (continuousPlayerIndex < 0) continuousPlayerIndex = continuousPhrases.length - 1;
+
+    const item = continuousPhrases[continuousPlayerIndex];
+    if (!item) return;
+
+    // フェーズ1: 日本語意味・状況ガイダンスを読み上げ (ja-JP)
+    updateContinuousPlayerUI('guide', '🗣️ 日本語想起', '#22c55e');
+    const textJp = item.guide || item.key_pattern_jp || 'この表現を英語で';
+
+    speakText(textJp, () => {
+      if (!isContinuousPlaying) return;
+
+      // フェーズ2: 想起のためのポーズ (1.4秒)
+      updateContinuousPlayerUI('gap', '⏱️ 英語想起ポーズ中...', '#f59e0b');
+      continuousPlayerTimer = setTimeout(() => {
+        if (!isContinuousPlaying) return;
+
+        // フェーズ3: 模範英語音声 (en-US)
+        updateContinuousPlayerUI('target', '🔊 模範英語リスニング', '#3b82f6');
+        speakText(item.target, () => {
+          if (!isContinuousPlaying) return;
+
+          // フェーズ4: 声出しシャドーイング用ポーズ (2.2秒)
+          updateContinuousPlayerUI('repeat', '🎙️ シャドーイング時間（声に出して復唱）', '#a855f7');
+          continuousPlayerTimer = setTimeout(() => {
+            if (!isContinuousPlaying) return;
+
+            // 次のフレーズへ遷移
+            if (continuousRepeatMode === 'one') {
+              playCurrentContinuousPhrase();
+            } else {
+              continuousPlayerIndex++;
+              if (continuousPlayerIndex >= continuousPhrases.length) {
+                continuousPlayerIndex = 0;
+                toast("🔁 全フレーズを一巡しました。先頭からループ再生します");
+              }
+              playCurrentContinuousPhrase();
+            }
+          }, 2200);
+        }, 'en-US');
+
+      }, 1400);
+
+    }, 'ja-JP');
+  }
+
+  function prevContinuousPhrase() {
+    window.speechSynthesis?.cancel();
+    if (continuousPlayerTimer) clearTimeout(continuousPlayerTimer);
+    continuousPlayerIndex--;
+    if (continuousPlayerIndex < 0) continuousPlayerIndex = continuousPhrases.length - 1;
+    playCurrentContinuousPhrase();
+  }
+
+  function nextContinuousPhrase() {
+    window.speechSynthesis?.cancel();
+    if (continuousPlayerTimer) clearTimeout(continuousPlayerTimer);
+    continuousPlayerIndex++;
+    if (continuousPlayerIndex >= continuousPhrases.length) continuousPlayerIndex = 0;
+    playCurrentContinuousPhrase();
+  }
+
+  function cycleContinuousSpeed() {
+    const speeds = [0.8, 1.0, 1.2];
+    const currentIdx = speeds.indexOf(continuousSpeed);
+    continuousSpeed = speeds[(currentIdx + 1) % speeds.length];
+    speechRate = continuousSpeed;
+    const btn = document.getElementById('btnContinuousSpeed');
+    if (btn) btn.innerText = `⚡ ${continuousSpeed.toFixed(1)}x`;
+    toast(`⚡ 音声再生速度を ${continuousSpeed.toFixed(1)}x に変更しました`);
+  }
+
+  function toggleContinuousLoop() {
+    continuousRepeatMode = continuousRepeatMode === 'all' ? 'one' : 'all';
+    const btn = document.getElementById('btnContinuousLoop');
+    if (btn) {
+      btn.innerText = continuousRepeatMode === 'all' ? '🔁 全件' : '🔂 1件';
+    }
+    toast(continuousRepeatMode === 'all' ? '🔁 リピート: 全件ループ' : '🔂 リピート: 現在の1件を集中反復');
+  }
+
+  // --- ➕ 独自フレーズ手動追加モーダル制御 ---
+  function openAddCustomPhraseModal() {
+    const modal = document.getElementById('customPhraseModal');
+    if (modal) modal.style.display = 'flex';
+    const targetInput = document.getElementById('customPhraseTargetInput');
+    if (targetInput) {
+      targetInput.value = '';
+      setTimeout(() => targetInput.focus(), 50);
+    }
+    const guideInput = document.getElementById('customPhraseGuideInput');
+    if (guideInput) guideInput.value = '';
+    const patternInput = document.getElementById('customPhrasePatternInput');
+    if (patternInput) patternInput.value = '';
+  }
+
+  function closeAddCustomPhraseModal() {
+    const modal = document.getElementById('customPhraseModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function saveCustomPhraseFromModal() {
+    const target = (document.getElementById('customPhraseTargetInput')?.value || '').trim();
+    const guide = (document.getElementById('customPhraseGuideInput')?.value || '').trim();
+    const pattern = (document.getElementById('customPhrasePatternInput')?.value || '').trim();
+    const topic = document.getElementById('customPhraseTopicSelect')?.value || 'pushback';
+
+    if (!target) {
+      toast("⚠️ 英文フレーズを入力してください");
+      document.getElementById('customPhraseTargetInput')?.focus();
+      return;
+    }
+    if (!guide) {
+      toast("⚠️ 日本語の意味・状況を入力してください");
+      document.getElementById('customPhraseGuideInput')?.focus();
+      return;
+    }
+
+    const now = new Date();
+    const dateStr = `${now.getMonth() + 1}/${now.getDate()}`;
+    const newPhrase = {
+      id: Date.now(),
+      target: target,
+      guide: guide,
+      key_pattern: pattern || 'Plain English実務表現',
+      key_pattern_jp: '自作武器',
+      pattern_rationale: '現場の実務で即答するために登録した独自フレーズです。',
+      topic: topic,
+      addedDate: dateStr,
+      custom: true
+    };
+
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    // 重複チェック
+    const exists = library.find(item => item.target.toLowerCase() === target.toLowerCase());
+    if (exists) {
+      toast("ℹ️ 同一の英文フレーズが既に武器庫に保存されています");
+      closeAddCustomPhraseModal();
+      return;
+    }
+
+    library.unshift(newPhrase);
+    localStorage.setItem('english_phrase_library', JSON.stringify(library));
+
+    // クラウド同期
+    if (window.fbSync && typeof window.fbSync.saveWeapon === 'function') {
+      window.fbSync.saveWeapon(newPhrase);
+    }
+
+    closeAddCustomPhraseModal();
+    renderLibrary();
+    updateSrsRecommendUI();
+    toast(`⭐ 独自フレーズ「${target}」を武器庫に登録しました！`);
+  }
+
+  // --- 📤 フレーズ武器庫 CSV / テキスト入出力・共有モーダル ---
+  function openExportImportModal() {
+    const modal = document.getElementById('exportImportModal');
+    if (modal) modal.style.display = 'flex';
+    switchExportImportTab('export');
+
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const summary = document.getElementById('exportSummaryText');
+    if (summary) {
+      summary.innerHTML = `
+        <b>📊 保存状況:</b> 現在 <b>${library.length}件</b> の重要フレーズが武器庫に登録されています。<br>
+        Excelやスプレッドシート、Ankiなどで復習カードとして活用できます。
+      `;
+    }
+  }
+
+  function closeExportImportModal() {
+    const modal = document.getElementById('exportImportModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function switchExportImportTab(tab) {
+    const paneExport = document.getElementById('paneExport');
+    const paneImport = document.getElementById('paneImport');
+    const tabBtnExport = document.getElementById('tabBtnExport');
+    const tabBtnImport = document.getElementById('tabBtnImport');
+
+    if (tab === 'export') {
+      if (paneExport) paneExport.style.display = 'block';
+      if (paneImport) paneImport.style.display = 'none';
+      if (tabBtnExport) {
+        tabBtnExport.style.background = '#2563eb';
+        tabBtnExport.style.color = '#fff';
+      }
+      if (tabBtnImport) {
+        tabBtnImport.style.background = 'transparent';
+        tabBtnImport.style.color = '#475569';
+      }
+    } else {
+      if (paneExport) paneExport.style.display = 'none';
+      if (paneImport) paneImport.style.display = 'block';
+      if (tabBtnExport) {
+        tabBtnExport.style.background = 'transparent';
+        tabBtnExport.style.color = '#475569';
+      }
+      if (tabBtnImport) {
+        tabBtnImport.style.background = '#2563eb';
+        tabBtnImport.style.color = '#fff';
+      }
+    }
+  }
+
+  function downloadPhrasesCsv() {
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.length === 0) {
+      toast("⚠️ 出力対象のフレーズがありません");
+      return;
+    }
+
+    const headers = ["English Phrase", "Japanese Meaning", "Key Pattern", "Topic", "Added Date"];
+    const rows = library.map(item => [
+      `"${(item.target || '').replace(/"/g, '""')}"`,
+      `"${(item.guide || '').replace(/"/g, '""')}"`,
+      `"${(item.key_pattern || '').replace(/"/g, '""')}"`,
+      `"${TOPIC_NAMES[item.topic] || item.topic || 'OTHER'}"`,
+      `"${item.addedDate || ''}"`
+    ]);
+
+    // Excelで日本語が文字化けしないよう UTF-8 BOM (\uFEFF) を付与
+    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    link.download = `plain_english_weapons_${dateStr}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast(`💾 CSVファイル (${library.length}件) をダウンロードしました！`);
+  }
+
+  function copyPhrasesToClipboard() {
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (library.length === 0) {
+      toast("⚠️ コピー対象のフレーズがありません");
+      return;
+    }
+
+    // TSV形式（スプレッドシートやNotionに貼り付け可能）
+    const tsv = library.map(item => 
+      `${item.target}\t${item.guide || ''}\t${item.key_pattern || ''}\t${TOPIC_NAMES[item.topic] || item.topic || ''}`
+    ).join('\n');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(tsv).then(() => {
+        toast(`📋 ${library.length}件のフレーズをコピーしました！(Excel/スプレッドシートに直接貼付可)`);
+      }).catch(() => {
+        fallbackCopyText(tsv);
+      });
+    } else {
+      fallbackCopyText(tsv);
+    }
+  }
+
+  function fallbackCopyText(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      toast("📋 フレーズをクリップボードにコピーしました！");
+    } catch (err) {
+      toast("⚠️ クリップボードへのコピーに失敗しました");
+    }
+    document.body.removeChild(textArea);
+  }
+
+  function executePhrasesImport() {
+    const text = (document.getElementById('importPhrasesTextarea')?.value || '').trim();
+    if (!text) {
+      toast("⚠️ 取り込むテキストを入力してください");
+      return;
+    }
+
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    let addedCount = 0;
+    let skippedCount = 0;
+    const now = new Date();
+    const dateStr = `${now.getMonth() + 1}/${now.getDate()}`;
+
+    lines.forEach((line, index) => {
+      let parts = [];
+      if (line.includes('\t')) {
+        parts = line.split('\t');
+      } else if (line.includes(',')) {
+        parts = line.split(',');
+      } else if (line.includes('：') || line.includes(':')) {
+        parts = line.split(/[:：]/);
+      } else {
+        parts = [line, ''];
+      }
+
+      const en = (parts[0] || '').trim().replace(/^["']|["']$/g, '');
+      const jp = (parts[1] || '').trim().replace(/^["']|["']$/g, '') || 'インポートフレーズ';
+      const pat = (parts[2] || '').trim().replace(/^["']|["']$/g, '');
+
+      if (!en) return;
+
+      const exists = library.find(item => item.target.toLowerCase() === en.toLowerCase());
+      if (exists) {
+        skippedCount++;
+        return;
+      }
+
+      const newItem = {
+        id: Date.now() + index,
+        target: en,
+        guide: jp,
+        key_pattern: pat || 'Imported Phrase',
+        key_pattern_jp: '取り込みフレーズ',
+        pattern_rationale: 'インポート機能により取り込まれたフレーズです。',
+        topic: 'pushback',
+        addedDate: dateStr,
+        custom: true
+      };
+
+      library.unshift(newItem);
+      if (window.fbSync && typeof window.fbSync.saveWeapon === 'function') {
+        window.fbSync.saveWeapon(newItem);
+      }
+      addedCount++;
+    });
+
+    if (addedCount > 0) {
+      localStorage.setItem('english_phrase_library', JSON.stringify(library));
+      renderLibrary();
+      updateSrsRecommendUI();
+      closeExportImportModal();
+      toast(`✅ ${addedCount}件のフレーズを武器庫に取り込みました！（重複スキップ: ${skippedCount}件）`);
+    } else {
+      toast(`ℹ️ 新規フレーズはありませんでした（重複スキップ: ${skippedCount}件）`);
+    }
   }
 
   function toggleAutoPlay() {
@@ -10342,13 +11025,30 @@
       } else {
         // User message & Coach feedback
         const avatarDisplay = isTeams ? 'YOU' : '👤';
+        const words = (msg.text || '').trim().split(/\s+/).filter(Boolean);
+        const basicVerbsList = ['get', 'take', 'make', 'check', 'keep', 'put', 'ping', 'send', 'let', 'give', 'look', 'call', 'tell', 'see', 'need', 'ask', 'set', 'hold', 'run', 'find', 'help', 'push', 'drop', 'bring', 'lead'];
+        const foundVerbs = [...new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g, '')).filter(w => basicVerbsList.includes(w)))];
+
         return `
           <div class="chat-msg-row user">
             <div class="chat-msg-avatar">${avatarDisplay}</div>
             <div style="max-width: 85%;">
               <div class="chat-bubble">
-                <div style="font-size: 10.5px; opacity: 0.85; margin-bottom: 1px;">${isTeams ? 'You (Teams即答)' : 'You (Plain English)'}</div>
-                <div>${escapeHtml(msg.text)}</div>
+                <div style="font-size: 10.5px; opacity: 0.85; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                  <span>${isTeams ? 'You (Teams即答)' : 'You (Plain English)'}</span>
+                  <span style="font-size: 9.5px; background: rgba(255,255,255,0.22); padding: 1px 5px; border-radius: 4px;">${words.length}語</span>
+                </div>
+                <div style="font-size: 13px; line-height: 1.45;">${escapeHtml(msg.text)}</div>
+                <div style="display: flex; gap: 4px; align-items: center; justify-content: flex-end; margin-top: 5px; flex-wrap: wrap;">
+                  ${foundVerbs.length > 0 ? `
+                    <span style="font-size: 9.5px; background: rgba(255,255,255,0.18); padding: 1px 5px; border-radius: 4px;" title="使用された中学動詞">
+                      動詞: ${escapeHtml(foundVerbs.join(', '))}
+                    </span>
+                  ` : ''}
+                  <button class="micro-btn" style="padding: 1px 6px; font-size: 9.5px; background: rgba(255,255,255,0.25); border: none; color: #fff; cursor: pointer;" onclick="speakText('${escapeHtml(msg.text).replace(/'/g, "\\'")}')">
+                    🔊 発音確認
+                  </button>
+                </div>
               </div>
               ${msg.coach ? `
                 <div class="coach-feedback-box">
