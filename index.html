@@ -4138,6 +4138,7 @@
   let currentStageIndex = 0;
   let currentChoices = [];
   let isAutoPlay = false;
+  let isSessionCompleted = false;
   let combo = 0;
   let sessionCorrect = 0;
   let sessionAnswered = 0;
@@ -4305,6 +4306,31 @@
   // 進行中セッションの保存と再開管理
   function saveActiveSession() {
     if (!scenarios || scenarios.length === 0) return;
+    if (isSessionCompleted) {
+      localStorage.removeItem('english_active_session');
+      updateResumeCardUI();
+      return;
+    }
+
+    // もし現在の履歴が完了状態ならアクティブセッションをクリア
+    if (currentHistoryId) {
+      let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      const item = history.find(h => String(h.id) === String(currentHistoryId));
+      if (item && item.status === 'completed') {
+        localStorage.removeItem('english_active_session');
+        updateResumeCardUI();
+        return;
+      }
+    }
+
+    const total = scenarios.length;
+    // 最終問題に到達し回答完了している場合も完了とみなし保存しない
+    if (currentStageIndex >= total - 1 && sessionAnswered >= total) {
+      localStorage.removeItem('english_active_session');
+      updateResumeCardUI();
+      return;
+    }
+
     const session = {
       historyId: currentHistoryId,
       stageIndex: currentStageIndex,
@@ -4332,17 +4358,47 @@
     const resumeBtnBottom = document.getElementById('btnResumeBottom');
     if (!resumeCard) return;
 
-    if (!scenarios || scenarios.length === 0) {
+    const activeSession = JSON.parse(localStorage.getItem('english_active_session') || 'null');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+
+    // 進行中セッションが存在しない、またはセッション完了状態の場合は非表示
+    if (!activeSession || !scenarios || scenarios.length === 0 || isSessionCompleted) {
       resumeCard.style.display = 'none';
       if (resumeBtnBottom) resumeBtnBottom.style.display = 'none';
       return;
     }
 
+    // 履歴で完了扱いになっている場合も非表示
+    if (activeSession.historyId || currentHistoryId) {
+      const hId = activeSession.historyId || currentHistoryId;
+      const histItem = history.find(h => String(h.id) === String(hId));
+      if (histItem && histItem.status === 'completed') {
+        resumeCard.style.display = 'none';
+        if (resumeBtnBottom) resumeBtnBottom.style.display = 'none';
+        return;
+      }
+    }
+
     const total = scenarios.length;
-    const currentNum = Math.min(total, currentStageIndex + 1);
+    const stageIdx = typeof activeSession.stageIndex === 'number' ? activeSession.stageIndex : currentStageIndex;
+    const currentNum = stageIdx + 1;
+
+    // 最終ステージ以降、または100%完了時は進行中カードを表示しない
+    if (currentNum > total || (currentNum >= total && (sessionAnswered >= total || isSessionCompleted))) {
+      resumeCard.style.display = 'none';
+      if (resumeBtnBottom) resumeBtnBottom.style.display = 'none';
+      return;
+    }
+
     const pct = Math.round((currentNum / total) * 100);
-    const topicTitle = TOPIC_NAMES[selectedTopic] || 'ビジネスPlain English';
-    const modeLabel = getModeLabel(trainingMode);
+    if (pct >= 100) {
+      resumeCard.style.display = 'none';
+      if (resumeBtnBottom) resumeBtnBottom.style.display = 'none';
+      return;
+    }
+
+    const topicTitle = TOPIC_NAMES[activeSession.topic || selectedTopic] || 'ビジネスPlain English';
+    const modeLabel = getModeLabel(activeSession.mode || trainingMode);
 
     const titleEl = document.getElementById('resumeSessionTitle');
     const stageEl = document.getElementById('resumeSessionStage');
@@ -4843,6 +4899,7 @@
   }
 
   function recordMistake(current) {
+    if (!current) return;
     const s = getStats();
     const key = current.target || current.ai_en;
     const old = s.mistakes.find(x => x.key === key);
@@ -4850,6 +4907,9 @@
     else s.mistakes.push({key, target: current.target, guide: current.guide, ai_en: current.ai_en, count:1});
     s.mistakes = s.mistakes.slice(-100);
     saveStats(s);
+    if (current.target && typeof advanceSrsItemLevel === 'function') {
+      advanceSrsItemLevel(current.target, false);
+    }
   }
 
   // 📊 シチュエーション別カルテ & 弱点アナリティクス
@@ -5760,12 +5820,15 @@
       history[idx].lastStageIndex = currentStageIndex;
       if (isCorrect) history[idx].correct = (history[idx].correct || 0) + 1;
       
-      const total = history[idx].data ? history[idx].data.length : 5;
+      const total = history[idx].data ? history[idx].data.length : (scenarios ? scenarios.length : 5);
       if (history[idx].answered >= total) {
-        const pct = Math.round((history[idx].correct / history[idx].answered) * 100);
-        history[idx].status = pct >= 80 ? 'completed' : 'needs_review';
+        history[idx].status = 'completed';
+        history[idx].lastStageIndex = 0;
+        isSessionCompleted = true;
+        localStorage.removeItem('english_active_session');
+        updateResumeCardUI();
       } else {
-        history[idx].status = 'needs_review';
+        history[idx].status = 'in_progress';
       }
       localStorage.setItem('english_scenarios_history', JSON.stringify(history));
       populateQuickModeSelect();
@@ -5817,6 +5880,8 @@
       currentStageIndex = 0;
       sessionCorrect = 0;
       sessionAnswered = 0;
+      isSessionCompleted = false;
+      reviewMode = false;
       
       toast(`🎯 AIが「${topicLabel}」(全5ステージ)を生成しました！`);
     } catch (e) {
@@ -5829,6 +5894,8 @@
       currentStageIndex = 0;
       sessionCorrect = 0;
       sessionAnswered = 0;
+      isSessionCompleted = false;
+      reviewMode = false;
 
       toast("💡 バックアップコースを読み込みました！");
     } finally {
@@ -7879,19 +7946,22 @@
     }
 
     container.innerHTML = history.map((item) => {
-      const st = item.status || 'unplayed';
-      const statusTag = st === 'completed' 
-        ? '<span class="log-status-badge completed">🟢 完了</span>' 
-        : st === 'needs_review' 
-        ? '<span class="log-status-badge needs_review">🟡 要復習</span>' 
-        : '<span class="log-status-badge unplayed">🔵 未学習</span>';
-
       const totalStages = item.data ? item.data.length : 5;
       const lastIdx = typeof item.lastStageIndex === 'number' ? item.lastStageIndex : 0;
-      const isOngoing = lastIdx > 0 && st !== 'completed';
+      const isCompleted = item.status === 'completed' || (item.answered && item.answered >= totalStages) || (lastIdx >= totalStages - 1 && item.answered > 0);
+      const isOngoing = !isCompleted && (lastIdx > 0 || (item.answered && item.answered > 0 && item.answered < totalStages));
+
+      const statusTag = isCompleted 
+        ? '<span class="log-status-badge completed">🟢 完了</span>' 
+        : isOngoing 
+        ? '<span class="log-status-badge needs_review">🟡 進行中</span>' 
+        : '<span class="log-status-badge unplayed">🔵 未学習</span>';
+
       const resumeStageNum = Math.min(totalStages, lastIdx + 1);
-      const actionBtnText = isOngoing ? `▶️ STAGE ${resumeStageNum}から再開` : '復習する';
-      const subInfo = isOngoing 
+      const actionBtnText = isOngoing ? `▶️ STAGE ${resumeStageNum}から再開` : 'もう一度復習する';
+      const subInfo = isCompleted
+        ? `<span style="color:#16a34a; font-weight:700;">全${totalStages}ステージ修了</span>`
+        : isOngoing 
         ? `<span style="color:#2563eb; font-weight:700;">進行中: STAGE ${resumeStageNum} / ${totalStages}</span>` 
         : `${totalStages} ステージ収録`;
 
@@ -8959,6 +9029,8 @@
     currentStageIndex = 0;
     sessionCorrect = 0;
     sessionAnswered = 0;
+    isSessionCompleted = false;
+    reviewMode = true;
 
     switchTab('play');
     loadStage();
@@ -8992,6 +9064,8 @@
     currentStageIndex = 0;
     sessionCorrect = 0;
     sessionAnswered = 0;
+    isSessionCompleted = false;
+    reviewMode = true;
 
     switchTab('play');
     loadStage();
@@ -10035,6 +10109,7 @@
   }
 
   function showSessionSummary() {
+    isSessionCompleted = true;
     // コース完了処理: 履歴を完了にし、アクティブセッションをリセット
     if (currentHistoryId) {
       let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -10042,12 +10117,23 @@
       if (idx !== -1) {
         history[idx].status = 'completed';
         history[idx].lastStageIndex = 0;
+        history[idx].completedAt = Date.now();
         localStorage.setItem('english_scenarios_history', JSON.stringify(history));
         if (window.fbSync && history[idx]) window.fbSync.saveQuizHistory(history[idx]);
       }
     }
     localStorage.removeItem('english_active_session');
     updateResumeCardUI();
+
+    // 復習ドリルだった場合、全問題のSRS進捗を確実に完了状態に
+    if (reviewMode) {
+      (scenarios || []).forEach(s => {
+        if (s.target && typeof advanceSrsItemLevel === 'function') {
+          advanceSrsItemLevel(s.target, true);
+        }
+      });
+      if (typeof updateSrsRecommendUI === 'function') updateSrsRecommendUI();
+    }
 
     const totalSurvival = survivalQuestions.length || scenarios.length || 5;
     const survivalPct = Math.round((survivalCorrectCount / totalSurvival) * 100);
@@ -10073,14 +10159,25 @@
     }
 
     if (scoreText) {
-      scoreText.innerHTML = `
-        <div style="font-size:14px; font-weight:800; color:#059669; margin-bottom:2px;">
-          ⚡ サバイバルテスト即答率: ${survivalPct}% (${survivalCorrectCount}/${totalSurvival} 問)
-        </div>
-        <div style="font-size:11.5px; color:#64748b;">
-          型習得 ➔ スロット変形ドリル ➔ 実戦テスト ➔ サバイバル完走！
-        </div>
-      `;
+      if (reviewMode) {
+        scoreText.innerHTML = `
+          <div style="font-size:14px; font-weight:800; color:#059669; margin-bottom:2px;">
+            ✨ 本日の忘却曲線復習ドリルをすべて達成しました！
+          </div>
+          <div style="font-size:11.5px; color:#64748b;">
+            復習したフレーズの定着レベル（SRS Level）が向上しました。次回の復習期日までリストから非表示になります。
+          </div>
+        `;
+      } else {
+        scoreText.innerHTML = `
+          <div style="font-size:14px; font-weight:800; color:#059669; margin-bottom:2px;">
+            ⚡ サバイバルテスト即答率: ${survivalPct}% (${survivalCorrectCount}/${totalSurvival} 問)
+          </div>
+          <div style="font-size:11.5px; color:#64748b;">
+            型習得 ➔ スロット変形ドリル ➔ 実戦テスト ➔ サバイバル完走！
+          </div>
+        `;
+      }
     }
 
     if (list) {
@@ -10160,6 +10257,12 @@
   function closeSessionModalAndGoHome() {
     const modal = document.getElementById('sessionCompleteModal');
     if (modal) modal.style.display = 'none';
+    isSessionCompleted = true;
+    localStorage.removeItem('english_active_session');
+    if (typeof updateResumeCardUI === 'function') updateResumeCardUI();
+    if (typeof updateDashboard === 'function') updateDashboard();
+    if (typeof updateSrsRecommendUI === 'function') updateSrsRecommendUI();
+    if (typeof renderHistory === 'function') renderHistory();
     switchTab('home');
   }
 
@@ -10313,6 +10416,32 @@
           }
         });
       }
+
+      // 4. 履歴ステータスと進行中セッションの整合性修復 (100%完了済みレッスンの進行中残留を完全解消)
+      let historyFixModified = false;
+      history.forEach(h => {
+        const total = (h.data && h.data.length > 0) ? h.data.length : 5;
+        const ans = h.answered || 0;
+        const lastIdx = typeof h.lastStageIndex === 'number' ? h.lastStageIndex : 0;
+        if (ans >= total || (lastIdx >= total - 1 && ans > 0) || h.topic === 'SRS_REVIEW') {
+          if (h.status !== 'completed' || h.lastStageIndex !== 0) {
+            h.status = 'completed';
+            h.lastStageIndex = 0;
+            historyFixModified = true;
+          }
+        }
+      });
+      if (historyFixModified) {
+        localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+      }
+
+      const activeSession = JSON.parse(localStorage.getItem('english_active_session') || 'null');
+      if (activeSession) {
+        const histItem = history.find(h => String(h.id) === String(activeSession.historyId));
+        if (histItem && histItem.status === 'completed') {
+          localStorage.removeItem('english_active_session');
+        }
+      }
     } catch (e) {
       console.warn("Auto-migration error:", e);
     }
@@ -10330,63 +10459,72 @@
     const dueItems = [];
 
     library.forEach(item => {
-      // nextReviewAt が未設定（初回）の場合は作成日から24時間経過、または nextReviewAt <= now
-      const isDue = !item.nextReviewAt || item.nextReviewAt <= now;
+      // nextReviewAt が未設定（初回）の場合は即時復習対象、または nextReviewAt <= now
+      const isDue = !item.nextReviewAt || Number(item.nextReviewAt) <= now;
       if (isDue) {
         dueItems.push(item);
       }
     });
 
-    // 過去の履歴で間違えた問題や要復習の履歴も補完（相手発言のオウム返しを完全排除して継承）
-    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    history.filter(h => h.status === 'needs_review').forEach(h => {
-      (h.data || []).forEach(stage => {
-        if (stage.target && !dueItems.some(d => d.target === stage.target)) {
-          const cp = resolveReviewCounterpartData(stage.target, stage.ai_en, stage.ai_jp, stage.guide, stage.ai_name);
-          dueItems.push({
-            id: 'hist_' + (stage.stage || Math.random()),
-            target: stage.target,
-            guide: stage.guide,
-            ai_name: cp.ai_name,
-            ai_en: cp.ai_en,
-            ai_jp: cp.ai_jp,
-            email_subject: stage.email_subject,
-            key_pattern: stage.key_pattern,
-            key_pattern_jp: stage.key_pattern_jp,
-            pattern_rationale: stage.pattern_rationale,
-            parts_hint: stage.parts_hint,
-            counterpart_reaction_en: stage.counterpart_reaction_en,
-            counterpart_reaction_jp: stage.counterpart_reaction_jp,
-            variations: stage.variations,
-            chunks: stage.chunks,
-            choices: stage.choices,
-            topic: h.topic || '',
-            mode: h.mode || 'speech',
-            srsLevel: 1,
-            isFromHistory: true
-          });
-        }
-      });
-    });
-
     return dueItems;
   }
 
-  function advanceSrsItemLevel(targetPhrase) {
+  function advanceSrsItemLevel(targetPhrase, isCorrect = true) {
     if (!targetPhrase) return;
+    const cleanTarget = targetPhrase.trim();
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-    let item = library.find(i => i.target && i.target.trim().toLowerCase() === targetPhrase.trim().toLowerCase());
+    let item = library.find(i => i.target && i.target.trim().toLowerCase() === cleanTarget.toLowerCase());
     
     if (item) {
-      const currentLevel = item.srsLevel || 0;
-      const nextLevel = Math.min(5, currentLevel + 1);
-      const intervalDays = SRS_INTERVALS_DAYS[nextLevel] || 1;
-      item.srsLevel = nextLevel;
-      item.lastReviewedAt = Date.now();
-      item.nextReviewAt = Date.now() + (intervalDays * 24 * 60 * 60 * 1000);
+      if (isCorrect) {
+        const currentLevel = item.srsLevel || 1;
+        const nextLevel = Math.min(5, currentLevel + 1);
+        const intervalDays = SRS_INTERVALS_DAYS[nextLevel] || 1;
+        item.srsLevel = nextLevel;
+        item.lastReviewedAt = Date.now();
+        item.nextReviewAt = Date.now() + (intervalDays * 24 * 60 * 60 * 1000);
+        item.reviewCount = (item.reviewCount || 0) + 1;
+        toast(`🧠 記憶定着度UP! [Level ${nextLevel}] 次回复習は${intervalDays}日後`);
+      } else {
+        item.srsLevel = 1;
+        item.lastReviewedAt = Date.now();
+        // 間違えた場合でも、本日のセッションでは一度復習済みとし、明日（または12時間後）に再出題
+        item.nextReviewAt = Date.now() + (12 * 60 * 60 * 1000);
+        item.reviewCount = (item.reviewCount || 0) + 1;
+        toast(`💡 Level 1から再スタート (次回は明日復習)`);
+      }
       localStorage.setItem('english_phrase_library', JSON.stringify(library));
       if (window.fbSync) window.fbSync.saveWeapon(item);
-      toast(`🧠 記憶定着度UP! [Level ${nextLevel}] 次回复習は${intervalDays}日後`);
+    } else {
+      // ライブラリに未登録のフレーズは新規登録して次回复習日を設定
+      const currentStage = (scenarios || []).find(s => s.target && s.target.trim().toLowerCase() === cleanTarget.toLowerCase()) || {};
+      const newWeapon = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        target: cleanTarget,
+        guide: currentStage.guide || "復習ドリルで学習した重要フレーズ",
+        ai_name: currentStage.ai_name || "Business Partner",
+        ai_en: currentStage.ai_en || "",
+        ai_jp: currentStage.ai_jp || "",
+        email_subject: currentStage.email_subject || "",
+        key_pattern: currentStage.key_pattern || "",
+        key_pattern_jp: currentStage.key_pattern_jp || "",
+        pattern_rationale: currentStage.pattern_rationale || "",
+        parts_hint: currentStage.parts_hint || "",
+        counterpart_reaction_en: currentStage.counterpart_reaction_en || "",
+        counterpart_reaction_jp: currentStage.counterpart_reaction_jp || "",
+        topic: selectedTopic || currentStage.topic || 'ALL',
+        srsLevel: isCorrect ? 2 : 1,
+        reviewCount: 1,
+        lastReviewedAt: Date.now(),
+        nextReviewAt: Date.now() + (isCorrect ? (SRS_INTERVALS_DAYS[2] || 3) * 86400000 : 86400000),
+        addedDate: new Date().toLocaleDateString('ja-JP')
+      };
+      library.unshift(newWeapon);
+      localStorage.setItem('english_phrase_library', JSON.stringify(library));
+      if (window.fbSync) window.fbSync.saveWeapon(newWeapon);
+      if (isCorrect) {
+        toast(`🧠 復習完了！ 武器庫に保存し定着度UP (次回は3日後)`);
+      }
     }
     updateSrsRecommendUI();
   }
@@ -10399,12 +10537,11 @@
     if (!card) return;
 
     const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
     const dueItems = getDueSrsItems();
 
     if (dueItems.length === 0) {
-      if (library.length === 0 && history.length === 0) {
-        // 保存フレーズも履歴も空の場合は非表示
+      if (library.length === 0) {
+        // 保存フレーズが空の場合は非表示
         card.style.display = 'none';
         return;
       }
@@ -10565,6 +10702,7 @@
       sessionCorrect = 0;
       sessionAnswered = 0;
       reviewMode = true;
+      isSessionCompleted = false;
 
       const loadingArea = document.getElementById('stageLoadingArea');
       const stageArea = document.getElementById('playStageArea');
