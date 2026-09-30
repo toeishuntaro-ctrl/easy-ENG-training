@@ -1739,6 +1739,64 @@
       font-weight: 700;
     }
 
+    /* 最終サバイバル: 語順組み立て & 3択切替タブ & ツールバー */
+    .survival-mode-toggle-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .survival-mode-tab {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .15s ease;
+      text-align: center;
+    }
+    .survival-mode-tab.active {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1d4ed8;
+      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12);
+    }
+    .survival-assembly-box {
+      min-height: 48px;
+      background: #f8fafc;
+      border: 2px dashed #94a3b8;
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+      transition: all .15s ease;
+    }
+    .survival-assembly-box.active {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      border-style: solid;
+    }
+    .survival-chunk-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+    .survival-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 6px;
+    }
+
     @keyframes genPulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.12); opacity: 0.85; }
@@ -3230,18 +3288,21 @@
       </div>
     </div>
 
-    <!-- トップコントロール行 (STAGEバッジ ＋ 聞き流し ＋ 速度) -->
+    <!-- トップコントロール行 (STAGEバッジ ＋ 自動再生ON/OFF ＋ 速度切替 ＋ 聞き流し) -->
     <div class="stage-control-bar">
       <div style="display:flex; align-items:center; gap:6px;">
         <span class="badge" id="turnBadge">STAGE 1 / 5</span>
         <span id="playModeSubText" style="font-size:11px; font-weight:700; color:#475569;"></span>
       </div>
-      <div style="display:flex; align-items:center; gap:5px;">
+      <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
+        <button class="micro-btn" id="btnAutoSpeakToggle" onclick="toggleAutoSpeakSetting()" title="問題開始時に相手の音声を自動再生するかどうかを切り替えます" style="font-size:11px; padding:3px 8px; font-weight:700;">
+          🔊 自動再生 ON
+        </button>
+        <button class="micro-btn" id="speedRateBtn" onclick="cycleSpeechRate()" title="再生速度を切り替えます (推奨: 1.2x)" style="font-size:11px; padding:3px 8px; font-weight:700;">
+          ⚡ 1.2x
+        </button>
         <button class="micro-btn audio-listen-btn" id="autoPlayBtn" onclick="toggleAutoPlay()">
           🎧 聞き流し
-        </button>
-        <button class="micro-btn" id="speedRateBtn" onclick="cycleSpeechRate()" style="font-size:11px; padding:3px 7px;">
-          ⚡ 1.0x
         </button>
       </div>
     </div>
@@ -3515,42 +3576,90 @@
     </div>
   </div>
 
-  <!-- 2.5 最終サバイバルテストモーダル (5フレーズ一気通貫タイムアタック・記憶定着判定) -->
+  <!-- 2.5 最終サバイバルテストモーダル (5フレーズ一気通貫・深い想起と定着マスター) -->
   <div class="session-modal-backdrop" id="survivalTestModal" style="display:none;">
-    <div class="session-modal-content" style="max-width:540px;">
+    <div class="session-modal-content" style="max-width:560px; max-height:92vh; overflow-y:auto;">
+      <!-- ヘッダー行 -->
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <div style="font-size:11px; font-weight:800; color:#dc2626; background:#fef2f2; padding:2px 8px; border-radius:5px; border:1px solid #fecaca;">
-          ⚡ 最終関門: サバイバルテスト (ヒントなし)
+          ⚡ 最終関門: 定着サバイバルマスター (ヒントなし)
         </div>
         <div style="font-size:12px; font-weight:800; color:#475569;" id="survivalProgressText">1 / 5 問</div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px;">
-        <div style="font-size:15px; font-weight:800; color:#0f172a;">瞬発アウトプット判定</div>
-        <div style="font-size:11.5px; font-weight:700; color:#ef4444;" id="survivalTimerLabel">⏱️ 残り 15秒</div>
+      <!-- タイマー ＆ モード切替バー -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <div style="font-size:14.5px; font-weight:800; color:#0f172a;">瞬発アウトプット判定</div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="font-size:11.5px; font-weight:700; color:#ef4444;" id="survivalTimerLabel">⏱️ 残り 35秒</div>
+          <button class="micro-btn" id="btnSurvivalPauseTimer" onclick="toggleSurvivalTimerPause()" style="font-size:10px; padding:2px 6px;" title="タイマーを一時停止 / 再開">⏸️ 停止</button>
+        </div>
       </div>
 
-      <div class="survival-timer-bar">
+      <div class="survival-timer-bar" style="margin-bottom:8px;">
         <div class="survival-timer-fill" id="survivalTimerFill"></div>
       </div>
 
+      <!-- 解答モード切替タブ (チャンク組み立て ⇄ 3択) -->
+      <div class="survival-mode-toggle-row">
+        <button class="survival-mode-tab active" id="btnSurvivalModeChunk" onclick="setSurvivalAnswerMode('chunk')">
+          🧩 語順チャンク組み立て (深い定着)
+        </button>
+        <button class="survival-mode-tab" id="btnSurvivalModeChoice" onclick="setSurvivalAnswerMode('choice')">
+          🎯 3択スピード判定
+        </button>
+      </div>
+
+      <!-- ミッション ＆ 相手の発言カード -->
       <div class="survival-mission-card">
         <div class="survival-mission-jp" id="survivalQuestionPrompt">日本語状況ミッション...</div>
-        <div class="survival-counterpart-quote" id="survivalCounterpartQuote">"相手の英語発言..."</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+          <div class="survival-counterpart-quote" id="survivalCounterpartQuote" style="margin-top:0;">"相手の英語発言..."</div>
+          <button class="micro-btn" style="padding:2px 6px; font-size:10px; background:#fff; flex-shrink:0; margin-left:6px;" onclick="speakSurvivalAiSpeech()">🔊 発言を聴く</button>
+        </div>
       </div>
 
-      <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">
-        最も適切な Plain English を即座に選択してください：
+      <!-- モードA: チャンク組み立てエリア -->
+      <div id="survivalChunkSection">
+        <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+          <span>パーツを正しい語順にタップして英文を完成させてください：</span>
+        </div>
+        
+        <!-- 組立枠 -->
+        <div class="survival-assembly-box" id="survivalAssemblyBox">
+          <span class="assembly-placeholder">（パーツをタップするとここに入ります）</span>
+        </div>
+
+        <!-- ツールバー (先頭ヒント & リセット) -->
+        <div class="survival-toolbar">
+          <div style="display:flex; gap:4px;">
+            <button class="micro-btn" onclick="hintSurvivalFirstChunk()" style="font-size:10.5px; padding:2px 7px; background:#fff; color:#1d4ed8; border-color:#bfdbfe;">💡 先頭ヒント</button>
+            <button class="micro-btn" onclick="resetSurvivalChunks()" style="font-size:10.5px; padding:2px 7px; background:#fff;">🔄 リセット</button>
+          </div>
+          <button class="micro-btn" id="btnSurvivalSubmitChunk" onclick="submitSurvivalChunkAssembly()" style="font-size:11px; padding:4px 10px; background:#2563eb; color:#fff; border-color:#1d4ed8; font-weight:bold;">✅ 回答を判定</button>
+        </div>
+
+        <!-- パーツプール -->
+        <div class="survival-chunk-pool" id="survivalChunkPool">
+          <!-- チップが動的に生成されます -->
+        </div>
       </div>
 
-      <div id="survivalChoicesList">
-        <!-- 3択ボタンが動的に生成されます -->
+      <!-- モードB: 3択エリア -->
+      <div id="survivalChoiceSection" style="display:none;">
+        <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">
+          最も適切な Plain English を即座に選択してください：
+        </div>
+        <div id="survivalChoicesList">
+          <!-- 3択ボタンが動的に生成されます -->
+        </div>
       </div>
 
-      <div id="survivalFeedbackBox" style="display:none; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700; margin-top:8px;"></div>
+      <!-- フィードバックボックス (厚い解説・型・音声) -->
+      <div id="survivalFeedbackBox" style="display:none; padding:10px 12px; border-radius:8px; font-size:12px; margin-top:8px;"></div>
       
-      <!-- 回答後に自分のペースで次へ進むためのボタン (自動切替は廃止) -->
-      <button class="btn-next" id="survivalNextBtn" style="display:none; margin-top:12px; background:#2563eb;" onclick="advanceSurvivalQuestion()">
+      <!-- 次の問題へボタン -->
+      <button class="btn-next" id="survivalNextBtn" style="display:none; margin-top:10px; background:#2563eb;" onclick="advanceSurvivalQuestion()">
         次の問題へ ➔
       </button>
     </div>
@@ -4152,7 +4261,9 @@
   let simSeconds = 600;
   let isHandsFree = false;
   let handsFreeIndex = 0;
-  let speechRate = 1.0;
+  let speechRate = parseFloat(localStorage.getItem('english_speech_rate') || '1.2');
+  if (isNaN(speechRate)) speechRate = 1.2;
+  let autoSpeakEnabled = localStorage.getItem('english_auto_speak') !== 'false';
 
   // トピック＆レッスン選択ステート（基本おまかせランダム出題）
   let selectedTopic = 'all';
@@ -4547,13 +4658,56 @@
   const SKILL_KEY = 'english_ctm_skills_v4';
   const SPACED_KEY = 'english_spaced_items_v1';
 
+  function toggleAutoSpeakSetting() {
+    autoSpeakEnabled = !autoSpeakEnabled;
+    localStorage.setItem('english_auto_speak', autoSpeakEnabled ? 'true' : 'false');
+    updateAutoSpeakUI();
+    if (autoSpeakEnabled) {
+      toast(`🔊 問題開始時の「${speechRate.toFixed(1)}倍速 自動音声」をONにしました！`);
+      if (typeof speakAiSpeech === 'function') speakAiSpeech();
+    } else {
+      toast('🔈 問題開始時の「自動再生」をOFF（手動タップ再生）にしました');
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+  }
+
   function cycleSpeechRate() {
-    if (speechRate === 1.0) speechRate = 0.8;
-    else if (speechRate === 0.8) speechRate = 1.2;
-    else speechRate = 1.0;
-    
-    document.getElementById('speedRateBtn').innerText = `⚡ ${speechRate}x`;
-    toast(`🔊 再生速度: ${speechRate}x`);
+    const speeds = [1.2, 1.5, 0.8, 1.0];
+    const currentIdx = speeds.indexOf(speechRate);
+    speechRate = (currentIdx >= 0) ? speeds[(currentIdx + 1) % speeds.length] : 1.2;
+    localStorage.setItem('english_speech_rate', speechRate.toString());
+    updateAutoSpeakUI();
+    toast(`⚡ 音声再生速度: ${speechRate.toFixed(1)}x に設定しました`);
+  }
+
+  function updateAutoSpeakUI() {
+    const autoBtn = document.getElementById('btnAutoSpeakToggle');
+    if (autoBtn) {
+      if (autoSpeakEnabled) {
+        autoBtn.innerHTML = '🔊 自動再生 ON';
+        autoBtn.style.background = '#eff6ff';
+        autoBtn.style.color = '#1d4ed8';
+        autoBtn.style.borderColor = '#93c5fd';
+      } else {
+        autoBtn.innerHTML = '🔈 自動再生 OFF';
+        autoBtn.style.background = '#f8fafc';
+        autoBtn.style.color = '#64748b';
+        autoBtn.style.borderColor = '#cbd5e1';
+      }
+    }
+    const speedBtn = document.getElementById('speedRateBtn');
+    if (speedBtn) {
+      speedBtn.innerText = `⚡ ${speechRate.toFixed(1)}x`;
+      if (speechRate === 1.2) {
+        speedBtn.style.color = '#1d4ed8';
+        speedBtn.style.background = '#eff6ff';
+        speedBtn.style.borderColor = '#93c5fd';
+      } else {
+        speedBtn.style.color = '';
+        speedBtn.style.background = '';
+        speedBtn.style.borderColor = '';
+      }
+    }
   }
 
   function getSkills() {
@@ -5980,12 +6134,13 @@
       if (resumeIdx >= total) resumeIdx = 0;
       currentStageIndex = resumeIdx;
 
-      loadStage();
+      loadStage(false);
     } else {
       scenarios = getFallbackScenarios(trainingMode);
       currentStageIndex = 0;
-      loadStage();
+      loadStage(false);
     }
+    updateAutoSpeakUI();
     updateDashboard();
     updateResumeCardUI();
     initDailyFocusCard();
@@ -7581,7 +7736,7 @@
     updateDashboard();
   }
 
-  function loadStage(autoSpeak = false) {
+  function loadStage(autoSpeak = null) {
     if (!scenarios || scenarios.length === 0) return;
 
     // ステージ読み込み時に現在の進行状況を自動永続化 & ステージピル更新
@@ -7761,8 +7916,15 @@
 
     applyAnswerModeUI();
     updateDashboard();
-    if (autoSpeak) {
-      speakText(data.ai_en);
+    updateAutoSpeakUI();
+
+    const shouldAutoSpeak = (autoSpeak === true) || (autoSpeak === null && autoSpeakEnabled && !isAutoPlay && !isHandsFree);
+    if (shouldAutoSpeak && data && data.ai_en) {
+      setTimeout(() => {
+        if (!isAutoPlay && !isHandsFree && (trainingMode !== 'roleplay')) {
+          speakText(data.ai_en);
+        }
+      }, 100);
     }
   }
 
@@ -8704,12 +8866,111 @@
     return chunks.length >= 2 ? chunks : [text];
   }
 
-  function buildDefaultChoices(targetText) {
-    return [
-      { type: "PERFECT", text: targetText, advice: "保存した重要なPlain English表現です。完璧です！" },
-      { type: "TOO_COMPLEX", text: targetText.replace(/send/gi, 'transmit').replace(/check/gi, 'investigate comprehensively').replace(/need/gi, 'require immediately'), advice: "意味は通じますが、過剰に硬い単語になっています。" },
-      { type: "TOO_DIRECT", text: targetText.replace(/please/gi, '').replace(/could you/gi, 'you must'), advice: "少し攻撃的で直接的すぎる表現になっています。" }
-    ];
+  function buildGuaranteedDistinctChoices(targetText, existingChoices = null, keyPattern = '') {
+    const cleanTarget = (targetText || '').trim();
+    if (!cleanTarget) {
+      return [
+        { type: "PERFECT", text: "I understand, and we will follow up immediately.", advice: "明快なPlain Englishです。" },
+        { type: "TOO_COMPLEX", text: "I acknowledge receipt and will facilitate subsequent protocol implementation.", advice: "単語が難解で過度に形式張っています。" },
+        { type: "TOO_DIRECT", text: "Wait. I'll do it later.", advice: "少し直接的すぎてビジネスの配慮に欠けます。" }
+      ];
+    }
+
+    const uniqueChoices = [];
+    const seenTexts = new Set();
+
+    // 1. 正解（PERFECT）を最優先で登録
+    uniqueChoices.push({
+      type: "PERFECT",
+      text: cleanTarget,
+      advice: "相手の状況を捉え、Plain Englishの型を使って最も的確・簡潔に返答する模範解答です！"
+    });
+    seenTexts.add(cleanTarget.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    // 2. 既存の選択肢があり、かつ重複していないなら取り込む
+    if (Array.isArray(existingChoices) && existingChoices.length > 0) {
+      existingChoices.forEach(c => {
+        if (!c || !c.text) return;
+        const cText = c.text.trim();
+        const norm = cText.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (norm && !seenTexts.has(norm)) {
+          seenTexts.add(norm);
+          uniqueChoices.push({
+            type: c.type || (uniqueChoices.length === 1 ? 'TOO_COMPLEX' : 'TOO_DIRECT'),
+            text: cText,
+            advice: c.advice || (c.type === 'TOO_COMPLEX' ? '単語が難解で回りくどい表現です。' : '直接的すぎて角が立つ表現です。')
+          });
+        }
+      });
+    }
+
+    // 3. 難解・過剰に硬いNG表現（TOO_COMPLEX）の動的生成
+    if (uniqueChoices.length < 2) {
+      let complexText = cleanTarget
+        .replace(/\b(let's make sure|make sure)\b/gi, 'it is imperatively mandatory to comprehensively verify')
+        .replace(/\b(i hear you, but|i see your point, but|i understand, but)\b/gi, 'while I fully acknowledge your perspective, nonetheless')
+        .replace(/\b(we need to|need to)\b/gi, 'we are strictly obligated to execute')
+        .replace(/\b(could you|please)\b/gi, 'it is kindly requested that you facilitate')
+        .replace(/\b(check|confirm)\b/gi, 'comprehensively investigate and authenticate')
+        .replace(/\b(send|share)\b/gi, 'duly transmit the corresponding documentation')
+        .replace(/\b(talk|discuss)\b/gi, 'conduct extensive multilateral consultations')
+        .replace(/\b(start|begin)\b/gi, 'commence full operational implementation')
+        .replace(/\b(wait|pause)\b/gi, 'maintain holding status pending authorization')
+        .replace(/\b(help|support)\b/gi, 'provide comprehensive cross-functional assistance');
+
+      if (complexText.toLowerCase() === cleanTarget.toLowerCase() || seenTexts.has(complexText.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
+        complexText = `With respect to this matter, it is necessary to facilitate comprehensive procedural alignment before proceeding.`;
+      }
+      
+      const norm = complexText.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!seenTexts.has(norm)) {
+        seenTexts.add(norm);
+        uniqueChoices.push({
+          type: "TOO_COMPLEX",
+          text: complexText,
+          advice: "意味は通じますが、過剰に硬い単語（Jargon）が並び、相手にプレッシャーや誤解を与えやすいNG表現です。"
+        });
+      }
+    }
+
+    // 4. 直接的すぎ・角が立つNG表現（TOO_DIRECT）の動的生成
+    if (uniqueChoices.length < 3) {
+      let directText = cleanTarget
+        .replace(/\b(i hear you, but|i see your point, but|i understand, but)\s*/gi, '')
+        .replace(/\b(let's make sure we|let's make sure)\s*/gi, 'You must ')
+        .replace(/\b(could you please|please)\s*/gi, 'You need to ')
+        .replace(/\b(we'd like to|we need to)\s*/gi, 'I want you to ');
+
+      if (directText.toLowerCase() === cleanTarget.toLowerCase() || seenTexts.has(directText.toLowerCase().replace(/[^a-z0-9]/g, ''))) {
+        directText = `No, we cannot do that right now. Just wait until formal approval is completed.`;
+      }
+
+      const norm = directText.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!seenTexts.has(norm)) {
+        seenTexts.add(norm);
+        uniqueChoices.push({
+          type: "TOO_DIRECT",
+          text: directText,
+          advice: "クッション言葉がなく命令口調になっているため、相手との信頼関係を損ねる恐れがあるNG表現です。"
+        });
+      }
+    }
+
+    // 5. 念のための第3選択肢フォールバック
+    if (uniqueChoices.length < 3) {
+      const fallback3 = "Stop this plan immediately. We don't have enough time.";
+      uniqueChoices.push({
+        type: "TOO_DIRECT",
+        text: fallback3,
+        advice: "感情的で協調性に欠けるNG表現です。"
+      });
+    }
+
+    return uniqueChoices.slice(0, 3);
+  }
+
+  function buildDefaultChoices(targetText, existingChoices = null, keyPattern = '') {
+    return buildGuaranteedDistinctChoices(targetText, existingChoices, keyPattern);
   }
 
   function synthesizePatternVariations(pattern, patternJp, target) {
@@ -9893,14 +10154,53 @@
   }
 
   // ----------------------------------------------------
-  // 最終関門: サバイバルテスト (5フレーズ一気通貫・想起タイムアタック)
+  // 最終関門: 定着サバイバルマスター (5フレーズ一気通貫・深い想起と定着判定)
   // ----------------------------------------------------
   let survivalQuestions = [];
   let currentSurvivalIndex = 0;
   let survivalCorrectCount = 0;
   let survivalTimerInterval = null;
-  let survivalTimeLeft = 15;
-  const SURVIVAL_TIME_LIMIT = 15;
+  let survivalTimeLeft = 35;
+  const SURVIVAL_TIME_LIMIT = 35;
+  let isSurvivalTimerPaused = false;
+  let survivalAnswerMode = 'chunk'; // 'chunk' (語順組み立て) or 'choice' (3択)
+  let survivalAssembled = [];
+  let survivalPool = [];
+  let survivalCurrentChoices = [];
+
+  function setSurvivalAnswerMode(mode) {
+    survivalAnswerMode = mode;
+    const btnChunk = document.getElementById('btnSurvivalModeChunk');
+    const btnChoice = document.getElementById('btnSurvivalModeChoice');
+    const secChunk = document.getElementById('survivalChunkSection');
+    const secChoice = document.getElementById('survivalChoiceSection');
+
+    if (btnChunk) btnChunk.classList.toggle('active', mode === 'chunk');
+    if (btnChoice) btnChoice.classList.toggle('active', mode === 'choice');
+    if (secChunk) secChunk.style.display = mode === 'chunk' ? 'block' : 'none';
+    if (secChoice) secChoice.style.display = mode === 'choice' ? 'block' : 'none';
+  }
+
+  function toggleSurvivalTimerPause() {
+    isSurvivalTimerPaused = !isSurvivalTimerPaused;
+    const btn = document.getElementById('btnSurvivalPauseTimer');
+    const timerLabel = document.getElementById('survivalTimerLabel');
+    if (btn) {
+      btn.innerText = isSurvivalTimerPaused ? '▶️ 再開' : '⏸️ 停止';
+      btn.style.background = isSurvivalTimerPaused ? '#fef3c7' : '#ffffff';
+      btn.style.color = isSurvivalTimerPaused ? '#92400e' : '#475569';
+    }
+    if (timerLabel) {
+      if (isSurvivalTimerPaused) {
+        timerLabel.innerText = `⏸️ 一時停止中 (${Math.ceil(Math.max(0, survivalTimeLeft))}秒)`;
+        timerLabel.style.color = '#d97706';
+      } else {
+        timerLabel.innerText = `⏱️ 残り ${Math.ceil(Math.max(0, survivalTimeLeft))}秒`;
+        timerLabel.style.color = '#ef4444';
+      }
+    }
+    toast(isSurvivalTimerPaused ? '⏸️ タイマーを一時停止しました（じっくり想起できます）' : '▶️ タイマーを再開しました');
+  }
 
   function startSurvivalTest() {
     if (!scenarios || scenarios.length === 0) {
@@ -9912,11 +10212,12 @@
     survivalQuestions = [...scenarios].sort(() => Math.random() - 0.5);
     currentSurvivalIndex = 0;
     survivalCorrectCount = 0;
+    isSurvivalTimerPaused = false;
 
     const modal = document.getElementById('survivalTestModal');
     if (modal) modal.style.display = 'flex';
 
-    toast("⚡ 最終関門【サバイバルテスト】開始！ ヒントなしで即座にアウトプットしてください");
+    toast("⚡ 最終関門【定着サバイバルマスター】開始！ 語順を組み立てて定着させましょう");
     loadSurvivalQuestion();
   }
 
@@ -9928,12 +10229,19 @@
 
     clearInterval(survivalTimerInterval);
     survivalTimeLeft = SURVIVAL_TIME_LIMIT;
+    isSurvivalTimerPaused = false;
+
+    const btnPause = document.getElementById('btnSurvivalPauseTimer');
+    if (btnPause) {
+      btnPause.innerText = '⏸️ 停止';
+      btnPause.style.background = '#ffffff';
+      btnPause.style.color = '#475569';
+    }
 
     const q = survivalQuestions[currentSurvivalIndex];
     const progressEl = document.getElementById('survivalProgressText');
     const promptEl = document.getElementById('survivalQuestionPrompt');
     const quoteEl = document.getElementById('survivalCounterpartQuote');
-    const choicesEl = document.getElementById('survivalChoicesList');
     const feedbackEl = document.getElementById('survivalFeedbackBox');
     const timerLabel = document.getElementById('survivalTimerLabel');
     const timerFill = document.getElementById('survivalTimerFill');
@@ -9944,7 +10252,8 @@
     if (quoteEl) quoteEl.innerText = `相手の発言: "${q.ai_en || '...'}"`;
     if (feedbackEl) {
       feedbackEl.style.display = 'none';
-      feedbackEl.innerText = '';
+      feedbackEl.innerHTML = '';
+      feedbackEl.className = '';
     }
     if (nextBtn) {
       nextBtn.style.display = 'none';
@@ -9957,21 +10266,41 @@
       timerLabel.style.color = '#ef4444';
     }
 
-    // 3択をシャッフル
-    const choices = [...(q.choices || [
-      { text: q.target, type: 'PERFECT', advice: '完璧です' }
-    ])].sort(() => Math.random() - 0.5);
+    // 1. チャンク組み立ての準備
+    let rawChunks = (q.chunks && Array.isArray(q.chunks) && q.chunks.length >= 2)
+      ? [...q.chunks]
+      : (typeof createClientSentenceChunks === 'function' ? createClientSentenceChunks(q.target) : splitTargetIntoChunks(q.target));
 
-    if (choicesEl) {
-      choicesEl.innerHTML = choices.map((c, idx) => `
-        <button class="survival-choice-btn" id="survivalChoiceBtn_${idx}" onclick="submitSurvivalChoice(${idx})">
-          ${escapeHtml(c.text)}
-        </button>
-      `).join('');
+    if (!rawChunks || rawChunks.length === 0) {
+      rawChunks = (q.target || "Thank you for the update.").split(' ');
     }
 
-    // タイムアタックカウントダウン
+    survivalAssembled = [];
+    survivalPool = rawChunks.map((text, idx) => ({
+      id: idx,
+      text: text.trim(),
+      used: false
+    })).sort(() => Math.random() - 0.5);
+
+    renderSurvivalChunkUI();
+
+    // 2. 3択の準備（重複のない厳格な3択を生成）
+    survivalCurrentChoices = buildGuaranteedDistinctChoices(q.target, q.choices, q.key_pattern).sort(() => Math.random() - 0.5);
+    renderSurvivalChoicesUI();
+
+    // モードUIの表示同期
+    setSurvivalAnswerMode(survivalAnswerMode);
+
+    // 音声自動再生がONなら相手音声を再生
+    if (typeof autoSpeakEnabled !== 'undefined' && autoSpeakEnabled && q.ai_en) {
+      setTimeout(() => {
+        if (typeof speakText === 'function') speakText(q.ai_en);
+      }, 150);
+    }
+
+    // カウントダウン開始
     survivalTimerInterval = setInterval(() => {
+      if (isSurvivalTimerPaused) return;
       survivalTimeLeft -= 0.1;
       const pct = Math.max(0, (survivalTimeLeft / SURVIVAL_TIME_LIMIT) * 100);
       if (timerFill) timerFill.style.width = `${pct}%`;
@@ -9984,93 +10313,226 @@
     }, 100);
   }
 
-  function handleSurvivalTimeout() {
-    clearInterval(survivalTimerInterval);
-    const feedbackEl = document.getElementById('survivalFeedbackBox');
-    const q = survivalQuestions[currentSurvivalIndex];
-    const perfectAdvice = q.choices?.find(c => c.type === 'PERFECT')?.advice || '型を使って簡潔に伝える表現です。';
+  function renderSurvivalChunkUI() {
+    const assemblyBox = document.getElementById('survivalAssemblyBox');
+    const poolBox = document.getElementById('survivalChunkPool');
+    if (!assemblyBox || !poolBox) return;
 
-    // 正解のボタンを緑色で強調表示
-    const allBtns = document.querySelectorAll('.survival-choice-btn');
-    allBtns.forEach(b => {
-      const txt = b.innerText.trim();
-      if (txt === (q.target || '').trim() || (q.choices && q.choices.some(c => c.type === 'PERFECT' && c.text.trim() === txt))) {
-        b.classList.add('correct');
-      }
-    });
-
-    if (feedbackEl) {
-      feedbackEl.style.display = 'block';
-      feedbackEl.className = 'drill-feedback-msg wrong';
-      feedbackEl.innerHTML = `
-        <div style="font-size:13px; font-weight:800; color:#b91c1c; margin-bottom:3px;">⏰ 時間切れ！</div>
-        <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:3px;">模範解答: "${escapeHtml(q.target)}"</div>
-        <div style="font-size:11.5px; font-weight:normal; color:#475569;">${escapeHtml(perfectAdvice)}</div>
-      `;
+    if (survivalAssembled.length === 0) {
+      assemblyBox.innerHTML = '<span class="assembly-placeholder">（下のパーツをタップして正しい語順に並べてください）</span>';
+      assemblyBox.classList.remove('active');
+    } else {
+      assemblyBox.classList.add('active');
+      assemblyBox.innerHTML = survivalAssembled.map((item, idx) => `
+        <button class="chunk-chip" onclick="unselectSurvivalChunk(${idx})" title="タップして戻す">
+          ${escapeHtml(item.text)}
+        </button>
+      `).join('');
     }
 
-    disableSurvivalButtons();
-    // 自動切替を廃止し、ユーザーが振り返ってから自ら進めるボタンを表示
-    showSurvivalNextButton();
+    poolBox.innerHTML = survivalPool.map(item => `
+      <button class="chunk-chip ${item.used ? 'used' : ''}" onclick="selectSurvivalChunk(${item.id})" ${item.used ? 'disabled' : ''}>
+        ${escapeHtml(item.text)}
+      </button>
+    `).join('');
   }
 
-  function disableSurvivalButtons() {
-    const btns = document.querySelectorAll('.survival-choice-btn');
-    btns.forEach(b => b.disabled = true);
+  function selectSurvivalChunk(chipId) {
+    const poolItem = survivalPool.find(p => p.id === chipId);
+    if (!poolItem || poolItem.used) return;
+
+    poolItem.used = true;
+    survivalAssembled.push({ id: poolItem.id, text: poolItem.text });
+    renderSurvivalChunkUI();
+
+    // 全パーツが選ばれたら自動判定
+    if (survivalAssembled.length === survivalPool.length) {
+      submitSurvivalChunkAssembly();
+    }
+  }
+
+  function unselectSurvivalChunk(assembledIndex) {
+    if (assembledIndex < 0 || assembledIndex >= survivalAssembled.length) return;
+    const removed = survivalAssembled.splice(assembledIndex, 1)[0];
+    const poolItem = survivalPool.find(p => p.id === removed.id);
+    if (poolItem) poolItem.used = false;
+    renderSurvivalChunkUI();
+  }
+
+  function resetSurvivalChunks() {
+    survivalAssembled = [];
+    survivalPool.forEach(p => p.used = false);
+    renderSurvivalChunkUI();
+  }
+
+  function hintSurvivalFirstChunk() {
+    const q = survivalQuestions[currentSurvivalIndex];
+    if (!q || !q.target) return;
+    let rawChunks = (q.chunks && Array.isArray(q.chunks) && q.chunks.length >= 2)
+      ? [...q.chunks]
+      : (typeof createClientSentenceChunks === 'function' ? createClientSentenceChunks(q.target) : splitTargetIntoChunks(q.target));
+
+    if (rawChunks.length === 0) return;
+    const firstChunkText = rawChunks[0].trim().toLowerCase();
+
+    // まだ選ばれていないか先頭と違う場合はリセットして先頭を入れる
+    const poolItem = survivalPool.find(p => p.text.trim().toLowerCase() === firstChunkText && !p.used);
+    if (poolItem) {
+      selectSurvivalChunk(poolItem.id);
+      toast('💡 先頭パーツをセットしました！ 続きを組み立てましょう');
+    }
+  }
+
+  function renderSurvivalChoicesUI() {
+    const choicesEl = document.getElementById('survivalChoicesList');
+    if (!choicesEl) return;
+    choicesEl.innerHTML = survivalCurrentChoices.map((c, idx) => `
+      <button class="survival-choice-btn" id="survivalChoiceBtn_${idx}" onclick="submitSurvivalChoice(${idx})">
+        ${escapeHtml(c.text)}
+      </button>
+    `).join('');
+  }
+
+  function cleanSentenceForCompare(str) {
+    return (str || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .trim();
+  }
+
+  function submitSurvivalChunkAssembly() {
+    if (survivalAssembled.length === 0) {
+      toast('⚠️ パーツをタップして英文を組み立ててください');
+      return;
+    }
+    clearInterval(survivalTimerInterval);
+
+    const q = survivalQuestions[currentSurvivalIndex];
+    const assembledText = survivalAssembled.map(a => a.text).join(' ');
+    const isCorrect = cleanSentenceForCompare(assembledText) === cleanSentenceForCompare(q.target);
+
+    showSurvivalEvaluationFeedback(isCorrect, assembledText, null);
   }
 
   function submitSurvivalChoice(choiceIndex) {
     clearInterval(survivalTimerInterval);
     const q = survivalQuestions[currentSurvivalIndex];
-    const choices = [...(q.choices || [])];
     const btn = document.getElementById(`survivalChoiceBtn_${choiceIndex}`);
-    const selectedText = btn ? btn.innerText.trim() : '';
+    const selected = survivalCurrentChoices[choiceIndex];
+    const selectedText = selected ? selected.text : '';
 
-    const isPerfect = selectedText === (q.target || '').trim() || 
-      choices.some(c => c.type === 'PERFECT' && c.text.trim() === selectedText);
+    const isCorrect = selected && (selected.type === 'PERFECT' || cleanSentenceForCompare(selectedText) === cleanSentenceForCompare(q.target));
 
+    showSurvivalEvaluationFeedback(isCorrect, selectedText, btn);
+  }
+
+  function handleSurvivalTimeout() {
+    clearInterval(survivalTimerInterval);
+    showSurvivalEvaluationFeedback(false, null, null, true);
+  }
+
+  function disableAllSurvivalInputs() {
+    document.querySelectorAll('.survival-choice-btn').forEach(b => b.disabled = true);
+    document.querySelectorAll('.survival-chunk-pool .chunk-chip').forEach(b => b.disabled = true);
+    document.querySelectorAll('.survival-assembly-box .chunk-chip').forEach(b => b.disabled = true);
+    const submitBtn = document.getElementById('btnSurvivalSubmitChunk');
+    if (submitBtn) submitBtn.disabled = true;
+  }
+
+  function showSurvivalEvaluationFeedback(isCorrect, userText, clickedBtn, isTimeout = false) {
+    clearInterval(survivalTimerInterval);
+    disableAllSurvivalInputs();
+
+    const q = survivalQuestions[currentSurvivalIndex];
     const feedbackEl = document.getElementById('survivalFeedbackBox');
-    disableSurvivalButtons();
 
-    // 正解のボタンを緑色で明示
+    // 3択ボタンのハイライト
     const allBtns = document.querySelectorAll('.survival-choice-btn');
-    allBtns.forEach(b => {
-      const txt = b.innerText.trim();
-      if (txt === (q.target || '').trim() || choices.some(c => c.type === 'PERFECT' && c.text.trim() === txt)) {
+    allBtns.forEach((b, idx) => {
+      const cObj = survivalCurrentChoices[idx];
+      if (cObj && cObj.type === 'PERFECT') {
         b.classList.add('correct');
+      } else if (b === clickedBtn && !isCorrect) {
+        b.classList.add('wrong');
       }
     });
 
-    if (isPerfect) {
+    const perfectChoice = (survivalCurrentChoices || []).find(c => c.type === 'PERFECT');
+    const advice = perfectChoice?.advice || '型を使って相手の意図を汲みつつ簡潔に伝える模範表現です。';
+    const keyPattern = q.key_pattern || '実務で即座に使えるPlain English構文';
+    const rationale = q.pattern_rationale || '相手に角を立てず、論理的かつシンプルに要点を伝える型です。';
+
+    if (isCorrect) {
       survivalCorrectCount++;
-      awardXP(20, true);
+      awardXP(25, true);
+      if (typeof advanceSrsItemLevel === 'function' && q.target) {
+        advanceSrsItemLevel(q.target, true);
+      }
+
       if (feedbackEl) {
         feedbackEl.style.display = 'block';
         feedbackEl.className = 'drill-feedback-msg correct';
         feedbackEl.innerHTML = `
-          <div style="font-size:13px; font-weight:800; color:#15803d; margin-bottom:3px;">🎉 即答クリア！ 記憶に定着しています！</div>
-          <div style="font-size:11.5px; font-weight:normal; color:#166534;">相手の発言に対し、Plain Englishの型を使って最も的確・簡潔に返答できました。</div>
+          <div style="font-size:13.5px; font-weight:800; color:#15803d; margin-bottom:4px;">
+            🎉 即答クリア！ 記憶に深く定着しています！
+          </div>
+          <div style="font-size:12.5px; font-weight:bold; color:#1e293b; background:#f0fdf4; padding:8px 10px; border-radius:6px; border:1px solid #bbf7d0; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+            <span>★ 模範解答: "${escapeHtml(q.target)}"</span>
+            <button class="micro-btn" onclick="speakSurvivalTarget()" style="padding:2px 7px; font-size:10px; background:#fff; flex-shrink:0;">🔊 発音</button>
+          </div>
+          <div style="font-size:11.5px; color:#166534; margin-bottom:2px;">
+            <b>🎯 決め手の型:</b> <span style="background:#dcfce7; padding:1px 5px; border-radius:4px; font-weight:bold;">${escapeHtml(keyPattern)}</span>
+          </div>
+          <div style="font-size:11px; color:#475569; line-height:1.4;">
+            💡 <b>解説:</b> ${escapeHtml(rationale)}
+          </div>
         `;
       }
-      toast("🎯 サバイバル正解！");
+      toast("🎯 サバイバル正解！ 定着度UP！");
+      speakSurvivalTarget();
     } else {
-      awardXP(2, false);
-      if (btn) btn.classList.add('wrong');
-      const perfectAdvice = choices.find(c => c.type === 'PERFECT')?.advice || '型を使って簡潔に伝える表現です。';
+      awardXP(3, false);
+      if (typeof advanceSrsItemLevel === 'function' && q.target) {
+        advanceSrsItemLevel(q.target, false);
+      }
+
       if (feedbackEl) {
         feedbackEl.style.display = 'block';
         feedbackEl.className = 'drill-feedback-msg wrong';
         feedbackEl.innerHTML = `
-          <div style="font-size:13px; font-weight:800; color:#b91c1c; margin-bottom:3px;">❌ 惜しい！</div>
-          <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:3px;">模範解答: "${escapeHtml(q.target)}"</div>
-          <div style="font-size:11.5px; font-weight:normal; color:#475569;">${escapeHtml(perfectAdvice)}</div>
+          <div style="font-size:13.5px; font-weight:800; color:#b91c1c; margin-bottom:4px;">
+            ${isTimeout ? '⏰ 時間切れ！' : '❌ 惜しい！ 正しい型を振り返りましょう'}
+          </div>
+          <div style="font-size:12.5px; font-weight:bold; color:#1e293b; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+            <span>★ 模範解答: "${escapeHtml(q.target)}"</span>
+            <button class="micro-btn" onclick="speakSurvivalTarget()" style="padding:2px 7px; font-size:10px; background:#fff; flex-shrink:0;">🔊 発音</button>
+          </div>
+          <div style="font-size:11.5px; color:#991b1b; margin-bottom:2px;">
+            <b>🎯 決め手の型:</b> <span style="background:#fee2e2; padding:1px 5px; border-radius:4px; font-weight:bold;">${escapeHtml(keyPattern)}</span>
+          </div>
+          <div style="font-size:11px; color:#475569; line-height:1.4;">
+            💡 <b>解説:</b> ${escapeHtml(advice)} ${escapeHtml(rationale)}
+          </div>
         `;
       }
-      toast("💡 模範表現を確認しましょう");
+      toast("💡 模範表現を確認して定着させましょう");
     }
 
-    // 自動切替を廃止し、自分のペースで次へ進むボタンを表示
     showSurvivalNextButton();
+  }
+
+  function speakSurvivalAiSpeech() {
+    const q = survivalQuestions[currentSurvivalIndex];
+    if (q && q.ai_en && typeof speakText === 'function') {
+      speakText(q.ai_en);
+    }
+  }
+
+  function speakSurvivalTarget() {
+    const q = survivalQuestions[currentSurvivalIndex];
+    if (q && q.target && typeof speakText === 'function') {
+      speakText(q.target);
+    }
   }
 
   function showSurvivalNextButton() {
