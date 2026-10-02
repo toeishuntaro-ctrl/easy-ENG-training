@@ -385,7 +385,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 8 Categories of Practical Global Business Plain English Key Patterns (型)
+  // 16 Categories of Practical Global Business Plain English Key Patterns (100+ Patterns)
   const patternLibrary = {
     acknowledge_boundary: {
       category: "受け止め・クッション＋制約提示 (Acknowledge & Set Boundaries)",
@@ -395,7 +395,10 @@ export default async function handler(req, res) {
         "That makes sense, but we are currently looking into [noun].",
         "I hear you, but let's make sure we [verb] before taking action.",
         "I appreciate the heads-up, but we cannot commit until we [verb].",
-        "Fair point, but let's stick to [noun] for now."
+        "Fair point, but let's stick to [noun] for now.",
+        "I acknowledge the importance of this, but our resources are committed to [task].",
+        "I completely understand where you are coming from, but we have to respect [policy/timeline].",
+        "While I share your concern, jumping into this without [noun] is too risky."
       ]
     },
     takeaway_deadline: {
@@ -406,18 +409,22 @@ export default async function handler(req, res) {
         "I will double-check [noun] and confirm with you later today.",
         "Give me until [time] to verify this with [team].",
         "I will follow up on this with [person] by [time].",
-        "Let's hold off on this until we hear back from [person]."
+        "Let's hold off on this until we hear back from [person].",
+        "I need to consult with [expert/lead] before giving a firm answer.",
+        "Let me run the numbers first and I will ping you on Teams by [time]."
       ]
     },
     clarify_paraphrase: {
-      category: "認識合わせ・明確化 (Clarify & Paraphrase)",
+      category: "認識合わせ・明確化・パラフレーズ (Clarify & Paraphrase)",
       patterns: [
         "Just to make sure, are you saying that [statement]?",
         "To be clear, do you mean we should [verb]?",
         "Could you clarify what you mean by [noun/phrase]?",
         "Let me make sure I understand: our next step is to [verb], right?",
         "Before we move forward, can we confirm who is leading [task]?",
-        "Are we aligned that [statement]?"
+        "Are we aligned that [statement]?",
+        "Could you walk me through the rationale behind [decision/request]?",
+        "Just to avoid any confusion later, who has the final sign-off on this?"
       ]
     },
     alternative_tradeoff: {
@@ -428,7 +435,9 @@ export default async function handler(req, res) {
         "What if we focus on [noun] first and handle the rest next week?",
         "To meet the deadline, our best option is to [verb].",
         "We are happy to help with this, provided that we get [noun] by [time].",
-        "How about we do [option A] instead of [option B]?"
+        "How about we do [option A] instead of [option B]?",
+        "We can commit to a partial release now and deliver the full scope later.",
+        "As a compromise, could we provide a summary report rather than raw logs?"
       ]
     },
     action_request: {
@@ -439,17 +448,21 @@ export default async function handler(req, res) {
         "Please let us know your decision by [time] so we don't lose time.",
         "Would you be able to review [document] before our next sync?",
         "Can you help us connect with [person] regarding this matter?",
-        "Let's make sure everyone reviews [noun] by EOD."
+        "Let's make sure everyone reviews [noun] by EOD.",
+        "May I ask you to prioritize [task] so we can unblock the team?",
+        "Could you give us the green light by [time] so we can mobilize resources?"
       ]
     },
     flag_risk: {
-      category: "懸念・リスクの事前共有 (Flagging Concerns & Risks)",
+      category: "懸念・リスクの事前共有・ブレーキ (Flagging Concerns & Risks)",
       patterns: [
         "My main concern is that [clause], so let's be careful.",
         "We might run into an issue if we don't [verb] early.",
         "To avoid any delays, it would be safer to [verb].",
         "There is a risk of [noun/gerund], so let's keep an eye on it.",
-        "Let's make sure we have a backup plan in case [clause]."
+        "Let's make sure we have a backup plan in case [clause].",
+        "I want to flag a potential bottleneck with [vendor/system].",
+        "Rushing this step could compromise [quality/compliance], which we cannot afford."
       ]
     },
     lock_next_step: {
@@ -459,16 +472,92 @@ export default async function handler(req, res) {
         "I will summarize the action items and share the notes by [time].",
         "Thanks for the alignment; I will take ownership of [task].",
         "Let's touch base again on [day] to review the progress.",
-        "We are all on the same page. Let's proceed with [plan]."
+        "We are all on the same page. Let's proceed with [plan].",
+        "I will document this agreement and circulate it to the key stakeholders.",
+        "Let's set up a quick 10-minute checkpoint on [day] to verify progress."
+      ]
+    },
+    scope_phasing: {
+      category: "スコープ分割・段階的アプローチ (Phased Rollout & Scope Chunking)",
+      patterns: [
+        "Would it be possible to split the scope into two phases?",
+        "Let's deliver the minimum viable setup first and iterate afterwards.",
+        "Can we treat [feature/task] as a stretch goal for Phase 2?",
+        "To safeguard the release date, let's freeze non-essential changes.",
+        "I recommend a phased rollout starting with the pilot group first."
+      ]
+    },
+    meeting_steering: {
+      category: "会議ファシリテーション・脱線修正 (Meeting Control & Steering)",
+      patterns: [
+        "Let's park this topic for now and return to our main agenda.",
+        "In the interest of time, let's take this offline with the relevant team.",
+        "Can we hear from [name] since they have direct context on this?",
+        "Before wrapping up, let's quickly review the owners and deadlines.",
+        "Let's pause here and make sure we have captured everyone's key input."
+      ]
+    },
+    escalation_guidance: {
+      category: "エスカレーション・上長巻き込み (Diplomatic Escalation & Alignment)",
+      patterns: [
+        "Since we have reached an impasse, should we escalate this to [sponsor/lead]?",
+        "I suggest we loop in [manager/lead] to get their executive guidance.",
+        "To resolve this bottleneck, we need a joint decision from both team leads.",
+        "I will draft a brief summary of the two options and present it to leadership."
+      ]
+    },
+    vendor_negotiation: {
+      category: "契約・外部ベンダー・第三者交渉 (Vendor & Cross-Org Negotiation)",
+      patterns: [
+        "Our budget is fixed at [amount], so we need to adjust deliverables accordingly.",
+        "Could you provide a detailed breakdown of the additional costs?",
+        "We are evaluating multiple vendors, so prompt turnaround is appreciated.",
+        "Please ensure all contractual milestones align with our compliance framework."
+      ]
+    },
+    teams_quick_reply: {
+      category: "社内Teams即答・クイック受領 (High-Speed Teams/Slack Chat Replies)",
+      patterns: [
+        "Thanks for flagging; I am on it and will send an update shortly.",
+        "Got it, thanks. Checking the root cause right now.",
+        "Understood. I will ping you on Teams as soon as the test finishes.",
+        "Noted with thanks. Let me coordinate with the on-duty engineer right away."
+      ]
+    },
+    incident_reassurance: {
+      category: "トラブル・インシデント初動 (Incident Response & Client Reassurance)",
+      patterns: [
+        "We have contained the issue and are currently implementing the permanent fix.",
+        "Rest assured, our highest priority right now is restoring full functionality.",
+        "We will issue an interim incident summary by [time] with root-cause analysis.",
+        "No data has been compromised, and we are monitoring the system continuously."
+      ]
+    },
+    constructive_proposal: {
+      category: "建設的提案・プロセス改善 (Constructive Proposals & Value Add)",
+      patterns: [
+        "I suggest we implement a standardized checklist to prevent future occurrences.",
+        "How about we automate this verification step to save weekly team hours?",
+        "Would it make sense to establish a shared dashboard for real-time visibility?",
+        "To improve efficiency, I propose we streamline the approval workflow."
+      ]
+    },
+    one_on_one_alignment: {
+      category: "1on1・業務フィードバック・負荷相談 (1-on-1 Alignment & Workload Balancing)",
+      patterns: [
+        "I would appreciate your guidance on how to prioritize these competing tasks.",
+        "To maintain sustainable pace, could we reassign [task] to another team member?",
+        "I wanted to give you a quick heads-up about a potential resource constraint next sprint.",
+        "Your constructive feedback in today's review was very helpful for our next iteration."
       ]
     },
     appreciation_partnership: {
       category: "感謝・パートナーシップ関係維持 (Appreciation & Partnership)",
       patterns: [
         "Thank you for your flexibility on this tight schedule.",
-        "Thanks for understanding our team's capacity.",
-        "I appreciate your quick turnaround on this issue.",
-        "Thanks for working with us to find a practical solution."
+        "Thanks for understanding our team's capacity during this crunch.",
+        "I appreciate your quick turnaround and collaborative support on this issue.",
+        "Thanks for working with us to find a practical and win-win solution."
       ]
     }
   };
@@ -665,10 +754,17 @@ export default async function handler(req, res) {
   const allCategoryKeys = Object.keys(patternLibrary);
   // Shuffle categories
   const shuffledKeys = [...allCategoryKeys].sort(() => 0.5 - Math.random());
-  const selected5Categories = shuffledKeys.slice(0, 5);
+  
+  const excludedPatternList = Array.isArray(excludePatterns) ? excludePatterns.filter(Boolean) : [];
+  const excludedTopicList = Array.isArray(excludeTopics) ? excludeTopics.filter(Boolean) : [];
 
-  const excludedPatternList = Array.isArray(excludePatterns) ? excludePatterns : [];
-  const excludedTopicList = Array.isArray(excludeTopics) ? excludeTopics : [];
+  // Prioritize categories that still have fresh, un-used patterns
+  const scoredCategories = shuffledKeys.sort((a, b) => {
+    const unUsedA = patternLibrary[a].patterns.filter(p => !excludedPatternList.some(ex => ex.toLowerCase().includes(p.substring(0, 15).toLowerCase()))).length;
+    const unUsedB = patternLibrary[b].patterns.filter(p => !excludedPatternList.some(ex => ex.toLowerCase().includes(p.substring(0, 15).toLowerCase()))).length;
+    return unUsedB - unUsedA;
+  });
+  const selected5Categories = scoredCategories.slice(0, 5);
 
   const stagePatternSuggestions = selected5Categories.map((catKey, idx) => {
     const cat = patternLibrary[catKey];
@@ -700,15 +796,18 @@ Generate a high-yield, structured 5-stage sequential business dialogue for Japan
 - Provide a simple "parts_hint" showing how common junior-high level English words (e.g. "keep the deadline", "talk to my team", "tomorrow afternoon") combine with the pattern to complete the target sentence.
 - This empowers users to immediately output the response without anxiety.
 
-[CRITICAL MANDATE: MAXIMUM PATTERN DIVERSITY (キーフレーズ・型の完全重複禁止)]
+[CRITICAL MANDATE: MAXIMUM PATTERN DIVERSITY & ZERO DUPLICATION (キーフレーズ・型の重複絶対禁止)]
 - You MUST ensure all 5 stages in this session teach **COMPLETELY DIFFERENT KEY PATTERNS (型)** with different functional purposes.
 - NEVER repeat or reuse the same opening/formula (e.g. do NOT use "I see your point..." or "Let me check..." more than once in the 5 stages).
 - Here are 5 distinct suggested pattern categories assigned specifically for this session's 5 stages (you can use these or creative equivalents):
 ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 
-[Strictly Excluded Recent Patterns & Topics (DO NOT REUSE ANY OF THESE)]:
-- Excluded Patterns: ${JSON.stringify(excludedPatternList.slice(-20))}
-- Excluded Target Phrases: ${JSON.stringify(excludedTopicList.slice(-20))}
+[Strictly Excluded Recent Patterns & Topics (DO NOT REUSE OR RESEMBLE ANY OF THESE)]:
+The user has already practiced and saved all the expressions in the lists below. You MUST NOT generate duplicate or nearly identical phrases to any item in these lists.
+- Excluded Key Patterns (Already Mastered):
+${JSON.stringify(excludedPatternList.slice(-80))}
+- Excluded Target English Sentences (Already Mastered):
+${JSON.stringify(excludedTopicList.slice(-80))}
 
 [Scenario Specifications]
 - Focus Category: "${topicDisplayTitle}"

@@ -3767,6 +3767,9 @@
           <span class="library-count-badge" id="libraryCountBadge">0件 保存</span>
         </div>
         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button class="btn-action" onclick="cleanAndDeduplicatePhraseLibrary(true)" title="重複・類似しているフレーズを自動統合して整理します" style="font-size: 11px; padding: 5px 9px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">
+            🧹 重複整理・クリーンアップ
+          </button>
           <button class="btn-action" onclick="openAddCustomPhraseModal()" style="font-size: 11px; padding: 5px 9px; background: #2563eb; color: #fff; font-weight: 700; border: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">
             ➕ 独自フレーズ追加
           </button>
@@ -6007,9 +6010,16 @@
     toast(`⏳ AIが【${topicLabel}】コースを生成中...`);
 
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    // 直近の過去履歴からターゲット英文とキーパターンを抽出し、重複生成を防止
-    const excludeTopics = history.flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
-    const excludePatterns = history.flatMap(h => (h.data || []).map(s => s.key_pattern)).filter(Boolean);
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+
+    // 過去履歴と武器庫（保存済みフレーズ）の双方からターゲット英文とキーパターンを網羅抽出
+    const historyTargets = history.flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
+    const libraryTargets = library.map(item => item.target).filter(Boolean);
+    const excludeTopics = Array.from(new Set([...historyTargets, ...libraryTargets]));
+
+    const historyPatterns = history.flatMap(h => (h.data || []).map(s => s.key_pattern)).filter(Boolean);
+    const libraryPatterns = library.map(item => item.key_pattern).filter(Boolean);
+    const excludePatterns = Array.from(new Set([...historyPatterns, ...libraryPatterns]));
 
     try {
       const res = await fetch('/api/generate', {
@@ -6168,6 +6178,7 @@
   window.closeFlashcardModal = closeFlashcardModal;
   window.speakFlashcardTarget = speakFlashcardTarget;
   window.saveCurrentPhrase = saveCurrentPhrase;
+  window.cleanAndDeduplicatePhraseLibrary = cleanAndDeduplicatePhraseLibrary;
   window.deleteLibraryItem = deleteLibraryItem;
 
   // --- 端末同期モーダル操作関数 (トップレベル公開) ---
@@ -9085,6 +9096,94 @@
     }
   }
 
+  // ==========================================
+  // 保存済み武器庫（フレーズライブラリ）の重複完全排除・知的一括整理エンジン
+  // ==========================================
+  function cleanAndDeduplicatePhraseLibrary(isManual = false) {
+    let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    if (!library || library.length === 0) {
+      if (isManual) toast("ℹ️ 武器庫に保存されたフレーズがありません");
+      return { beforeCount: 0, afterCount: 0, removedCount: 0 };
+    }
+
+    const beforeCount = library.length;
+    const seenMap = new Map();
+    const removedTargets = [];
+
+    // 重複を厳格に判定（アルファベット小文字・記号空白除去による正規化）
+    library.forEach(item => {
+      if (!item || !item.target) return;
+      const normKey = item.target.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+      if (!normKey) return;
+
+      if (!seenMap.has(normKey)) {
+        seenMap.set(normKey, item);
+      } else {
+        const existing = seenMap.get(normKey);
+        // より情報が充実している方（解説、リアクション、型情報、SRSレベル）を優先して統合
+        const scoreExisting = (existing.key_pattern ? 2 : 0) + (existing.pattern_rationale ? 2 : 0) + (existing.counterpart_reaction_en ? 1 : 0) + (existing.srsLevel || 1);
+        const scoreNew = (item.key_pattern ? 2 : 0) + (item.pattern_rationale ? 2 : 0) + (item.counterpart_reaction_en ? 1 : 0) + (item.srsLevel || 1);
+
+        if (scoreNew > scoreExisting) {
+          removedTargets.push(existing.target);
+          seenMap.set(normKey, {
+            ...existing,
+            ...item,
+            srsLevel: Math.max(existing.srsLevel || 1, item.srsLevel || 1),
+            reviewCount: (existing.reviewCount || 0) + (item.reviewCount || 0)
+          });
+        } else {
+          removedTargets.push(item.target);
+          existing.srsLevel = Math.max(existing.srsLevel || 1, item.srsLevel || 1);
+          existing.reviewCount = (existing.reviewCount || 0) + (item.reviewCount || 0);
+        }
+      }
+    });
+
+    const deduplicated = Array.from(seenMap.values());
+    const removedCount = beforeCount - deduplicated.length;
+
+    if (removedCount > 0 || isManual) {
+      localStorage.setItem('english_phrase_library', JSON.stringify(deduplicated));
+      
+      // クラウド同期側からも重複削除したドキュメントを同期
+      if (window.fbSync && removedTargets.length > 0) {
+        removedTargets.forEach(t => {
+          if (t) window.fbSync.deleteWeapon(t);
+        });
+        deduplicated.forEach(w => {
+          if (w) window.fbSync.saveWeapon(w);
+        });
+      }
+
+      // 忘却曲線アイテム（english_spaced_items_v1）も重複排除
+      let spaced = JSON.parse(localStorage.getItem('english_spaced_items_v1') || '[]');
+      const spacedMap = new Map();
+      spaced.forEach(s => {
+        if (!s || !s.target) return;
+        const sNorm = s.target.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        if (!spacedMap.has(sNorm)) {
+          spacedMap.set(sNorm, s);
+        }
+      });
+      localStorage.setItem('english_spaced_items_v1', JSON.stringify(Array.from(spacedMap.values())));
+
+      renderLibrary();
+      updateSrsRecommendUI();
+      updateDashboard();
+
+      if (isManual) {
+        if (removedCount > 0) {
+          toast(`✨ 武器庫を整理しました！ ${removedCount}件の重複フレーズを統合・クリーンアップしました（全${deduplicated.length}件）`);
+        } else {
+          toast(`✨ 武器庫の全${deduplicated.length}件は既に重複がなく、綺麗に整理されています！`);
+        }
+      }
+    }
+
+    return { beforeCount, afterCount: deduplicated.length, removedCount };
+  }
+
   function copyTeamsDraft() {
     const current = scenarios[currentStageIndex];
     if (!current || !current.target) return;
@@ -10835,6 +10934,8 @@
       if (libModified) {
         localStorage.setItem('english_phrase_library', JSON.stringify(library));
       }
+      // 武器庫の重複自動統合・クリーンアップ
+      cleanAndDeduplicatePhraseLibrary(false);
 
       // 3. 現在アクティブなセッション（scenarios）の即時修復
       if (scenarios && scenarios.length > 0) {
