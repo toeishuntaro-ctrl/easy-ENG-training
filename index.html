@@ -6115,8 +6115,9 @@
       console.warn("[initApp] fbSync await error:", syncErr);
     }
 
-    // 3. 既存保存データの自動修復マイグレーション & 進行中セッションまたは直近履歴からステージ進捗を復元
+    // 3. 既存保存データの自動修復マイグレーション & 武器庫の重複完全排除
     if (typeof migrateAndRepairStoredData === 'function') migrateAndRepairStoredData();
+    if (typeof cleanAndDeduplicatePhraseLibrary === 'function') cleanAndDeduplicatePhraseLibrary(false);
     const activeSession = JSON.parse(localStorage.getItem('english_active_session') || 'null');
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
 
@@ -8220,8 +8221,9 @@
     const current = scenarios[currentStageIndex];
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
 
-    if (library.some(item => item.target === current.target)) {
-      toast("すでに保存されているフレーズです");
+    const normKey = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+    if (library.some(item => normKey(item.target) === normKey(current.target))) {
+      toast("すでに武器庫に保存されているフレーズです");
       return;
     }
 
@@ -8877,13 +8879,27 @@
     return chunks.length >= 2 ? chunks : [text];
   }
 
+  function standardizeChoiceSentence(text, isQuestion = false) {
+    if (!text || typeof text !== 'string') return '';
+    let cleaned = text.trim();
+    // 文末の既存記号・句読点を除去
+    cleaned = cleaned.replace(/[\s,.\?!;:"'“”’‘]+$/g, '').trim();
+    if (!cleaned) return '';
+    // 文頭を必ず大文字化（大文字・小文字の差異で正解が見抜かれないように統一）
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    // 文末に統一した句読点を付与（疑問文なら?、平叙文なら.）
+    cleaned += isQuestion ? '?' : '.';
+    return cleaned;
+  }
+
   function buildGuaranteedDistinctChoices(targetText, existingChoices = null, keyPattern = '') {
     const cleanTarget = (targetText || '').trim();
+    const isQuestion = cleanTarget.endsWith('?');
     if (!cleanTarget) {
       return [
         { type: "PERFECT", text: "I understand, and we will follow up immediately.", advice: "明快なPlain Englishです。" },
         { type: "TOO_COMPLEX", text: "I acknowledge receipt and will facilitate subsequent protocol implementation.", advice: "単語が難解で過度に形式張っています。" },
-        { type: "TOO_DIRECT", text: "Wait. I'll do it later.", advice: "少し直接的すぎてビジネスの配慮に欠けます。" }
+        { type: "TOO_DIRECT", text: "Wait. I will do it later.", advice: "少し直接的すぎてビジネスの配慮に欠けます。" }
       ];
     }
 
@@ -8969,7 +8985,7 @@
 
     // 5. 念のための第3選択肢フォールバック
     if (uniqueChoices.length < 3) {
-      const fallback3 = "Stop this plan immediately. We don't have enough time.";
+      const fallback3 = "Stop this plan immediately. We do not have enough time.";
       uniqueChoices.push({
         type: "TOO_DIRECT",
         text: fallback3,
@@ -8977,7 +8993,11 @@
       });
     }
 
-    return uniqueChoices.slice(0, 3);
+    // すべての選択肢の文頭・文末句読点を厳格に統一（ピリオドや大文字の違いで正解が露見するのを完全に防止）
+    return uniqueChoices.slice(0, 3).map(c => ({
+      ...c,
+      text: standardizeChoiceSentence(c.text, isQuestion)
+    }));
   }
 
   function buildDefaultChoices(targetText, existingChoices = null, keyPattern = '') {
@@ -9069,7 +9089,7 @@
   }
 
   // ==========================================
-  // 保存済みフレーズライブラリの自動修復・サニタイズ（問題＝答えバグの根絶）
+  // 保存済みフレーズライブラリの自動修復・サニタイズ（問題＝答えバグの根絶 & 重複完全排除）
   // ==========================================
   function sanitizePhraseLibrary() {
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
@@ -9094,6 +9114,8 @@
     if (changed) {
       localStorage.setItem('english_phrase_library', JSON.stringify(library));
     }
+    // 武器庫の重複完全排除・知的一括整理を常時実行
+    cleanAndDeduplicatePhraseLibrary(false);
   }
 
   // ==========================================
@@ -9113,8 +9135,19 @@
     // 重複を厳格に判定（アルファベット小文字・記号空白除去による正規化）
     library.forEach(item => {
       if (!item || !item.target) return;
-      const normKey = item.target.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+      const rawTarget = item.target.trim();
+      const normKey = rawTarget.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
       if (!normKey) return;
+
+      // ターゲット英文の書式を綺麗に整頓（先頭大文字、末尾ピリオド/クエスチョンマーク）
+      const isQ = rawTarget.endsWith('?');
+      let cleanTargetText = rawTarget.replace(/[\s,.\?!;:"'“”’‘]+$/g, '').trim();
+      if (cleanTargetText.length > 0) {
+        cleanTargetText = cleanTargetText.charAt(0).toUpperCase() + cleanTargetText.slice(1) + (isQ ? '?' : '.');
+      } else {
+        cleanTargetText = rawTarget;
+      }
+      item.target = cleanTargetText;
 
       if (!seenMap.has(normKey)) {
         seenMap.set(normKey, item);
@@ -9136,6 +9169,10 @@
           removedTargets.push(item.target);
           existing.srsLevel = Math.max(existing.srsLevel || 1, item.srsLevel || 1);
           existing.reviewCount = (existing.reviewCount || 0) + (item.reviewCount || 0);
+          if (!existing.pattern_rationale && item.pattern_rationale) existing.pattern_rationale = item.pattern_rationale;
+          if (!existing.key_pattern && item.key_pattern) existing.key_pattern = item.key_pattern;
+          if (!existing.key_pattern_jp && item.key_pattern_jp) existing.key_pattern_jp = item.key_pattern_jp;
+          if (!existing.guide && item.guide) existing.guide = item.guide;
         }
       }
     });
@@ -9174,9 +9211,9 @@
 
       if (isManual) {
         if (removedCount > 0) {
-          toast(`✨ 武器庫を整理しました！ ${removedCount}件の重複フレーズを統合・クリーンアップしました（全${deduplicated.length}件）`);
+          toast(`✨ 武器庫を整理整頓しました！ ${removedCount}件の重複フレーズを統合・削除しました（全${deduplicated.length}件）`);
         } else {
-          toast(`✨ 武器庫の全${deduplicated.length}件は既に重複がなく、綺麗に整理されています！`);
+          toast(`✨ 武器庫の全${deduplicated.length}件は重複がなく、綺麗に整理整頓されています！`);
         }
       }
     }
@@ -9817,8 +9854,9 @@
     };
 
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-    // 重複チェック
-    const exists = library.find(item => item.target.toLowerCase() === target.toLowerCase());
+    // 重複チェック（大文字小文字・句読点差分の同一フレーズも確実に検出）
+    const normKey = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+    const exists = library.find(item => normKey(item.target) === normKey(target));
     if (exists) {
       toast("ℹ️ 同一の英文フレーズが既に武器庫に保存されています");
       closeAddCustomPhraseModal();
@@ -10365,7 +10403,7 @@
       timerLabel.style.color = '#ef4444';
     }
 
-    // 1. チャンク組み立ての準備
+    // 1. チャンク組み立ての準備（文頭・文末の句読点・大文字を徹底サニタイズして答えの露見を完全防止）
     let rawChunks = (q.chunks && Array.isArray(q.chunks) && q.chunks.length >= 2)
       ? [...q.chunks]
       : (typeof createClientSentenceChunks === 'function' ? createClientSentenceChunks(q.target) : splitTargetIntoChunks(q.target));
@@ -10374,12 +10412,20 @@
       rawChunks = (q.target || "Thank you for the update.").split(' ');
     }
 
+    const sanitizedChunks = rawChunks.map(c => sanitizeChunkText(c)).filter(c => c && c.length > 0);
+    const validChunks = sanitizedChunks.length >= 2 ? sanitizedChunks : rawChunks.map(c => sanitizeChunkText(c) || c.trim());
+
     survivalAssembled = [];
-    survivalPool = rawChunks.map((text, idx) => ({
+    survivalPool = validChunks.map((text, idx) => ({
       id: idx,
-      text: text.trim(),
+      text: text,
       used: false
     })).sort(() => Math.random() - 0.5);
+
+    // 偶然元の並び順のままならシャッフル
+    if (survivalPool.length > 1 && survivalPool.every((item, idx) => item.id === idx)) {
+      [survivalPool[0], survivalPool[1]] = [survivalPool[1], survivalPool[0]];
+    }
 
     renderSurvivalChunkUI();
 
@@ -10472,10 +10518,10 @@
       : (typeof createClientSentenceChunks === 'function' ? createClientSentenceChunks(q.target) : splitTargetIntoChunks(q.target));
 
     if (rawChunks.length === 0) return;
-    const firstChunkText = rawChunks[0].trim().toLowerCase();
+    const firstChunkText = sanitizeChunkText(rawChunks[0]).trim().toLowerCase();
 
     // まだ選ばれていないか先頭と違う場合はリセットして先頭を入れる
-    const poolItem = survivalPool.find(p => p.text.trim().toLowerCase() === firstChunkText && !p.used);
+    const poolItem = survivalPool.find(p => sanitizeChunkText(p.text).trim().toLowerCase() === firstChunkText && !p.used);
     if (poolItem) {
       selectSurvivalChunk(poolItem.id);
       toast('💡 先頭パーツをセットしました！ 続きを組み立てましょう');
@@ -10758,9 +10804,10 @@
     if (!scenarios || scenarios.length === 0) return;
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
     let addedCount = 0;
+    const normKey = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
 
     scenarios.forEach(s => {
-      if (s.target && !library.some(item => item.target === s.target)) {
+      if (s.target && !library.some(item => normKey(item.target) === normKey(s.target))) {
         const cpData = resolveReviewCounterpartData(
           s.target,
           s.ai_en,
@@ -11036,7 +11083,8 @@
     if (!targetPhrase) return;
     const cleanTarget = targetPhrase.trim();
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-    let item = library.find(i => i.target && i.target.trim().toLowerCase() === cleanTarget.toLowerCase());
+    const normKey = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+    let item = library.find(i => i.target && normKey(i.target) === normKey(cleanTarget));
     
     if (item) {
       if (isCorrect) {
@@ -11060,7 +11108,7 @@
       if (window.fbSync) window.fbSync.saveWeapon(item);
     } else {
       // ライブラリに未登録のフレーズは新規登録して次回复習日を設定
-      const currentStage = (scenarios || []).find(s => s.target && s.target.trim().toLowerCase() === cleanTarget.toLowerCase()) || {};
+      const currentStage = (scenarios || []).find(s => s.target && normKey(s.target) === normKey(cleanTarget)) || {};
       const newWeapon = {
         id: Date.now() + Math.floor(Math.random() * 1000),
         target: cleanTarget,
@@ -12101,8 +12149,9 @@
   function savePhraseFromCoach(betterEn, pattern) {
     if (!betterEn) return;
     let library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
-    if (library.some(i => i.target === betterEn)) {
-      toast("📚 既にライブラリに保存されています！");
+    const normKey = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+    if (library.some(i => normKey(i.target) === normKey(betterEn))) {
+      toast("📚 既に武器庫に保存されています！");
       return;
     }
 

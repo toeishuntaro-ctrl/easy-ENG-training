@@ -18,9 +18,11 @@ import {
   getDocFromServer 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Helper: safe string encoder for Firestore document IDs
+// Helper: safe string encoder for Firestore document IDs (uses normalized key to prevent punctuation/case duplication)
 function encodeDocId(str) {
   if (!str) return 'id_' + Date.now();
+  const normKey = str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+  if (normKey) return 'w_' + normKey.slice(0, 80);
   return encodeURIComponent(str.trim().slice(0, 100)).replace(/%/g, '_');
 }
 
@@ -289,20 +291,42 @@ class FirebaseSyncService {
         updatedAt: new Date().toISOString()
       }), { merge: true });
 
-      // 2. Sync Saved Weapons / Phrases Library
+      // 2. Sync Saved Weapons / Phrases Library (Strict Deduplication & Consolidation)
       const weaponsRef = this.getCollectionRef('weapons');
       const weaponsSnap = await getDocs(weaponsRef);
       let localLib = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
 
+      const normKey = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+      const libMap = new Map();
+
+      // Seed with local library
+      localLib.forEach(item => {
+        if (!item || !item.target) return;
+        const k = normKey(item.target);
+        if (k) libMap.set(k, item);
+      });
+
+      const obsoleteCloudDocRefs = [];
+
       weaponsSnap.forEach(docSnap => {
         const item = docSnap.data();
-        if (item.target && !localLib.some(l => l.target === item.target)) {
-          // Never assign target to ai_en (prevents question === answer defect)
-          const validAiEn = (item.ai_en && item.ai_en.trim().toLowerCase() !== item.target.trim().toLowerCase())
-            ? item.ai_en : '';
-          localLib.push({
+        if (!item || !item.target) return;
+        const k = normKey(item.target);
+        if (!k) return;
+
+        const validAiEn = (item.ai_en && item.ai_en.trim().toLowerCase() !== item.target.trim().toLowerCase())
+          ? item.ai_en : '';
+
+        // If doc ID was from legacy URL-encoding instead of normalized ID, mark old doc for cleanup
+        const expectedDocId = 'w_' + k.slice(0, 80);
+        if (docSnap.id !== expectedDocId) {
+          obsoleteCloudDocRefs.push(docSnap.ref);
+        }
+
+        if (!libMap.has(k)) {
+          libMap.set(k, {
             id: Date.now() + Math.random(),
-            target: item.target,
+            target: item.target.trim(),
             guide: item.guide || '',
             key_pattern: item.key_pattern || '',
             key_pattern_jp: item.key_pattern_jp || '',
@@ -312,12 +336,28 @@ class FirebaseSyncService {
             ai_name: item.ai_name || '',
             ai_en: validAiEn,
             ai_jp: item.ai_jp || '',
-            email_subject: item.email_subject || ''
+            email_subject: item.email_subject || '',
+            srsLevel: item.srsLevel || 1,
+            reviewCount: item.reviewCount || 0
           });
+        } else {
+          // Merge richer fields
+          const existing = libMap.get(k);
+          if (!existing.pattern_rationale && item.pattern_rationale) existing.pattern_rationale = item.pattern_rationale;
+          if (!existing.key_pattern && item.key_pattern) existing.key_pattern = item.key_pattern;
+          if (!existing.ai_en && validAiEn) existing.ai_en = validAiEn;
+          if (!existing.ai_jp && item.ai_jp) existing.ai_jp = item.ai_jp;
+          if ((item.srsLevel || 0) > (existing.srsLevel || 0)) existing.srsLevel = item.srsLevel;
+          if ((item.reviewCount || 0) > (existing.reviewCount || 0)) existing.reviewCount = item.reviewCount;
         }
       });
 
-      // Sanitize any existing corrupted items in localLib where ai_en was set to target
+      // Cleanup obsolete duplicated cloud docs if any
+      if (obsoleteCloudDocRefs.length > 0) {
+        Promise.all(obsoleteCloudDocRefs.map(ref => deleteDoc(ref).catch(() => {}))).catch(() => {});
+      }
+
+      localLib = Array.from(libMap.values());
       localLib.forEach(item => {
         if (item.ai_en && item.target && item.ai_en.trim().toLowerCase() === item.target.trim().toLowerCase()) {
           item.ai_en = '';
@@ -333,7 +373,7 @@ class FirebaseSyncService {
           ? phrase.ai_en : '';
         await setDoc(doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId), sanitizeForFirestore({
           syncCode: this.syncCode,
-          target: phrase.target,
+          target: phrase.target.trim(),
           guide: phrase.guide || '',
           key_pattern: phrase.key_pattern || '',
           key_pattern_jp: phrase.key_pattern_jp || '',
@@ -344,6 +384,8 @@ class FirebaseSyncService {
           ai_en: safeAiEn,
           ai_jp: phrase.ai_jp || '',
           email_subject: phrase.email_subject || '',
+          srsLevel: phrase.srsLevel || 1,
+          reviewCount: phrase.reviewCount || 0,
           savedAt: new Date().toISOString()
         }), { merge: true });
       }
@@ -498,9 +540,13 @@ class FirebaseSyncService {
   async deleteWeapon(target) {
     if (!this.db || !target) return;
     try {
-      const docId = encodeDocId(target);
-      const weaponRef = doc(this.db, 'sync_profiles', this.syncCode, 'weapons', docId);
-      await deleteDoc(weaponRef);
+      const legacyId = encodeURIComponent(target.trim().slice(0, 100)).replace(/%/g, '_');
+      const normKey = target.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+      const normId = normKey ? 'w_' + normKey.slice(0, 80) : legacyId;
+      await deleteDoc(doc(this.db, 'sync_profiles', this.syncCode, 'weapons', legacyId)).catch(() => {});
+      if (normId !== legacyId) {
+        await deleteDoc(doc(this.db, 'sync_profiles', this.syncCode, 'weapons', normId)).catch(() => {});
+      }
     } catch (e) {
       console.warn("[FirebaseSync] deleteWeapon error:", e);
     }
