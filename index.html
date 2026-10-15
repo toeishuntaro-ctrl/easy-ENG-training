@@ -5436,9 +5436,8 @@
     downloadDailyScenarios(selectedTopic);
   }
 
-  function getFallbackScenarios(mode) {
-    if (mode === 'teams' || mode === 'chat') {
-      return [
+  function getFallbackScenarios(mode, excludePatterns = [], excludeTopics = []) {
+    const teamsPack = [
         {
           stage: 1,
           ai_name: "Sarah (Project Lead)",
@@ -5614,10 +5613,8 @@
             }
           ]
         }
-      ];
-    }
-    if (mode === 'email') {
-      return [
+    ];
+    const emailPack = [
         {
           stage: 1,
           ai_name: "Sponsor (Email)",
@@ -5722,10 +5719,8 @@
             { type: "TOO_COMPLEX", text: "Thanks for the alignment; I will consummate the documentation and transmit the finalized transcript on Friday.", advice: "同じ型ですが、consummate, transmit the finalized transcript など言葉が不自然に重すぎます。" },
             { type: "TOO_DIRECT", text: "Thanks for the alignment; I will do it Friday so do not email me again until then.", advice: "同じ型ですが、今後の連絡を遮断するような冷淡な文脈になっています。" }
           ]
-        }
-      ];
-    } else if (mode === 'sim') {
-      return [
+    ];
+    const simPack = [
         {
           stage: 1,
           ai_name: "Sponsor (Director)",
@@ -5830,10 +5825,8 @@
             { type: "TOO_COMPLEX", text: "Let's lock in the milestone, and I shall disseminate the minutes of this teleconference prior to close of business.", advice: "同じ型ですが、disseminate the minutes of this teleconference など文章が硬直しています。" },
             { type: "TOO_DIRECT", text: "Let's lock in the date, and make sure nobody changes their mind again.", advice: "同じ型ですが、相手を疑うような言葉づかいになっており信頼を損ねます。" }
           ]
-        }
-      ];
-    } else {
-      return [
+    ];
+    const quizPack = [
         {
           stage: 1,
           ai_name: "Rajesh (Tech Lead)",
@@ -5937,10 +5930,43 @@
             { type: "PERFECT", text: "Thanks for working together on this; let's connect for a quick 15-minute sync on Thursday afternoon.", advice: "完璧です！仲間との絆を強めつつ、軽やかで確実な次のステップを提示できています。" },
             { type: "TOO_COMPLEX", text: "Thanks for working together on this; let us convene an interim synchronization session on Thursday afternoon.", advice: "同じ型ですが、convene an interim synchronization session など硬すぎます。" },
             { type: "TOO_DIRECT", text: "Thanks for working together on this; let's meet Thursday so you don't forget.", advice: "同じ型ですが、相手を小馬鹿にしたような言い回しになっています。" }
-          ]
         }
       ];
+
+    const pastStems = new Set(
+      [...(excludePatterns || []), ...(excludeTopics || [])].map(s => {
+        return (s || '').toLowerCase().replace(/\[.*?\]/g, ' ').replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
+      }).filter(Boolean)
+    );
+
+    const primaryPack = (mode === 'teams' || mode === 'chat') ? teamsPack : (mode === 'email' ? emailPack : (mode === 'sim' ? simPack : quizPack));
+    const allPacks = [primaryPack, teamsPack, emailPack, simPack, quizPack];
+
+    // 1. 過去履歴や武器庫と重複のないパックを優先選択
+    for (const p of allPacks) {
+      const hasDuplicate = p.some(st => {
+        const tStem = (st.target || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
+        const pStem = (st.key_pattern || '').toLowerCase().replace(/\[.*?\]/g, ' ').replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
+        return pastStems.has(tStem) || pastStems.has(pStem) || (excludeTopics || []).includes(st.target) || (excludePatterns || []).includes(st.key_pattern);
+      });
+      if (!hasDuplicate) {
+        return p;
+      }
     }
+
+    // 2. 全パックから過去履歴と重複しない5ステージを動的に選出して合成
+    const allStages = [...teamsPack, ...emailPack, ...simPack, ...quizPack];
+    const cleanStages = allStages.filter(st => {
+      const tStem = (st.target || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
+      const pStem = (st.key_pattern || '').toLowerCase().replace(/\[.*?\]/g, ' ').replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
+      return !pastStems.has(tStem) && !pastStems.has(pStem) && !(excludeTopics || []).includes(st.target) && !(excludePatterns || []).includes(st.key_pattern);
+    });
+
+    if (cleanStages.length >= 5) {
+      return cleanStages.slice(0, 5).map((st, idx) => ({ ...st, stage: idx + 1 }));
+    }
+
+    return primaryPack;
   }
 
   function saveScenariosToHistory(data) {
@@ -6021,6 +6047,20 @@
     const libraryPatterns = library.map(item => item.key_pattern).filter(Boolean);
     const excludePatterns = Array.from(new Set([...historyPatterns, ...libraryPatterns]));
 
+    // キーフレーズ・フレーム（型）の冒頭語幹（ステム）を網羅抽出して完全重複排除
+    function extractFrameStem(str) {
+      if (!str || typeof str !== 'string') return '';
+      return str.toLowerCase()
+        .replace(/\[.*?\]/g, ' ')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .slice(0, 3)
+        .join(' ');
+    }
+    const allPastStrings = [...historyTargets, ...libraryTargets, ...historyPatterns, ...libraryPatterns];
+    const excludeStems = Array.from(new Set(allPastStrings.map(extractFrameStem).filter(Boolean)));
+
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -6029,7 +6069,8 @@
           mode: trainingMode, 
           topic: topic, 
           excludeTopics: excludeTopics,
-          excludePatterns: excludePatterns 
+          excludePatterns: excludePatterns,
+          excludeStems: excludeStems
         })
       });
       if (!res.ok) {
@@ -6051,7 +6092,7 @@
     } catch (e) {
       console.warn("API取得に失敗したため、バックアップ問題を読み込みます:", e.message);
       
-      const fallbackData = getFallbackScenarios(trainingMode);
+      const fallbackData = getFallbackScenarios(trainingMode, excludePatterns, excludeTopics);
       saveScenariosToHistory(fallbackData);
 
       scenarios = fallbackData;

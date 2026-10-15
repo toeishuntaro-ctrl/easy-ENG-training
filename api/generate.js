@@ -385,7 +385,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 16 Categories of Practical Global Business Plain English Key Patterns (100+ Patterns)
+  // 26 Categories of Practical Global Business Plain English Key Patterns (180+ Patterns)
   const patternLibrary = {
     acknowledge_boundary: {
       category: "受け止め・クッション＋制約提示 (Acknowledge & Set Boundaries)",
@@ -484,7 +484,8 @@ export default async function handler(req, res) {
         "Let's deliver the minimum viable setup first and iterate afterwards.",
         "Can we treat [feature/task] as a stretch goal for Phase 2?",
         "To safeguard the release date, let's freeze non-essential changes.",
-        "I recommend a phased rollout starting with the pilot group first."
+        "I recommend a phased rollout starting with the pilot group first.",
+        "Could we roll this out in stages so that we can validate each milestone?"
       ]
     },
     meeting_steering: {
@@ -494,7 +495,8 @@ export default async function handler(req, res) {
         "In the interest of time, let's take this offline with the relevant team.",
         "Can we hear from [name] since they have direct context on this?",
         "Before wrapping up, let's quickly review the owners and deadlines.",
-        "Let's pause here and make sure we have captured everyone's key input."
+        "Let's pause here and make sure we have captured everyone's key input.",
+        "To make sure everyone gets a say, let's go around the table briefly."
       ]
     },
     escalation_guidance: {
@@ -503,7 +505,8 @@ export default async function handler(req, res) {
         "Since we have reached an impasse, should we escalate this to [sponsor/lead]?",
         "I suggest we loop in [manager/lead] to get their executive guidance.",
         "To resolve this bottleneck, we need a joint decision from both team leads.",
-        "I will draft a brief summary of the two options and present it to leadership."
+        "I will draft a brief summary of the two options and present it to leadership.",
+        "Let's seek formal alignment from our director before signing off on this change."
       ]
     },
     vendor_negotiation: {
@@ -512,7 +515,8 @@ export default async function handler(req, res) {
         "Our budget is fixed at [amount], so we need to adjust deliverables accordingly.",
         "Could you provide a detailed breakdown of the additional costs?",
         "We are evaluating multiple vendors, so prompt turnaround is appreciated.",
-        "Please ensure all contractual milestones align with our compliance framework."
+        "Please ensure all contractual milestones align with our compliance framework.",
+        "We would need written confirmation on SLA metrics before issuing the PO."
       ]
     },
     teams_quick_reply: {
@@ -521,7 +525,8 @@ export default async function handler(req, res) {
         "Thanks for flagging; I am on it and will send an update shortly.",
         "Got it, thanks. Checking the root cause right now.",
         "Understood. I will ping you on Teams as soon as the test finishes.",
-        "Noted with thanks. Let me coordinate with the on-duty engineer right away."
+        "Noted with thanks. Let me coordinate with the on-duty engineer right away.",
+        "On it! Will drop the revised document in this thread within the hour."
       ]
     },
     incident_reassurance: {
@@ -530,7 +535,8 @@ export default async function handler(req, res) {
         "We have contained the issue and are currently implementing the permanent fix.",
         "Rest assured, our highest priority right now is restoring full functionality.",
         "We will issue an interim incident summary by [time] with root-cause analysis.",
-        "No data has been compromised, and we are monitoring the system continuously."
+        "No data has been compromised, and we are monitoring the system continuously.",
+        "Our engineering team is actively investigating and will share hourly updates."
       ]
     },
     constructive_proposal: {
@@ -539,7 +545,8 @@ export default async function handler(req, res) {
         "I suggest we implement a standardized checklist to prevent future occurrences.",
         "How about we automate this verification step to save weekly team hours?",
         "Would it make sense to establish a shared dashboard for real-time visibility?",
-        "To improve efficiency, I propose we streamline the approval workflow."
+        "To improve efficiency, I propose we streamline the approval workflow.",
+        "We might consider standardizing the template so all regional teams stay aligned."
       ]
     },
     one_on_one_alignment: {
@@ -548,7 +555,8 @@ export default async function handler(req, res) {
         "I would appreciate your guidance on how to prioritize these competing tasks.",
         "To maintain sustainable pace, could we reassign [task] to another team member?",
         "I wanted to give you a quick heads-up about a potential resource constraint next sprint.",
-        "Your constructive feedback in today's review was very helpful for our next iteration."
+        "Your constructive feedback in today's review was very helpful for our next iteration.",
+        "Could we block 20 minutes to review my current bandwidth and upcoming milestones?"
       ]
     },
     appreciation_partnership: {
@@ -557,12 +565,239 @@ export default async function handler(req, res) {
         "Thank you for your flexibility on this tight schedule.",
         "Thanks for understanding our team's capacity during this crunch.",
         "I appreciate your quick turnaround and collaborative support on this issue.",
-        "Thanks for working with us to find a practical and win-win solution."
+        "Thanks for working with us to find a practical and win-win solution.",
+        "Great teamwork on this turnaround; really appreciate everyone pulling together."
+      ]
+    },
+    proactive_inquiry: {
+      category: "能動的進捗確認・ボトルネック事前察知 (Proactive Inquiry & Status Check)",
+      patterns: [
+        "Where do things currently stand regarding [deliverable]?",
+        "Do you foresee any potential blockers before our upcoming milestone?",
+        "Are there any pending dependencies we should clear before proceeding?",
+        "Could you give us a quick status check on the deliverable for Site 102?",
+        "Is there anything our team can do to help unblock this deliverable?"
+      ]
+    },
+    pushback_diplomacy: {
+      category: "角を立てない辞退・キャパシティ防衛 (Polite Pushback & Bandwidth Defense)",
+      patterns: [
+        "Taking on [task] right now will inevitably delay our primary deliverable.",
+        "Our team is currently at full capacity, so we cannot absorb additional requests.",
+        "I strongly advise against rushing this phase without comprehensive testing.",
+        "We want to deliver top quality, which is why we cannot compress this timeline further.",
+        "Given our existing sprint commitments, we will have to defer this to next cycle."
+      ]
+    },
+    conditional_commitment: {
+      category: "前提条件つき約束・引き受け条件 (Conditional Commitment & Prerequisites)",
+      patterns: [
+        "We can commit to this schedule on the condition that [clause].",
+        "We are ready to move forward once we receive sign-off from [person/team].",
+        "This target is achievable as long as there are no further scope additions.",
+        "We can deliver the report by Friday provided that data is uploaded by Wednesday.",
+        "We will prioritize this task on the condition that the specs are fully locked."
+      ]
+    },
+    reassurance_ownership: {
+      category: "当事者意識・安心感の提供 (Ownership & Client Reassurance)",
+      patterns: [
+        "Please rest assured that our team is taking full ownership of this deliverable.",
+        "You can rely on us to see this matter through to completion.",
+        "We are tracking every step closely and will flag any variance immediately.",
+        "Rest assured, we have allocated dedicated engineers to guarantee delivery.",
+        "Our team is fully accountable for this rollout and will support you end-to-end."
+      ]
+    },
+    seeking_input: {
+      category: "相手の意見・専門的知見の引き出し (Seeking Input & Perspectives)",
+      patterns: [
+        "What is your preference regarding the implementation approach for [noun]?",
+        "We would value your perspective before finalizing our decision.",
+        "How has your team handled this type of challenge in previous rollouts?",
+        "Do you have any recommendations on how we should structure the pilot?",
+        "We welcome your expert input on the optimal timeline for this phase."
+      ]
+    },
+    apology_remedy: {
+      category: "誠実な謝意＋即時リカバリー (Professional Apology & Remedy)",
+      patterns: [
+        "I apologize for the oversight on our end; we are correcting it immediately.",
+        "Sorry for the delay in getting back to you; let me address your question directly.",
+        "We regret the confusion and have updated the documentation accordingly.",
+        "Thank you for your patience while we resolved this unexpected hiccup.",
+        "I apologize for any inconvenience caused and will ensure this does not recur."
+      ]
+    },
+    summarizing_agreement: {
+      category: "合意の要約・再確認 (Summarizing Consensus & Alignment)",
+      patterns: [
+        "To summarize our agreement: our team will handle [task A] and you will lead [task B].",
+        "Just to recap: the target delivery date is now confirmed for [date].",
+        "To ensure mutual clarity: we will proceed with the phased rollout as outlined.",
+        "So that we are on the same page: our next sync is scheduled for [day].",
+        "To wrap up our discussion: we will hold off on deployment until all tests pass."
+      ]
+    },
+    boundary_polite_refusal: {
+      category: "スコープ外の丁重なお断り・規程遵守 (Scope Boundary & Polite Refusal)",
+      patterns: [
+        "Company compliance policy prevents us from sharing unmasked data.",
+        "While we understand the request, that falls outside our agreed scope of work.",
+        "That is handled by a different department, so I suggest contacting [team] directly.",
+        "Due to contractual constraints, we are not authorized to modify these parameters.",
+        "We are unable to accommodate ad-hoc requests outside the formal change-order process."
+      ]
+    },
+    meeting_efficiency: {
+      category: "会議効率化・非同期コミュニケーション (Meeting Efficiency & Async Shift)",
+      patterns: [
+        "Could we handle these minor updates asynchronously via email or Teams?",
+        "To keep our meeting on track, let's limit each report to two minutes.",
+        "Let's reserve the last five minutes of this call to confirm owners and action items.",
+        "Since the core points are resolved, let's give everyone ten minutes back.",
+        "Let's review the detailed metrics in the shared sheet rather than during this call."
+      ]
+    },
+    renegotiating_milestone: {
+      category: "マイルストーン再調整・品質確保 (Milestone Recalibration & Quality)",
+      patterns: [
+        "Given the recent scope changes, we recommend adjusting the milestone to [date].",
+        "To safeguard quality, our best course of action is to push the release by one week.",
+        "Let's recalibrate the timeline in light of these unexpected technical hurdles.",
+        "A realistic target for Phase 1 would now be [date], ensuring zero defects.",
+        "Let's revisit the launch date once the critical bug fixes are validated."
       ]
     }
   };
 
-  const { mode, topic, customPrompt, excludeTopics, excludePatterns } = req.body || {};
+  // Helper: extract opening stem (first 3-4 significant words, lowercased and stripped of brackets/punctuation)
+  function extractFrameRoot(str) {
+    if (!str || typeof str !== 'string') return { twoWord: '', threeWord: '', fourWord: '', words: [] };
+    const clean = str.replace(/\[.*?\]/g, ' ').replace(/[^a-zA-Z\s]/g, ' ').trim().toLowerCase();
+    const words = clean.split(/\s+/).filter(Boolean);
+    const twoWord = words.slice(0, 2).join(' ');
+    const threeWord = words.slice(0, 3).join(' ');
+    const fourWord = words.slice(0, 4).join(' ');
+    return { twoWord, threeWord, fourWord, words };
+  }
+
+  function normalizeStem(str) {
+    if (!str || typeof str !== 'string') return '';
+    return extractFrameRoot(str).threeWord;
+  }
+
+  function matchesPastFrame(testStr, pastStemsSet, pastPhrasesList) {
+    if (!testStr) return false;
+    const roots = extractFrameRoot(testStr);
+    if (!roots.twoWord) return false;
+
+    if (pastStemsSet.has(roots.threeWord) || pastStemsSet.has(roots.fourWord)) return true;
+
+    // Distinctive 2-word openings that define a reusable frame
+    const distinctTwoWords = [
+      'i see', 'let me', 'thanks for', 'we cannot', 'would it', 'could you', 'could we',
+      'i am', 'to keep', 'looks great', 'makes sense', 'how about', 'give me', 'fair point',
+      'i suggest', 'rest assured', 'to prevent', 'to avoid', 'to ensure', 'our main',
+      'just to', 'before we', 'we need', 'what if', 'my main', 'taking on', 'our budget',
+      'where do', 'to recap', 'so that', 'to summarize', 'to safeguard', 'due to',
+      'company compliance', 'what is', 'you can', 'please rest', 'we are'
+    ];
+    if (distinctTwoWords.includes(roots.twoWord) && pastStemsSet.has(roots.twoWord)) {
+      return true;
+    }
+
+    if (Array.isArray(pastPhrasesList)) {
+      for (const past of pastPhrasesList) {
+        if (!past) continue;
+        const pRoots = extractFrameRoot(past);
+        if (pRoots.threeWord && pRoots.threeWord === roots.threeWord) return true;
+        if (pRoots.twoWord && distinctTwoWords.includes(pRoots.twoWord) && pRoots.twoWord === roots.twoWord) return true;
+      }
+    }
+    return false;
+  }
+
+  // Synthesize a fully valid, polished stage if Gemini duplicates an excluded frame
+  function synthesizeStageFromPattern(pattern, categoryInfo, originalAiEn, originalAiJp, originalAiName, stageNumber, currentMode) {
+    const cleanPat = (pattern || '').replace(/\.\.\.$/, '').trim();
+    const config = {
+      verbs: ["review the updated data", "verify the requirements", "schedule a sync", "finalize the checklist"],
+      nouns: ["the revised milestone", "the draft proposal", "the initial timeline", "the project scope"],
+      teams: ["our project manager", "the operations lead", "our QA team", "the technical lead"],
+      times: ["by tomorrow afternoon", "by the end of this week", "before 5 PM", "by Friday noon"],
+      goals: ["keep the current schedule", "avoid unexpected delays", "maintain output quality", "meet compliance"],
+      clauses: ["we receive the final sign-off", "the technical review is complete", "the prerequisites are met"],
+      fallbacks: ["the next step", "the action item", "the contingency plan"]
+    };
+
+    let target = replaceSlots(cleanPat, config);
+    if (!target.endsWith('.') && !target.endsWith('?')) target += '.';
+    const chunks = createSentenceChunks(target);
+    const variations = synthesizePatternVariations(pattern, categoryInfo?.category || '', target);
+
+    const choices = [
+      {
+        type: "PERFECT",
+        text: target,
+        advice: `模範回答です！「${cleanPat.split(' ')[0]}」の型を使い、平易な語彙で明快・建設的に意図を伝えています。`
+      },
+      {
+        type: "TOO_COMPLEX",
+        text: target.replace(/check|confirm|review/i, 'comprehensively scrutinize').replace(/send|share/i, 'duly transmit the corresponding documentation'),
+        advice: "同じ型ですが、単語が過剰に硬く大げさで、日常のビジネスコミュニケーションには不向きです。"
+      },
+      {
+        type: "TOO_DIRECT",
+        text: "No, we cannot do that right now. Wait until next week.",
+        advice: "クッション言葉がなく直接的すぎて、相手との関係を損ねる恐れがあります。"
+      }
+    ];
+
+    return {
+      stage: stageNumber,
+      ai_name: originalAiName || "Stakeholder",
+      ai_en: originalAiEn || "Could you give us an update on how we should handle the next steps?",
+      ai_jp: originalAiJp || "次のステップをどう進めるべきか、状況共有をお願いできますか？",
+      key_pattern: pattern,
+      key_pattern_jp: categoryInfo?.category || "実務Plain English構文",
+      pattern_rationale: "相手の立場を尊重しつつ、中学基本単語で確実な合意形成と次のステップを固定できる必須パターンです。",
+      parts_hint: "中学英語パーツを型に当てはめるだけ！",
+      guide: "状況に応じて、新しい型を用いた的確なPlain Englishで返答してください。",
+      target: target,
+      chunks: chunks,
+      variations: variations,
+      counterpart_reaction_en: "Understood. That sounds like a solid and reasonable plan. Let's proceed as discussed.",
+      counterpart_reaction_jp: "承知しました。確実で妥当な進め方ですね。その方針で進めましょう。",
+      closing_choices: [
+        {
+          text: "Thank you for the quick alignment. Our team will follow up with the latest notes by tomorrow.",
+          jp: "迅速なご合意ありがとうございます。弊チームより明日までに最新メモを共有いたします。",
+          is_correct: true,
+          tag: "◎ Plain English 合意",
+          feedback: "感謝と具体的なネクストアクションが簡潔に提示できており完璧です。"
+        },
+        {
+          text: "Understood. I will wait until your team finishes everything and sends me an update.",
+          jp: "了解しました。そちらのチームがすべて完了して連絡をくれるまで待ちます。",
+          is_correct: false,
+          tag: "△ 受動的・丸投げ",
+          feedback: "受動的で相手に全責任を委ねており、プロフェッショナルな協業感が薄れます。"
+        },
+        {
+          text: "Fine. Just make sure nobody causes any unexpected errors on this delivery.",
+          jp: "結構です。今回の納品で誰も予期せぬエラーを起こさないよう注意してください。",
+          is_correct: false,
+          tag: "✕ 角が立つ・他責",
+          feedback: "疑念や警告が前面に出ており、相手への敬意を欠いています。"
+        }
+      ],
+      email_subject: "Project update and next steps",
+      choices: choices
+    };
+  }
+
+  const { mode, topic, customPrompt, excludeTopics, excludePatterns, excludeStems } = req.body || {};
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -757,21 +992,45 @@ export default async function handler(req, res) {
   
   const excludedPatternList = Array.isArray(excludePatterns) ? excludePatterns.filter(Boolean) : [];
   const excludedTopicList = Array.isArray(excludeTopics) ? excludeTopics.filter(Boolean) : [];
+  const excludedStemsList = Array.isArray(excludeStems) ? excludeStems.filter(Boolean) : [];
 
-  // Prioritize categories that still have fresh, un-used patterns
+  // Build a set of all normalized 2-to-4 word opening stems and roots from past history & library
+  const pastStemsSet = new Set();
+  const pastPhrasesList = [...excludedPatternList, ...excludedTopicList];
+
+  excludedStemsList.forEach(s => {
+    if (s && typeof s === 'string') {
+      const r = extractFrameRoot(s);
+      if (r.twoWord) pastStemsSet.add(r.twoWord);
+      if (r.threeWord) pastStemsSet.add(r.threeWord);
+      if (r.fourWord) pastStemsSet.add(r.fourWord);
+    }
+  });
+  pastPhrasesList.forEach(p => {
+    if (p && typeof p === 'string') {
+      const r = extractFrameRoot(p);
+      if (r.twoWord) pastStemsSet.add(r.twoWord);
+      if (r.threeWord) pastStemsSet.add(r.threeWord);
+      if (r.fourWord) pastStemsSet.add(r.fourWord);
+    }
+  });
+
+  // Prioritize categories that still have truly fresh, un-used patterns
   const scoredCategories = shuffledKeys.sort((a, b) => {
-    const unUsedA = patternLibrary[a].patterns.filter(p => !excludedPatternList.some(ex => ex.toLowerCase().includes(p.substring(0, 15).toLowerCase()))).length;
-    const unUsedB = patternLibrary[b].patterns.filter(p => !excludedPatternList.some(ex => ex.toLowerCase().includes(p.substring(0, 15).toLowerCase()))).length;
+    const unUsedA = patternLibrary[a].patterns.filter(p => !matchesPastFrame(p, pastStemsSet, pastPhrasesList)).length;
+    const unUsedB = patternLibrary[b].patterns.filter(p => !matchesPastFrame(p, pastStemsSet, pastPhrasesList)).length;
     return unUsedB - unUsedA;
   });
   const selected5Categories = scoredCategories.slice(0, 5);
 
+  const selectedSuggestionsSet = new Set();
   const stagePatternSuggestions = selected5Categories.map((catKey, idx) => {
     const cat = patternLibrary[catKey];
     // Filter out previously used patterns if possible
-    const availablePatterns = cat.patterns.filter(p => !excludedPatternList.some(ex => ex && ex.toLowerCase().includes(p.substring(0, 15).toLowerCase())));
-    const poolToUse = availablePatterns.length > 0 ? availablePatterns : cat.patterns;
-    const pickedPattern = poolToUse[Math.floor(Math.random() * poolToUse.length)];
+    const availablePatterns = cat.patterns.filter(p => !matchesPastFrame(p, pastStemsSet, pastPhrasesList) && !selectedSuggestionsSet.has(normalizeStem(p)));
+    const poolToUse = availablePatterns.length > 0 ? availablePatterns : cat.patterns.filter(p => !selectedSuggestionsSet.has(normalizeStem(p)));
+    const pickedPattern = (poolToUse.length > 0 ? poolToUse : cat.patterns)[Math.floor(Math.random() * (poolToUse.length || cat.patterns.length))];
+    selectedSuggestionsSet.add(normalizeStem(pickedPattern));
     return `Stage ${idx + 1} (${cat.category}): Suggested pattern idea -> "${pickedPattern}"`;
   });
 
@@ -798,16 +1057,18 @@ Generate a high-yield, structured 5-stage sequential business dialogue for Japan
 
 [CRITICAL MANDATE: MAXIMUM PATTERN DIVERSITY & ZERO DUPLICATION (キーフレーズ・型の重複絶対禁止)]
 - You MUST ensure all 5 stages in this session teach **COMPLETELY DIFFERENT KEY PATTERNS (型)** with different functional purposes.
-- NEVER repeat or reuse the same opening/formula (e.g. do NOT use "I see your point..." or "Let me check..." more than once in the 5 stages).
-- Here are 5 distinct suggested pattern categories assigned specifically for this session's 5 stages (you can use these or creative equivalents):
+- NEVER repeat or reuse the same opening/formula (e.g. do NOT use "I see your point...", "Let me check with...", "Thanks for flagging...", "Could you please...", etc. if already mastered).
+- Here are 5 distinct suggested pattern categories assigned specifically for this session's 5 stages (strictly follow these or novel creative equivalents in these categories):
 ${stagePatternSuggestions.map(s => `  * ${s}`).join('\n')}
 
-[Strictly Excluded Recent Patterns & Topics (DO NOT REUSE OR RESEMBLE ANY OF THESE)]:
-The user has already practiced and saved all the expressions in the lists below. You MUST NOT generate duplicate or nearly identical phrases to any item in these lists.
+[Strictly Excluded Past Openings & Patterns (DO NOT REUSE OR RESEMBLE ANY OF THESE)]:
+The user has already practiced and saved all the expressions in the lists below. You MUST NOT generate duplicate or nearly identical phrases or opening frames to any item in these lists.
+- Excluded Past Opening Frames:
+${JSON.stringify(Array.from(pastStemsSet).slice(-80))}
 - Excluded Key Patterns (Already Mastered):
-${JSON.stringify(excludedPatternList.slice(-80))}
+${JSON.stringify(excludedPatternList.slice(-60))}
 - Excluded Target English Sentences (Already Mastered):
-${JSON.stringify(excludedTopicList.slice(-80))}
+${JSON.stringify(excludedTopicList.slice(-60))}
 
 [Scenario Specifications]
 - Focus Category: "${topicDisplayTitle}"
@@ -1090,6 +1351,51 @@ ${JSON.stringify(excludedTopicList.slice(-80))}
             choices: Array.isArray(sc.choices) ? sc.choices : []
           };
         });
+
+        // 厳格事後検証：過去履歴やセッション内でのキーフレーズ／フレーム重複を完全排除
+        const sessionSeenStems = new Set();
+        const fallbackCategoryKeys = shuffledKeys.filter(k => !selected5Categories.includes(k));
+
+        for (let i = 0; i < formattedScenarios.length; i++) {
+          const sc = formattedScenarios[i];
+          const patStem = normalizeStem(sc.key_pattern);
+          const targetStem = normalizeStem(sc.target);
+
+          const isDuplicate = 
+            matchesPastFrame(sc.key_pattern, pastStemsSet, pastPhrasesList) ||
+            matchesPastFrame(sc.target, pastStemsSet, pastPhrasesList) ||
+            (patStem && sessionSeenStems.has(patStem));
+
+          if (isDuplicate) {
+            console.warn(`[AI Generate] Stage ${i + 1} ("${sc.key_pattern}") duplicates past or session frame. Replacing with novel pattern.`);
+            // 未使用のカテゴリーから過去にも本セッションにも出現していない新しい型を探索
+            let freshPattern = null;
+            let freshCat = null;
+            for (const catKey of [...fallbackCategoryKeys, ...shuffledKeys]) {
+              const cat = patternLibrary[catKey];
+              const candidate = cat.patterns.find(p => !matchesPastFrame(p, pastStemsSet, pastPhrasesList) && !sessionSeenStems.has(normalizeStem(p)));
+              if (candidate) {
+                freshPattern = candidate;
+                freshCat = cat;
+                break;
+              }
+            }
+            if (freshPattern) {
+              sessionSeenStems.add(normalizeStem(freshPattern));
+              formattedScenarios[i] = synthesizeStageFromPattern(
+                freshPattern,
+                freshCat,
+                sc.ai_en,
+                sc.ai_jp,
+                sc.ai_name,
+                i + 1,
+                mode
+              );
+              continue;
+            }
+          }
+          if (patStem) sessionSeenStems.add(patStem);
+        }
 
         console.log(`[AI Generate] Successfully generated ${formattedScenarios.length} stages using ${modelName}`);
         return res.status(200).json(formattedScenarios);
