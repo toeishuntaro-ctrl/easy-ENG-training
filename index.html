@@ -5719,6 +5719,7 @@
             { type: "TOO_COMPLEX", text: "Thanks for the alignment; I will consummate the documentation and transmit the finalized transcript on Friday.", advice: "同じ型ですが、consummate, transmit the finalized transcript など言葉が不自然に重すぎます。" },
             { type: "TOO_DIRECT", text: "Thanks for the alignment; I will do it Friday so do not email me again until then.", advice: "同じ型ですが、今後の連絡を遮断するような冷淡な文脈になっています。" }
           ]
+        }
     ];
     const simPack = [
         {
@@ -5825,6 +5826,7 @@
             { type: "TOO_COMPLEX", text: "Let's lock in the milestone, and I shall disseminate the minutes of this teleconference prior to close of business.", advice: "同じ型ですが、disseminate the minutes of this teleconference など文章が硬直しています。" },
             { type: "TOO_DIRECT", text: "Let's lock in the date, and make sure nobody changes their mind again.", advice: "同じ型ですが、相手を疑うような言葉づかいになっており信頼を損ねます。" }
           ]
+        }
     ];
     const quizPack = [
         {
@@ -5930,8 +5932,9 @@
             { type: "PERFECT", text: "Thanks for working together on this; let's connect for a quick 15-minute sync on Thursday afternoon.", advice: "完璧です！仲間との絆を強めつつ、軽やかで確実な次のステップを提示できています。" },
             { type: "TOO_COMPLEX", text: "Thanks for working together on this; let us convene an interim synchronization session on Thursday afternoon.", advice: "同じ型ですが、convene an interim synchronization session など硬すぎます。" },
             { type: "TOO_DIRECT", text: "Thanks for working together on this; let's meet Thursday so you don't forget.", advice: "同じ型ですが、相手を小馬鹿にしたような言い回しになっています。" }
+          ]
         }
-      ];
+    ];
 
     const pastStems = new Set(
       [...(excludePatterns || []), ...(excludeTopics || [])].map(s => {
@@ -7535,19 +7538,18 @@
   // 選択肢のヒント漏れ（大文字や文末記号）を除去するサニタイズ関数
   function sanitizeChunkText(text) {
     if (!text || typeof text !== 'string') return '';
-    // 文頭・文末の句読点・記号・引用符を徹底除去
+    // 文頭・文末のあらゆる句読点・記号（ピリオド・カンマ・セミコロン・感嘆符・疑問符・引用符など）を徹底除去
     let cleaned = text.trim().replace(/^[\s,.\?!;:"'“”’‘]+|[\s,.\?!;:"'“”’‘]+$/g, '').trim();
     if (!cleaned) return '';
+    cleaned = cleaned.replace(/^[,.\?!;:]+|[,.\?!;:]+$/g, '').trim();
 
-    const words = cleaned.split(/\s+/);
-    const firstWord = words[0];
-
-    // 大文字を維持すべき語句（I, 曜日, 略語, 固有名詞）以外は先頭を小文字化して先頭漏れを防ぐ
-    const retainCaps = /^(I|I'm|I'll|I've|I'd|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|EOD|COB|ASAP|CEO|CTO|CRA|CTM|Sponsor|Site|Teams|Zoom|Slack|Japan|US|UK|EU)$/i;
-
-    if (!retainCaps.test(firstWord)) {
+    // 先頭が大文字であることで「先頭パーツ」だと特定されるのを完全に防ぐため、
+    // すべてのパーツの先頭を小文字に統一（"I" や "I'll" なども小文字化し、視覚的な先頭ヒントを完全排除）
+    if (cleaned.length > 0) {
       cleaned = cleaned.charAt(0).toLowerCase() + cleaned.slice(1);
     }
+    // 文末の残存記号も念入りに除去
+    cleaned = cleaned.replace(/[\s,.\?!;:"'“”’‘]+$/g, '').trim();
     return cleaned;
   }
 
@@ -7948,8 +7950,15 @@
     // チャンクビルダー初期化
     initChunkBuilder(data);
 
-    // 3択の準備
-    currentChoices = [...(data.choices || [])];
+    // 3択の準備（文末記号や大文字・小文字を厳格統一して正解露見を完全防止）
+    const isQ = (data.target || '').trim().endsWith('?');
+    const rawChoices = (data.choices && data.choices.length >= 3)
+      ? data.choices
+      : buildGuaranteedDistinctChoices(data.target, data.choices, data.key_pattern);
+    currentChoices = rawChoices.map(c => ({
+      ...c,
+      text: standardizeChoiceSentence(c.text, isQ)
+    }));
     for (let i = currentChoices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [currentChoices[i], currentChoices[j]] = [currentChoices[j], currentChoices[i]];
