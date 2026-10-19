@@ -1,15 +1,41 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
+export function cleanEnglishText(text) {
+  if (!text || typeof text !== 'string') return '';
+  let s = text;
+  // 1. 不自然な連続冠詞（"the the", "the a", "a the", "an the", "the, the" 等）をループで完全消去
+  let prev;
+  let iterations = 0;
+  do {
+    prev = s;
+    s = s.replace(/\b(the|a|an)\b\s*[,.-]?\s*\b(the|a|an)\b/gi, (match, p1, p2) => p2);
+    iterations++;
+  } while (s !== prev && iterations < 5);
+
+  // 2. 不自然な前置詞・助動詞の重複（"in in", "to to", "for for", "of of", "at at", "on on", "with with" 等）を解消
+  iterations = 0;
+  do {
+    prev = s;
+    s = s.replace(/\b(in|on|at|to|for|of|with|by|from|about|into)\b\s*[,.-]?\s*\b\1\b/gi, '$1');
+    iterations++;
+  } while (s !== prev && iterations < 5);
+
+  // 3. 句読点前の余分な空白を除去し、単語間空白を単一スペースに正規化
+  s = s.replace(/\s+([,.\?!;:])(\s+|$)/g, '$1$2');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s;
+}
+
 function createSentenceChunks(sentence) {
   if (!sentence) return [];
-  const trimmed = sentence.trim();
+  const trimmed = cleanEnglishText(sentence);
   const words = trimmed.split(/\s+/);
   if (words.length <= 4) return words;
 
   // If comma exists, try splitting around commas or conjunctions
   if (trimmed.includes(',')) {
     const parts = trimmed.split(/(?<=,)\s+/);
-    if (parts.length >= 3 && parts.length <= 5) return parts;
+    if (parts.length >= 3 && parts.length <= 5) return parts.map(cleanEnglishText);
     if (parts.length === 2) {
       const res = [];
       parts.forEach(part => {
@@ -22,7 +48,7 @@ function createSentenceChunks(sentence) {
           res.push(part);
         }
       });
-      return res;
+      return res.map(cleanEnglishText);
     }
   }
 
@@ -33,12 +59,12 @@ function createSentenceChunks(sentence) {
   for (let i = 0; i < words.length; i += chunkSize) {
     chunks.push(words.slice(i, i + chunkSize).join(' '));
   }
-  return chunks;
+  return chunks.map(cleanEnglishText);
 }
 
 function getPatternStem(pattern) {
   if (!pattern) return "";
-  const clean = pattern.replace(/\[.*?\]/g, " ").replace(/[^a-zA-Z\s]/g, " ").trim();
+  const clean = cleanEnglishText(pattern).replace(/\[.*?\]/g, " ").replace(/[^a-zA-Z\s]/g, " ").trim();
   const words = clean.split(/\s+/).filter(Boolean);
   return words.slice(0, 3).join(" ").toLowerCase();
 }
@@ -310,17 +336,31 @@ function synthesizePatternVariations(pattern, patternJp, target) {
     let res = pat.trim().replace(/\.\.\.$/, '').trim();
     if (res.includes('[')) {
       let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
-      res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
-      res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
-      res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
-      res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
-      res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
-      res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
-      res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+      const replaceWithArticleCheck = (pattern, slotRegex, getReplacement) => {
+        return pattern.replace(slotRegex, (match, offset, fullStr) => {
+          const val = getReplacement();
+          const prefix = fullStr.substring(0, offset);
+          const hasArticleBefore = /\b(?:the|a|an|this|that|these|those|my|your|our|their|his|her)\s*$/i.test(prefix);
+          if (hasArticleBefore && /^(?:the|a|an)\s+/i.test(val)) {
+            return val.replace(/^(?:the|a|an)\s+/i, '');
+          }
+          return val;
+        });
+      };
+
+      res = replaceWithArticleCheck(res, /\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
+      res = replaceWithArticleCheck(res, /\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
+      res = replaceWithArticleCheck(res, /\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
+      res = replaceWithArticleCheck(res, /\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
+      res = replaceWithArticleCheck(res, /\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
+      res = replaceWithArticleCheck(res, /\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
+      res = replaceWithArticleCheck(res, /\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
     } else {
       // 角括弧がない接頭辞・型フレーズの場合、文構造を自動補完して完全な英文（10語前後）にする
       const lower = res.toLowerCase();
-      if (/\b(?:to|on|for|with|about|in|at|of|into|from)$/i.test(lower)) {
+      if (/\b(?:the|a|an)$/i.test(lower)) {
+        res = res.replace(/\b(?:the|a|an)$/i, '').trim() + ` ${config.nouns[0]} ${config.times[0]}`;
+      } else if (/\b(?:to|on|for|with|about|in|at|of|into|from)$/i.test(lower)) {
         res = `${res} ${config.nouns[0]} ${config.times[0]}`;
       } else if (/\b(?:that|if|whether|because|although|while)$/i.test(lower)) {
         res = `${res} ${config.clauses[0]}`;
@@ -335,7 +375,7 @@ function synthesizePatternVariations(pattern, patternJp, target) {
         }
       }
     }
-    res = res.trim();
+    res = cleanEnglishText(res.trim());
     if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
     return res;
   };
@@ -360,8 +400,8 @@ function synthesizePatternVariations(pattern, patternJp, target) {
     fallbacks: ["the alternative plan", "the contingency option"]
   };
 
-  const vTarget1 = replaceSlots(cleanPat, config1);
-  const vTarget2 = replaceSlots(cleanPat, config2);
+  const vTarget1 = cleanEnglishText(replaceSlots(cleanPat, config1));
+  const vTarget2 = cleanEnglishText(replaceSlots(cleanPat, config2));
   const cleanJp = (patternJp || "この型").replace(/\[.*?\]/g, "〜");
 
   return [
@@ -731,7 +771,7 @@ export default async function handler(req, res) {
       fallbacks: ["the next step", "the action item", "the contingency plan"]
     };
 
-    let target = replaceSlots(cleanPat, config);
+    let target = cleanEnglishText(replaceSlots(cleanPat, config));
     if (!target.endsWith('.') && !target.endsWith('?')) target += '.';
     const chunks = createSentenceChunks(target);
     const variations = synthesizePatternVariations(pattern, categoryInfo?.category || '', target);
@@ -1251,10 +1291,12 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
 
         // Validate and ensure 5 stages are numbered 1 to 5 with patterns, variations, and hints
         const formattedScenarios = scenarios.map((sc, idx) => {
-          const target = sc.target || (sc.choices && sc.choices.find(c => c.type === 'PERFECT')?.text) || "";
-          let chunks = Array.isArray(sc.chunks) && sc.chunks.length >= 2 ? sc.chunks.map(c => c.trim()).filter(Boolean) : [];
+          const target = cleanEnglishText(sc.target || (sc.choices && sc.choices.find(c => c.type === 'PERFECT')?.text) || "");
+          let chunks = Array.isArray(sc.chunks) && sc.chunks.length >= 2 ? sc.chunks.map(c => cleanEnglishText(c.trim())).filter(Boolean) : [];
           if (chunks.length < 2) {
             chunks = createSentenceChunks(target);
+          } else {
+            chunks = chunks.map(cleanEnglishText);
           }
 
           // Process and strictly validate variations for slot-swap drilling
@@ -1264,7 +1306,7 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
           // Only keep variations that actually contain the key pattern stem and are complete sentences (not just the pattern)
           let validVariations = rawVariations.filter(v => {
             if (!v || !v.variation_target) return false;
-            const targetLower = v.variation_target.toLowerCase().trim();
+            const targetLower = cleanEnglishText(v.variation_target).toLowerCase().trim();
             const wordCount = targetLower.split(/\s+/).filter(Boolean).length;
             if (wordCount <= 4 || targetLower.length < 24) return false;
             if (targetLower.includes('to this') || targetLower.endsWith(' to this.') || targetLower.endsWith(' to this?')) return false;
@@ -1281,14 +1323,15 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
           let finalVariations;
           if (validVariations.length >= 2) {
             finalVariations = validVariations.slice(0, 2).map(v => {
+              const vTar = cleanEnglishText(v.variation_target || "");
               let vChunks = Array.isArray(v.variation_chunks) && v.variation_chunks.length >= 2 
-                ? v.variation_chunks.map(c => c.trim()).filter(Boolean) 
-                : createSentenceChunks(v.variation_target || "");
+                ? v.variation_chunks.map(c => cleanEnglishText(c.trim())).filter(Boolean) 
+                : createSentenceChunks(vTar);
               return {
                 variation_prompt_jp: v.variation_prompt_jp || "同じ型を使って表現してみましょう：",
-                variation_target: v.variation_target || "",
+                variation_target: vTar,
                 variation_hint_parts: v.variation_hint_parts || "中学英語パーツを入れ替えるだけ！",
-                variation_chunks: vChunks
+                variation_chunks: vChunks.map(cleanEnglishText)
               };
             });
           } else {
@@ -1322,7 +1365,7 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
             ai_name: sc.ai_name || "Stakeholder",
             ai_en: safeAiEn,
             ai_jp: safeAiJp,
-            key_pattern: sc.key_pattern || "I see your point, but we need to...",
+            key_pattern: cleanEnglishText(sc.key_pattern || "I see your point, but we need to..."),
             key_pattern_jp: sc.key_pattern_jp || "おっしゃることは分かりますが、〜する必要があります",
             pattern_rationale: sc.pattern_rationale || "相手の立場を尊重しつつ、中学レベルの平易な動詞で制約や次のアクションを明快に伝えることで、非ネイティブ同士でも誤解なく合意形成できます。",
             parts_hint: sc.parts_hint || "中学単語を当てはめて声に出してみましょう！",
@@ -1345,10 +1388,10 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
                 console.warn(`[AI Generate] Filtered out parroted closing_choices in stage ${sc.stage}`);
                 return null; // クライアント側の高精度コンテキスト生成器にフォールバックさせる
               }
-              return sc.closing_choices;
+              return sc.closing_choices.map(c => ({ ...c, text: cleanEnglishText(c.text) }));
             })(),
             email_subject: sc.email_subject || (sc.ai_en?.startsWith("Subject:") ? sc.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project update and next steps"),
-            choices: Array.isArray(sc.choices) ? sc.choices : []
+            choices: Array.isArray(sc.choices) ? sc.choices.map(c => ({ ...c, text: cleanEnglishText(c.text) })) : []
           };
         });
 

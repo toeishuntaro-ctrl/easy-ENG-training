@@ -6754,9 +6754,36 @@
     }
   }
 
+  // 英語文中の不自然な冠詞・前置詞の連続（"the the", "in in", "the a" 等）を徹底除去して自然な英文に整流する関数
+  function cleanEnglishText(text) {
+    if (!text || typeof text !== 'string') return '';
+    let s = text;
+    // 1. 不自然な連続冠詞（"the the", "the a", "a the", "an the", "the, the" 等）をループで完全消去
+    let prev;
+    let iterations = 0;
+    do {
+      prev = s;
+      s = s.replace(/\b(the|a|an)\b\s*[,.-]?\s*\b(the|a|an)\b/gi, (match, p1, p2) => p2);
+      iterations++;
+    } while (s !== prev && iterations < 5);
+
+    // 2. 不自然な前置詞・助動詞の重複（"in in", "to to", "for for", "of of", "at at", "on on", "with with" 等）を解消
+    iterations = 0;
+    do {
+      prev = s;
+      s = s.replace(/\b(in|on|at|to|for|of|with|by|from|about|into)\b\s*[,.-]?\s*\b\1\b/gi, '$1');
+      iterations++;
+    } while (s !== prev && iterations < 5);
+
+    // 3. 句読点前の余分な空白を除去し、単語間空白を単一スペースに正規化
+    s = s.replace(/\s+([,.\?!;:])(\s+|$)/g, '$1$2');
+    s = s.replace(/\s+/g, ' ').trim();
+    return s;
+  }
+
   function getClientPatternStem(pattern) {
     if (!pattern) return "";
-    const clean = pattern.replace(/\[.*?\]/g, " ").replace(/[^a-zA-Z\s]/g, " ").trim();
+    const clean = cleanEnglishText(pattern).replace(/\[.*?\]/g, " ").replace(/[^a-zA-Z\s]/g, " ").trim();
     const words = clean.split(/\s+/).filter(Boolean);
     return words.slice(0, 3).join(" ").toLowerCase();
   }
@@ -7028,17 +7055,31 @@
       let res = pat.trim().replace(/\.\.\.$/, '').trim();
       if (res.includes('[')) {
         let vIdx = 0, nIdx = 0, pIdx = 0, tIdx = 0, gIdx = 0, cIdx = 0, fIdx = 0;
-        res = res.replace(/\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
-        res = res.replace(/\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
-        res = res.replace(/\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
-        res = res.replace(/\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
-        res = res.replace(/\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
-        res = res.replace(/\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
-        res = res.replace(/\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
+        const replaceWithArticleCheck = (pattern, slotRegex, getReplacement) => {
+          return pattern.replace(slotRegex, (match, offset, fullStr) => {
+            const val = getReplacement();
+            const prefix = fullStr.substring(0, offset);
+            const hasArticleBefore = /\b(?:the|a|an|this|that|these|those|my|your|our|their|his|her)\s*$/i.test(prefix);
+            if (hasArticleBefore && /^(?:the|a|an)\s+/i.test(val)) {
+              return val.replace(/^(?:the|a|an)\s+/i, '');
+            }
+            return val;
+          });
+        };
+
+        res = replaceWithArticleCheck(res, /\[(?:verb|action)[^\]]*\]/gi, () => config.verbs[vIdx++ % config.verbs.length]);
+        res = replaceWithArticleCheck(res, /\[(?:noun|matter|topic|item)[^\]]*\]/gi, () => config.nouns[nIdx++ % config.nouns.length]);
+        res = replaceWithArticleCheck(res, /\[(?:person|team|lead|manager)[^\]]*\]/gi, () => config.teams[pIdx++ % config.teams.length]);
+        res = replaceWithArticleCheck(res, /\[(?:time|deadline)[^\]]*\]/gi, () => config.times[tIdx++ % config.times.length]);
+        res = replaceWithArticleCheck(res, /\[(?:goal|risk)[^\]]*\]/gi, () => config.goals[gIdx++ % config.goals.length]);
+        res = replaceWithArticleCheck(res, /\[(?:clause|statement|condition)[^\]]*\]/gi, () => config.clauses[cIdx++ % config.clauses.length]);
+        res = replaceWithArticleCheck(res, /\[[^\]]+\]/g, () => config.fallbacks[fIdx++ % config.fallbacks.length]);
       } else {
         // 角括弧がない接頭辞・型フレーズの場合、文構造を自動補完して完全な英文（10語前後）にする
         const lower = res.toLowerCase();
-        if (/\b(?:to|on|for|with|about|in|at|of|into|from)$/i.test(lower)) {
+        if (/\b(?:the|a|an)$/i.test(lower)) {
+          res = res.replace(/\b(?:the|a|an)$/i, '').trim() + ` ${config.nouns[0]} ${config.times[0]}`;
+        } else if (/\b(?:to|on|for|with|about|in|at|of|into|from)$/i.test(lower)) {
           res = `${res} ${config.nouns[0]} ${config.times[0]}`;
         } else if (/\b(?:that|if|whether|because|although|while)$/i.test(lower)) {
           res = `${res} ${config.clauses[0]}`;
@@ -7053,7 +7094,7 @@
           }
         }
       }
-      res = res.trim();
+      res = cleanEnglishText(res.trim());
       if (!res.endsWith(".") && !res.endsWith("?")) res += ".";
       return res;
     };
@@ -7078,8 +7119,8 @@
       fallbacks: ["the alternative plan", "the contingency option"]
     };
 
-    const vTarget1 = replaceSlots(cleanPat, config1);
-    const vTarget2 = replaceSlots(cleanPat, config2);
+    const vTarget1 = cleanEnglishText(replaceSlots(cleanPat, config1));
+    const vTarget2 = cleanEnglishText(replaceSlots(cleanPat, config2));
     const cleanJp = (patternJp || "この型").replace(/\[.*?\]/g, "〜");
 
     return [
@@ -7087,13 +7128,13 @@
         variation_prompt_jp: `【実務応用 1/2: スケジュール調整】「${cleanJp}」の型で進捗や日程を伝える時：`,
         variation_target: vTarget1,
         variation_hint_parts: "型をそのまま固定し、日程やレビューのパーツを当てはめるだけ！",
-        variation_chunks: createClientSentenceChunks(vTarget1)
+        variation_chunks: createClientSentenceChunks(vTarget1).map(cleanEnglishText)
       },
       {
         variation_prompt_jp: `【実務応用 2/2: スコープ・優先度調整】「${cleanJp}」の型で別条件を提示する時：`,
         variation_target: vTarget2,
         variation_hint_parts: "型を固定したまま、スコープや優先度のパーツに入れ替えてみよう！",
-        variation_chunks: createClientSentenceChunks(vTarget2)
+        variation_chunks: createClientSentenceChunks(vTarget2).map(cleanEnglishText)
       }
     ];
   }
@@ -7110,11 +7151,13 @@
     // Validate that variations strictly match this stage's key pattern stem AND are complete sentences (not just key pattern)
     let validVariations = rawVariations.filter(v => {
       if (!v || !v.variation_target) return false;
-      const targetLower = v.variation_target.toLowerCase().trim();
+      const targetLower = cleanEnglishText(v.variation_target).toLowerCase().trim();
       const wordCount = targetLower.split(/\s+/).filter(Boolean).length;
       // 型だけの不完全文（単語数4語以下、または24文字未満）やダミー文を排除
       if (wordCount <= 4 || targetLower.length < 24) return false;
       if (targetLower.includes('to this') || targetLower.endsWith(' to this.') || targetLower.endsWith(' to this?')) return false;
+      // 不自然な冠詞の連続（the the, a a 等）がある場合は無効として除外・再合成
+      if (/\b(the|a|an)\s+(the|a|an)\b/i.test(v.variation_target)) return false;
 
       const cleanPat = (stageData?.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       const cleanTarget = targetLower.replace(/[^a-z0-9]/g, '');
@@ -7128,7 +7171,11 @@
     let variations;
     // 2問存在し、かつ2問のターゲット英文が同一の重複でないことを検証
     if (validVariations.length >= 2 && validVariations[0].variation_target !== validVariations[1].variation_target) {
-      variations = validVariations.slice(0, 2);
+      variations = validVariations.slice(0, 2).map(v => ({
+        ...v,
+        variation_target: cleanEnglishText(v.variation_target),
+        variation_chunks: (v.variation_chunks || []).map(cleanEnglishText)
+      }));
     } else {
       variations = synthesizeClientPatternVariations(
         stageData?.key_pattern,
@@ -7142,12 +7189,13 @@
     }
 
     drillState = variations.map((v, vIdx) => {
+      const vTar = cleanEnglishText(v.variation_target || '');
       let rawChunks = (v.variation_chunks && v.variation_chunks.length >= 2) 
-        ? [...v.variation_chunks] 
-        : createClientSentenceChunks(v.variation_target || '');
-      if (!rawChunks || rawChunks.length < 2) rawChunks = [v.variation_target || 'Target phrase'];
+        ? v.variation_chunks.map(cleanEnglishText)
+        : createClientSentenceChunks(vTar);
+      if (!rawChunks || rawChunks.length < 2) rawChunks = [vTar || 'Target phrase'];
       
-      const sanitized = rawChunks.map(c => sanitizeChunkText(c)).filter(Boolean);
+      const sanitized = rawChunks.map(c => sanitizeChunkText(cleanEnglishText(c))).filter(Boolean);
       const chunks = sanitized.length >= 2 ? sanitized : rawChunks;
 
       const pool = chunks.map((cText, cIdx) => ({ id: cIdx, text: cText, used: false }));
@@ -7158,7 +7206,7 @@
 
       return {
         prompt_jp: v.variation_prompt_jp || "同じ型を別シチュエーションに応用してみましょう：",
-        target: v.variation_target || "",
+        target: vTar,
         hint_parts: v.variation_hint_parts || "中学パーツを入れ替えるだけ！",
         originalChunks: chunks,
         pool: pool,
@@ -7172,7 +7220,7 @@
     const container = document.getElementById('drillVariationsContainer');
     if (!container) return;
 
-    if (!drillState || drillState.length === 0 || drillState.some(d => !d.target || d.target.length < 24 || d.pool.length < 2)) {
+    if (!drillState || drillState.length === 0 || drillState.some(d => !d.target || d.target.length < 24 || d.pool.length < 2 || /\b(the|a|an)\s+(the|a|an)\b/i.test(d.target) || d.pool.some(p => /\b(the|a|an)\s+(the|a|an)\b/i.test(p.text)))) {
       const current = scenarios && scenarios[currentStageIndex];
       if (current) {
         initDrillForCurrentStage(current);
@@ -7538,8 +7586,9 @@
   // 選択肢のヒント漏れ（大文字や文末記号）を除去するサニタイズ関数
   function sanitizeChunkText(text) {
     if (!text || typeof text !== 'string') return '';
+    let cleaned = cleanEnglishText(text);
     // 文頭・文末のあらゆる句読点・記号（ピリオド・カンマ・セミコロン・感嘆符・疑問符・引用符など）を徹底除去
-    let cleaned = text.trim().replace(/^[\s,.\?!;:"'“”’‘]+|[\s,.\?!;:"'“”’‘]+$/g, '').trim();
+    cleaned = cleaned.trim().replace(/^[\s,.\?!;:"'“”’‘]+|[\s,.\?!;:"'“”’‘]+$/g, '').trim();
     if (!cleaned) return '';
     cleaned = cleaned.replace(/^[,.\?!;:]+|[,.\?!;:]+$/g, '').trim();
 
@@ -7550,7 +7599,7 @@
     }
     // 文末の残存記号も念入りに除去
     cleaned = cleaned.replace(/[\s,.\?!;:"'“”’‘]+$/g, '').trim();
-    return cleaned;
+    return cleanEnglishText(cleaned);
   }
 
   function initChunkBuilder(stageData) {
@@ -7572,8 +7621,8 @@
     }
 
     // 各チャンクのヒント記号・先頭大文字を除去
-    const sanitizedChunks = rawChunks.map(c => sanitizeChunkText(c)).filter(c => c.length > 0);
-    originalChunks = sanitizedChunks.length >= 2 ? sanitizedChunks : rawChunks;
+    const sanitizedChunks = rawChunks.map(c => sanitizeChunkText(cleanEnglishText(c))).filter(c => c.length > 0);
+    originalChunks = sanitizedChunks.length >= 2 ? sanitizedChunks : rawChunks.map(cleanEnglishText);
 
     const pool = originalChunks.map((text, idx) => ({ id: idx, text: text, used: false }));
     // ランダムシャッフル
@@ -7594,14 +7643,14 @@
     if (!sentence || typeof sentence !== 'string') {
       return ["thank you", "I will check this", "by Friday"];
     }
-    const trimmed = sentence.trim();
+    const trimmed = cleanEnglishText(sentence);
     if (!trimmed) {
       return ["thank you", "I will check this", "by Friday"];
     }
 
     // 1. カンマで自然な句に分割
     if (trimmed.includes(',')) {
-      const parts = trimmed.split(',').map(p => p.trim()).filter(p => p.length > 0);
+      const parts = trimmed.split(',').map(p => cleanEnglishText(p.trim())).filter(p => p.length > 0);
 
       if (parts.length >= 2 && parts.length <= 4) {
         const subParts = [];
@@ -7615,14 +7664,14 @@
             subParts.push(p);
           }
         });
-        if (subParts.length >= 2) return subParts;
+        if (subParts.length >= 2) return subParts.map(cleanEnglishText);
       }
     }
 
     // 2. 単語数による安全な分割 (3〜4個のチャンク)
     const words = trimmed.split(/\s+/);
     if (words.length <= 4) {
-      return words;
+      return words.map(cleanEnglishText);
     }
 
     const chunkCount = words.length >= 9 ? 4 : 3;
@@ -7630,7 +7679,7 @@
     const chunks = [];
     for (let i = 0; i < words.length; i += chunkSize) {
       const piece = words.slice(i, i + chunkSize).join(' ');
-      if (piece) chunks.push(piece);
+      if (piece) chunks.push(cleanEnglishText(piece));
     }
     return chunks.length >= 2 ? chunks : [trimmed];
   }
@@ -7843,6 +7892,7 @@
         const words = t.split(/\s+/).filter(Boolean);
         if (words.length <= 4 || t.length < 24) return true;
         if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+        if (/\b(the|a|an)\s+(the|a|an)\b/i.test(t)) return true; // 不自然な連続冠詞（the the）を検知して修復
         const cleanP = (data.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         const cleanT = t.replace(/[^a-z0-9]/g, '');
         if (cleanP.length > 0 && cleanP === cleanT) return true;
@@ -7851,6 +7901,22 @@
       (vList[0]?.variation_target === vList[1]?.variation_target);
     if (isBrokenV) {
       data.variations = synthesizeClientPatternVariations(data.key_pattern, data.key_pattern_jp, data.target);
+    }
+
+    // 全文テキストの不自然な冠詞・前置詞重複（"the the" 等）を即時クリーンアップ
+    if (data.target) data.target = cleanEnglishText(data.target);
+    if (data.key_pattern) data.key_pattern = cleanEnglishText(data.key_pattern);
+    if (Array.isArray(data.chunks)) data.chunks = data.chunks.map(cleanEnglishText);
+    if (Array.isArray(data.variations)) {
+      data.variations.forEach(v => {
+        if (v.variation_target) v.variation_target = cleanEnglishText(v.variation_target);
+        if (Array.isArray(v.variation_chunks)) v.variation_chunks = v.variation_chunks.map(cleanEnglishText);
+      });
+    }
+    if (Array.isArray(data.choices)) {
+      data.choices.forEach(c => {
+        if (c.text) c.text = cleanEnglishText(c.text);
+      });
     }
 
     if (trainingMode === 'sim') {
@@ -8155,6 +8221,127 @@
     });
   }
 
+  // ==========================================
+  // レッスン単位 忘却曲線（Spaced Repetition）システム
+  // ==========================================
+  const LESSON_SRS_INTERVALS_DAYS = [1, 1, 3, 7, 14, 30];
+
+  function getDueSrsLessons() {
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const now = Date.now();
+    return history.filter(item => {
+      if (!item.data || item.data.length === 0) return false;
+      const totalStages = item.data.length;
+      const isCompleted = item.status === 'completed' || (item.answered && item.answered >= totalStages);
+      if (!isCompleted && !item.lastReviewedAt && !item.completedAt) return false;
+      const completedTime = Number(item.completedAt || item.id || now);
+      const nextReviewAt = Number(item.nextReviewAt || (completedTime + 86400000));
+      return nextReviewAt <= now;
+    }).sort((a, b) => {
+      const timeA = Number(a.nextReviewAt || ((a.completedAt || a.id) + 86400000));
+      const timeB = Number(b.nextReviewAt || ((b.completedAt || b.id) + 86400000));
+      return timeA - timeB;
+    });
+  }
+
+  function getLessonSrsInfo(item) {
+    const now = Date.now();
+    const totalStages = item.data ? item.data.length : 5;
+    const lastIdx = typeof item.lastStageIndex === 'number' ? item.lastStageIndex : 0;
+    const isCompleted = item.status === 'completed' || (item.answered && item.answered >= totalStages) || (lastIdx >= totalStages - 1 && item.answered > 0);
+
+    if (!isCompleted) {
+      const resumeStageNum = Math.min(totalStages, lastIdx + 1);
+      return {
+        status: 'ongoing',
+        isDue: false,
+        level: 1,
+        badgeHtml: '<span class="log-status-badge needs_review">🟡 進行中</span>',
+        subInfo: `<span style="color:#2563eb; font-weight:700;">進行中: STAGE ${resumeStageNum} / ${totalStages}</span>`,
+        actionText: `▶️ STAGE ${resumeStageNum}から再開`,
+        isActionResume: true
+      };
+    }
+
+    const level = item.srsLevel || 1;
+    const completedTime = Number(item.completedAt || item.id || now);
+    const nextReviewAt = Number(item.nextReviewAt || (completedTime + 86400000));
+    const isDue = nextReviewAt <= now;
+    const diffDays = Math.max(0, Math.round((now - completedTime) / 86400000));
+
+    if (isDue) {
+      return {
+        status: 'due',
+        isDue: true,
+        level: level,
+        diffDays: diffDays,
+        badgeHtml: `<span style="background:#fef3c7; color:#b45309; border:1px solid #f59e0b; font-weight:800; padding:2px 7px; border-radius:12px; font-size:11px; display:inline-flex; align-items:center; gap:3px;">🔔 復習期日 [Level ${level} / ${diffDays === 0 ? '初回' : diffDays + '日経過'}]</span>`,
+        subInfo: `<span style="color:#d97706; font-weight:700;">忘却曲線：本日の復習推奨（全${totalStages}ステージ）</span>`,
+        actionText: '🔄 このレッスンを復習 (推奨)',
+        isActionResume: false
+      };
+    } else {
+      const daysLeft = Math.max(1, Math.ceil((nextReviewAt - now) / 86400000));
+      if (level >= 5) {
+        return {
+          status: 'mastered',
+          isDue: false,
+          level: level,
+          badgeHtml: `<span style="background:#ecfdf5; color:#047857; border:1px solid #10b981; font-weight:800; padding:2px 7px; border-radius:12px; font-size:11px;">🏆 定着完了 [Level 5]</span>`,
+          subInfo: `<span style="color:#16a34a; font-weight:700;">長期記憶に定着（全${totalStages}ステージ修了）</span>`,
+          actionText: 'もう一度復習する',
+          isActionResume: false
+        };
+      }
+      return {
+        status: 'scheduled',
+        isDue: false,
+        level: level,
+        daysLeft: daysLeft,
+        badgeHtml: `<span style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; font-weight:700; padding:2px 7px; border-radius:12px; font-size:11px;">⏳ 次回复習: ${daysLeft}日後 [Level ${level}]</span>`,
+        subInfo: `<span style="color:#64748b; font-weight:600;">全${totalStages}ステージ修了 (次回期日: ${new Date(nextReviewAt).toLocaleDateString('ja-JP')})</span>`,
+        actionText: 'もう一度復習する',
+        isActionResume: false
+      };
+    }
+  }
+
+  function startLessonReview(id, isSrs = true) {
+    saveActiveSession();
+    if (typeof migrateAndRepairStoredData === 'function') migrateAndRepairStoredData();
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const target = history.find(item => String(item.id) === String(id));
+    if (target && target.data && target.data.length > 0) {
+      scenarios = target.data.map(stage => ({
+        ...stage,
+        target: cleanEnglishText(stage.target),
+        key_pattern: cleanEnglishText(stage.key_pattern),
+        chunks: Array.isArray(stage.chunks) ? stage.chunks.map(cleanEnglishText) : stage.chunks,
+        choices: Array.isArray(stage.choices) ? stage.choices.map(c => ({ ...c, text: cleanEnglishText(c.text) })) : stage.choices
+      }));
+      currentHistoryId = target.id;
+      if (target.mode) setTrainingMode(target.mode);
+      if (target.topic) selectedTopic = target.topic;
+      currentStageIndex = 0;
+      sessionCorrect = 0;
+      sessionAnswered = 0;
+      reviewMode = true;
+      isSessionCompleted = false;
+
+      const loadingArea = document.getElementById('stageLoadingArea');
+      const stageArea = document.getElementById('playStageArea');
+      if (loadingArea) loadingArea.style.display = 'none';
+      if (stageArea) stageArea.style.display = 'block';
+
+      switchTab('play');
+      loadStage();
+      populateQuickModeSelect();
+      toast(`🔁 [忘却曲線レッスン復習] ${target.date || ''} (全${scenarios.length}ステージ) を開始しました！`);
+    } else {
+      toast('⚠️ 過去レッスンのデータが見つかりませんでした');
+    }
+  }
+
   function renderHistory() {
     const container = document.getElementById('historyListContainer');
     const clearBtn = document.getElementById('btnClearAllHistory');
@@ -8169,41 +8356,53 @@
       return;
     }
 
-    container.innerHTML = history.map((item) => {
-      const totalStages = item.data ? item.data.length : 5;
-      const lastIdx = typeof item.lastStageIndex === 'number' ? item.lastStageIndex : 0;
-      const isCompleted = item.status === 'completed' || (item.answered && item.answered >= totalStages) || (lastIdx >= totalStages - 1 && item.answered > 0);
-      const isOngoing = !isCompleted && (lastIdx > 0 || (item.answered && item.answered > 0 && item.answered < totalStages));
+    const dueLessons = getDueSrsLessons();
+    let bannerHtml = '';
+    if (dueLessons.length > 0) {
+      const topDue = dueLessons[0];
+      bannerHtml = `
+        <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #f59e0b; border-radius: 12px; padding: 13px 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+            <span style="background:#f59e0b; color:#fff; font-weight:800; font-size:11px; padding:2px 8px; border-radius:12px;">🔔 忘却曲線：本日の復習推奨レッスン</span>
+            <span style="font-weight:800; font-size:11px; color:#b45309;">${dueLessons.length}件のレッスンが期日です</span>
+          </div>
+          <div style="font-size:12px; color:#78350f; line-height:1.45; margin-bottom:10px;">
+            ※ 履歴の一番上の最新レッスンではなく、エビングハウスの忘却曲線に基づき<b>今もっとも記憶が薄れかけているレッスン（1日後・3日後・7日後など）</b>です。一連の文脈（全5ステージ）を保ったまま復習できます。
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button onclick="startLessonReview('${topDue.id}')" style="background:#d97706; color:#fff; border:none; border-radius:8px; padding:8px 14px; font-weight:800; font-size:12.5px; cursor:pointer; box-shadow:0 2px 4px rgba(217, 119, 6, 0.3);">
+              🎯 おすすめレッスン（${topDue.date}）を復習する
+            </button>
+          </div>
+        </div>
+      `;
+    }
 
-      const statusTag = isCompleted 
-        ? '<span class="log-status-badge completed">🟢 完了</span>' 
-        : isOngoing 
-        ? '<span class="log-status-badge needs_review">🟡 進行中</span>' 
-        : '<span class="log-status-badge unplayed">🔵 未学習</span>';
-
-      const resumeStageNum = Math.min(totalStages, lastIdx + 1);
-      const actionBtnText = isOngoing ? `▶️ STAGE ${resumeStageNum}から再開` : 'もう一度復習する';
-      const subInfo = isCompleted
-        ? `<span style="color:#16a34a; font-weight:700;">全${totalStages}ステージ修了</span>`
-        : isOngoing 
-        ? `<span style="color:#2563eb; font-weight:700;">進行中: STAGE ${resumeStageNum} / ${totalStages}</span>` 
-        : `${totalStages} ステージ収録`;
+    const itemsHtml = history.map((item) => {
+      const srsInfo = getLessonSrsInfo(item);
+      const isDue = srsInfo.isDue;
+      const isOngoing = srsInfo.isActionResume;
 
       return `
-        <div class="list-item">
+        <div class="list-item" style="${isDue ? 'border: 1.5px solid #f59e0b; background: #fffdf7;' : ''}">
           <div class="list-info">
-            <div class="list-title">📅 ${item.date} [${(item.mode || 'quiz').toUpperCase()}] ${statusTag}</div>
-            <div class="list-sub">${subInfo}</div>
+            <div class="list-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span>📅 ${item.date} [${(item.mode || 'quiz').toUpperCase()}]</span>
+              ${srsInfo.badgeHtml}
+            </div>
+            <div class="list-sub">${srsInfo.subInfo}</div>
           </div>
           <div style="display:flex; gap:6px; align-items:center;">
-            <button class="btn-action btn-play" onclick="loadHistoryItem('${item.id}')" style="${isOngoing ? 'background:#2563eb; color:#fff; font-weight:700;' : ''}">
-              ${actionBtnText}
+            <button class="btn-action btn-play" onclick="${isOngoing ? `loadHistoryItem('${item.id}')` : `startLessonReview('${item.id}')`}" style="${isDue ? 'background:#d97706; color:#fff; font-weight:800; box-shadow:0 2px 4px rgba(217,119,6,0.3);' : (isOngoing ? 'background:#2563eb; color:#fff; font-weight:700;' : '')}">
+              ${srsInfo.actionText}
             </button>
             <button class="btn-action btn-delete" onclick="deleteHistoryItem('${item.id}')">削除</button>
           </div>
         </div>
       `;
     }).join('');
+
+    container.innerHTML = bannerHtml + itemsHtml;
   }
 
   function loadHistoryItem(id) {
@@ -8931,7 +9130,7 @@
 
   function standardizeChoiceSentence(text, isQuestion = false) {
     if (!text || typeof text !== 'string') return '';
-    let cleaned = text.trim();
+    let cleaned = cleanEnglishText(text).trim();
     // 文末の既存記号・句読点を除去
     cleaned = cleaned.replace(/[\s,.\?!;:"'“”’‘]+$/g, '').trim();
     if (!cleaned) return '';
@@ -8939,11 +9138,11 @@
     cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
     // 文末に統一した句読点を付与（疑問文なら?、平叙文なら.）
     cleaned += isQuestion ? '?' : '.';
-    return cleaned;
+    return cleanEnglishText(cleaned);
   }
 
   function buildGuaranteedDistinctChoices(targetText, existingChoices = null, keyPattern = '') {
-    const cleanTarget = (targetText || '').trim();
+    const cleanTarget = cleanEnglishText((targetText || '').trim());
     const isQuestion = cleanTarget.endsWith('?');
     if (!cleanTarget) {
       return [
@@ -10775,6 +10974,19 @@
         history[idx].status = 'completed';
         history[idx].lastStageIndex = 0;
         history[idx].completedAt = Date.now();
+        const curLevel = history[idx].srsLevel || 1;
+        if (reviewMode) {
+          const nextLevel = Math.min(5, curLevel + 1);
+          const intervalDays = (typeof LESSON_SRS_INTERVALS_DAYS !== 'undefined' ? LESSON_SRS_INTERVALS_DAYS : [1, 1, 3, 7, 14, 30])[nextLevel] || 1;
+          history[idx].srsLevel = nextLevel;
+          history[idx].lastReviewedAt = Date.now();
+          history[idx].nextReviewAt = Date.now() + (intervalDays * 24 * 60 * 60 * 1000);
+          history[idx].reviewCount = (history[idx].reviewCount || 0) + 1;
+        } else {
+          if (!history[idx].srsLevel) history[idx].srsLevel = 1;
+          history[idx].lastReviewedAt = Date.now();
+          history[idx].nextReviewAt = Date.now() + (1 * 24 * 60 * 60 * 1000);
+        }
         localStorage.setItem('english_scenarios_history', JSON.stringify(history));
         if (window.fbSync && history[idx]) window.fbSync.saveQuizHistory(history[idx]);
       }
@@ -10790,6 +11002,7 @@
         }
       });
       if (typeof updateSrsRecommendUI === 'function') updateSrsRecommendUI();
+      if (typeof renderHistory === 'function') renderHistory();
     }
 
     const totalSurvival = survivalQuestions.length || scenarios.length || 5;
@@ -10969,6 +11182,34 @@
             stage.parts_hint = pInfo.parts_hint;
             historyModified = true;
           }
+          if (stage.target) {
+            const cleaned = cleanEnglishText(stage.target);
+            if (cleaned !== stage.target) {
+              stage.target = cleaned;
+              historyModified = true;
+            }
+          }
+          if (stage.key_pattern) {
+            const cleaned = cleanEnglishText(stage.key_pattern);
+            if (cleaned !== stage.key_pattern) {
+              stage.key_pattern = cleaned;
+              historyModified = true;
+            }
+          }
+          if (Array.isArray(stage.chunks)) {
+            const cleanedChunks = stage.chunks.map(cleanEnglishText);
+            if (JSON.stringify(cleanedChunks) !== JSON.stringify(stage.chunks)) {
+              stage.chunks = cleanedChunks;
+              historyModified = true;
+            }
+          }
+          if (Array.isArray(stage.choices)) {
+            const cleanedChoices = stage.choices.map(c => ({ ...c, text: cleanEnglishText(c.text) }));
+            if (JSON.stringify(cleanedChoices) !== JSON.stringify(stage.choices)) {
+              stage.choices = cleanedChoices;
+              historyModified = true;
+            }
+          }
           const vList = stage.variations || [];
           const isBrokenV = vList.length < 2 || 
             vList.some(v => {
@@ -10977,6 +11218,7 @@
               const words = t.split(/\s+/).filter(Boolean);
               if (words.length <= 4 || t.length < 24) return true;
               if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+              if (/\b(the|a|an)\s+(the|a|an)\b/i.test(t)) return true;
               const cleanP = (stage.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
               const cleanT = t.replace(/[^a-z0-9]/g, '');
               if (cleanP.length > 0 && cleanP === cleanT) return true;
@@ -10986,6 +11228,23 @@
           if (isBrokenV) {
             stage.variations = synthesizeClientPatternVariations(stage.key_pattern, stage.key_pattern_jp, stage.target);
             historyModified = true;
+          } else if (Array.isArray(stage.variations)) {
+            stage.variations.forEach(v => {
+              if (v.variation_target) {
+                const cleaned = cleanEnglishText(v.variation_target);
+                if (cleaned !== v.variation_target) {
+                  v.variation_target = cleaned;
+                  historyModified = true;
+                }
+              }
+              if (Array.isArray(v.variation_chunks)) {
+                const cleanedChunks = v.variation_chunks.map(cleanEnglishText);
+                if (JSON.stringify(cleanedChunks) !== JSON.stringify(v.variation_chunks)) {
+                  v.variation_chunks = cleanedChunks;
+                  historyModified = true;
+                }
+              }
+            });
           }
         });
       });
@@ -11009,6 +11268,20 @@
             ? orig.ai_jp
             : resolveCounterpartTranslation(item.ai_en, item.guide);
           libModified = true;
+        }
+        if (item.target) {
+          const cleaned = cleanEnglishText(item.target);
+          if (cleaned !== item.target) {
+            item.target = cleaned;
+            libModified = true;
+          }
+        }
+        if (item.key_pattern) {
+          const cleaned = cleanEnglishText(item.key_pattern);
+          if (cleaned !== item.key_pattern) {
+            item.key_pattern = cleaned;
+            libModified = true;
+          }
         }
         const pInfo = deriveKeyPatternInfo(
           item.target,
@@ -11048,6 +11321,9 @@
               ? orig.ai_jp
               : resolveCounterpartTranslation(stage.ai_en, stage.guide);
           }
+          if (stage.target) stage.target = cleanEnglishText(stage.target);
+          if (stage.key_pattern) stage.key_pattern = cleanEnglishText(stage.key_pattern);
+          if (Array.isArray(stage.chunks)) stage.chunks = stage.chunks.map(cleanEnglishText);
           const pInfo = deriveKeyPatternInfo(stage.target, stage.key_pattern, stage.key_pattern_jp, stage.pattern_rationale, stage.guide);
           if (!stage.pattern_rationale || stage.pattern_rationale.includes('実務で多用される明快なPlain English構文です。主語＋基本動詞のリズムを意識して')) {
             stage.pattern_rationale = pInfo.pattern_rationale;
@@ -11065,6 +11341,7 @@
               const words = t.split(/\s+/).filter(Boolean);
               if (words.length <= 4 || t.length < 24) return true;
               if (t.includes('to this') || t.endsWith(' to this.') || t.endsWith(' to this?')) return true;
+              if (/\b(the|a|an)\s+(the|a|an)\b/i.test(t)) return true;
               const cleanP = (stage.key_pattern || '').toLowerCase().replace(/[^a-z0-9]/g, '');
               const cleanT = t.replace(/[^a-z0-9]/g, '');
               if (cleanP.length > 0 && cleanP === cleanT) return true;
@@ -11073,6 +11350,11 @@
             (vList[0]?.variation_target === vList[1]?.variation_target);
           if (isBrokenV) {
             stage.variations = synthesizeClientPatternVariations(stage.key_pattern, stage.key_pattern_jp, stage.target);
+          } else if (Array.isArray(stage.variations)) {
+            stage.variations.forEach(v => {
+              if (v.variation_target) v.variation_target = cleanEnglishText(v.variation_target);
+              if (Array.isArray(v.variation_chunks)) v.variation_chunks = v.variation_chunks.map(cleanEnglishText);
+            });
           }
         });
       }
@@ -11198,15 +11480,16 @@
     if (!card) return;
 
     const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const dueLessons = getDueSrsLessons();
     const dueItems = getDueSrsItems();
 
-    if (dueItems.length === 0) {
-      if (library.length === 0) {
-        // 保存フレーズが空の場合は非表示
+    if (dueLessons.length === 0 && dueItems.length === 0) {
+      if (library.length === 0 && history.length === 0) {
         card.style.display = 'none';
         return;
       }
-      // 保存フレーズがあるが本日の復習分はすべて完了している場合
+      // 保存フレーズまたはレッスンがあり、本日の復習分はすべて達成している場合
       card.style.display = 'block';
       card.style.background = '#f0fdf4';
       card.style.borderColor = '#86efac';
@@ -11222,13 +11505,13 @@
       }
       const desc = document.getElementById('srsDescText');
       if (desc) {
-        desc.innerText = '記憶の定着が順調に進んでいます。明日また復習期日に達したフレーズを自動でお知らせします。';
+        desc.innerText = 'レッスン単位・重要フレーズともに記憶の定着が順調に進んでいます。明日また復習期日に達したレッスン・フレーズを自動でお知らせします。';
         desc.style.color = '#15803d';
       }
       if (listEl) listEl.style.display = 'none';
       if (btn) {
-        btn.innerText = '📚 保存フレーズ（武器庫）の一覧を見る';
-        btn.onclick = () => switchTab('library');
+        btn.innerText = '📜 過去の受講履歴一覧（履歴タブ）を見る';
+        btn.onclick = () => switchTab('history');
         btn.style.background = '#16a34a';
       }
       return;
@@ -11238,42 +11521,87 @@
     card.style.display = 'block';
     card.style.background = 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
     card.style.borderColor = '#f59e0b';
-    if (pill) {
-      pill.innerText = `${dueItems.length}件 要復習`;
-      pill.style.color = '#d97706';
-      pill.style.borderColor = '#fde68a';
-    }
+
     const title = document.getElementById('srsTitleText');
-    if (title) {
-      title.innerText = `エビングハウス忘却曲線：本日の復習 (${dueItems.length}件)`;
-      title.style.color = '#78350f';
-    }
     const desc = document.getElementById('srsDescText');
-    if (desc) {
-      desc.innerText = '記憶が薄れ始めている重要フレーズをピックアップしました。今復習すると定着率が最大化されます！';
-      desc.style.color = '#92400e';
-    }
-    if (listEl) {
-      listEl.style.display = 'flex';
-      const previewSlice = dueItems.slice(0, 3);
-      listEl.innerHTML = previewSlice.map(item => {
-        const lvl = item.srsLevel || 1;
-        const canDelete = item.id && !item.isFromHistory;
-        return `
-          <div class="srs-item-preview" style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="srs-item-guide" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:6px;">🎯 ${escapeHtml(item.guide || item.target || '')}</span>
-            <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-              <span class="srs-level-badge lvl-${lvl}">Level ${lvl}</span>
-              ${canDelete ? `<button onclick="event.stopPropagation(); deleteLibraryItemDirect(${item.id})" style="border:none; background:transparent; cursor:pointer; font-size:12px; color:#94a3b8; padding:0 3px;" title="復習リストから削除">✕</button>` : ''}
+
+    if (dueLessons.length > 0) {
+      const topDueLesson = dueLessons[0];
+      const lessonSrs = getLessonSrsInfo(topDueLesson);
+      if (pill) {
+        pill.innerText = `${dueLessons.length}レッスン 要復習`;
+        pill.style.color = '#d97706';
+        pill.style.borderColor = '#fde68a';
+      }
+      if (title) {
+        title.innerText = `エビングハウス忘却曲線：本日の推奨レッスン復習 (${dueLessons.length}件)`;
+        title.style.color = '#78350f';
+      }
+      if (desc) {
+        desc.innerHTML = `
+          ランダムな単語抜き出しではなく、<b>ストーリー全5ステージ（打診→制約→提案→交渉→合意）の文脈を丸ごと再現</b>して復習できます。直近ではなく、記憶が薄れ始めている最適なレッスンを推薦しています。
+        `;
+        desc.style.color = '#92400e';
+      }
+      if (listEl) {
+        listEl.style.display = 'block';
+        listEl.innerHTML = `
+          <div style="background:#ffffff; border:1.5px solid #f59e0b; border-radius:10px; padding:10px 12px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-weight:800; font-size:12px; color:#b45309;">🎯 最優先レッスン [${(topDueLesson.mode || 'quiz').toUpperCase()}]</span>
+              ${lessonSrs.badgeHtml}
+            </div>
+            <div style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:2px;">
+              📅 ${topDueLesson.date}
+            </div>
+            <div style="font-size:11.5px; color:#64748b;">
+              全${topDueLesson.data ? topDueLesson.data.length : 5}ステージの会話ラリーを一気に復習
             </div>
           </div>
         `;
-      }).join('') + (dueItems.length > 3 ? `<div style="font-size:10.5px; color:#b45309; text-align:right; margin-top:2px;"><a href="javascript:void(0)" onclick="switchTab('library')" style="color:#b45309; text-decoration:underline;">他 ${dueItems.length - 3} 件のフレーズ（フレーズタブで確認）➔</a></div>` : '');
-    }
-    if (btn) {
-      btn.innerText = `🚀 今すぐ「今日の復習ドリル」を開始 (${dueItems.length}件)`;
-      btn.onclick = startSrsReviewSession;
-      btn.style.background = '#d97706';
+      }
+      if (btn) {
+        btn.innerText = `🚀 おすすめ：レッスン単位で復習する（全5ステージ）`;
+        btn.onclick = () => startLessonReview(topDueLesson.id);
+        btn.style.background = '#d97706';
+      }
+    } else {
+      // レッスン期日はなく、フレーズのみ期日の場合
+      if (pill) {
+        pill.innerText = `${dueItems.length}件 要復習`;
+        pill.style.color = '#d97706';
+        pill.style.borderColor = '#fde68a';
+      }
+      if (title) {
+        title.innerText = `エビングハウス忘却曲線：本日の復習 (${dueItems.length}件)`;
+        title.style.color = '#78350f';
+      }
+      if (desc) {
+        desc.innerText = '記憶が薄れ始めている重要フレーズをピックアップしました。今復習すると定着率が最大化されます！';
+        desc.style.color = '#92400e';
+      }
+      if (listEl) {
+        listEl.style.display = 'flex';
+        const previewSlice = dueItems.slice(0, 3);
+        listEl.innerHTML = previewSlice.map(item => {
+          const lvl = item.srsLevel || 1;
+          const canDelete = item.id && !item.isFromHistory;
+          return `
+            <div class="srs-item-preview" style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="srs-item-guide" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:6px;">🎯 ${escapeHtml(item.guide || item.target || '')}</span>
+              <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                <span class="srs-level-badge lvl-${lvl}">Level ${lvl}</span>
+                ${canDelete ? `<button onclick="event.stopPropagation(); deleteLibraryItemDirect(${item.id})" style="border:none; background:transparent; cursor:pointer; font-size:12px; color:#94a3b8; padding:0 3px;" title="復習リストから削除">✕</button>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('') + (dueItems.length > 3 ? `<div style="font-size:10.5px; color:#b45309; text-align:right; margin-top:2px;"><a href="javascript:void(0)" onclick="switchTab('library')" style="color:#b45309; text-decoration:underline;">他 ${dueItems.length - 3} 件のフレーズ（フレーズタブで確認）➔</a></div>` : '');
+      }
+      if (btn) {
+        btn.innerText = `🚀 今すぐ「今日の復習ドリル」を開始 (${dueItems.length}件)`;
+        btn.onclick = startSrsReviewSession;
+        btn.style.background = '#d97706';
+      }
     }
   }
 
