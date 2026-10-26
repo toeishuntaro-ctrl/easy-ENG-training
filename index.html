@@ -12086,7 +12086,13 @@
 
   function updateRoleplayHeaderUI() {
     const turnText = document.getElementById('roleplayRallyTurnText');
-    if (turnText) turnText.innerText = `ラリー ${Math.min(roleplayState.turn, roleplayState.maxTurns)} / ${roleplayState.maxTurns}`;
+    if (turnText) {
+      if (roleplayState.isConcluded) {
+        turnText.innerText = `🎉 合意完了（全 ${Math.max(1, roleplayState.turn - 1)} 往復でクローズ）`;
+      } else {
+        turnText.innerText = `ラリー ${Math.min(roleplayState.turn, roleplayState.maxTurns)} / 最大${roleplayState.maxTurns}往復（合意で即クローズ可）`;
+      }
+    }
 
     const topic = ROLEPLAY_TOPICS[roleplayState.topicKey] || ROLEPLAY_TOPICS.pushback;
     const goalBadge = document.getElementById('roleplayGoalBadge');
@@ -12097,7 +12103,7 @@
       dotsContainer.innerHTML = Array.from({ length: roleplayState.maxTurns }, (_, i) => {
         const dotNum = i + 1;
         let cls = 'roleplay-step-dot';
-        if (dotNum < roleplayState.turn) cls += ' done';
+        if (roleplayState.isConcluded || dotNum < roleplayState.turn) cls += ' done';
         else if (dotNum === roleplayState.turn) cls += ' active';
         return `<div class="${cls}"></div>`;
       }).join('');
@@ -12246,6 +12252,25 @@
   function selectAndSendQuickReply(idx) {
     const text = currentQuickRepliesList[idx];
     if (!text) return;
+    if (text.startsWith('👍')) {
+      const cleanReaction = "👍 Will do. Speak then!";
+      roleplayState.messages.push({
+        role: 'user',
+        text: cleanReaction,
+        coach: {
+          coach_feedback_jp: "Teamsチャットのリアルなマナーとして満点です！合意後は長々と会話を続けず、リアクションでスマートにクローズするのが最も好まれます。",
+          better_plain_english: cleanReaction,
+          key_pattern_suggested: "Will do. Speak then!",
+          key_pattern_jp: "了解です。その時間にお話ししましょう（スマートなクローズ）"
+        }
+      });
+      renderRoleplayTimeline();
+      showRoleplayConclusion({
+        final_score: 98,
+        final_summary_jp: "🎉 完璧なTeamsチャットクロージング！要件と期限を即答し、リアクションでスマートに完了できました。"
+      });
+      return;
+    }
     const input = document.getElementById('roleplayInputField');
     if (input) input.value = text;
     sendRoleplayMessage(text);
@@ -12373,37 +12398,41 @@
   }
 
   function handleRoleplayFallbackResponse(userText, char, topic) {
-    const fallbackTurns = [
-      {
-        ai: "I understand, but we have strict commitments. Can you guarantee the core features will be completely bug-free?",
-        ai_jp: "理解しましたが、厳しい約束があります。コア機能にバグが一切ないことを保証できますか？",
-        coach: "要点は伝わっています！次は相手の安心感を引き出すため、『確実に〜する』というコミットメントを中学動詞で伝えましょう。",
-        better: "I will make sure the core release is tested thoroughly by our senior QA lead.",
-        pattern: "I will make sure [clause] by [verb-ing]...",
-        pattern_jp: "〜することで確実に…いたします。",
+    const userLower = (userText || '').toLowerCase();
+    const hasCommitment = /\b(by \d|by noon|by tomorrow|later today|will send|will check|will update|will get back|looking into)\b/i.test(userLower);
+
+    let fb;
+    if (hasCommitment || roleplayState.turn >= 2) {
+      fb = {
+        ai: "Sounds good. I appreciate the quick turnaround. I'll watch for your update. Thanks!",
+        ai_jp: "了解しました。迅速なご対応ありがとうございます。アップデートをお待ちしています！",
+        coach: "「いつまでに何をするか」を即答できており、ビジネスチャットとして満点の対応です！相手が了承した時点でスパッと会話を切り上げるのがスマートな実務マナーです。",
+        better: "Understood. I will check with the team and send the update by 2 PM.",
+        pattern: "I will [verb] and update you by [time].",
+        pattern_jp: "〜を確認し、○時までに更新をご報告します（納期を明示する基本形）",
         replies: [
-          "I will make sure our team runs all tests before deploying on Friday.",
-          "Yes, we will freeze changes today to focus 100% on stability.",
-          "Let me send you the verified test report by tomorrow afternoon."
-        ]
-      },
-      {
-        ai: "Great, that gives me the confidence we need. Let's document this scope and brief the stakeholders together on Thursday.",
-        ai_jp: "素晴らしい、それなら十分な確信が持てます。このスコープを文書化し、木曜日に一緒にステークホルダーへ報告しましょう。",
-        coach: "完璧です！相手の懸念を払拭し、見事に合意を取り付けました。",
-        better: "Thanks for working together on this; I will share the summary notes by 5 PM.",
-        pattern: "Thanks for working together on this; let's [verb] on [day].",
-        pattern_jp: "調整にご協力いただき感謝します。〜曜日に…しましょう。",
-        replies: [
-          "Thanks for working together on this. I will send the summary shortly.",
-          "Sounds like a solid plan. Looking forward to Thursday.",
-          "Thank you! We are fully committed to this timeline."
+          "👍 (Teamsリアクション完了)",
+          "Will do. Speak then!",
+          "On it. Thanks!"
         ],
         concluded: true
-      }
-    ];
-
-    const fb = fallbackTurns[Math.min(roleplayState.turn - 1, fallbackTurns.length - 1)];
+      };
+    } else {
+      fb = {
+        ai: "Understood on the investigation. In the meantime, should we temporarily pause data sync for this site to prevent further errors, or keep it running?",
+        ai_jp: "調査の件は承知しました。その間、エラー拡大を防ぐために当該サイトのデータ同期を一時停止すべきでしょうか、それとも稼働を継続しますか？",
+        coach: "初動の受け止めは良好です！相手から暫定措置の判断を求められたので、リスクを最小化する提案を中学動詞で簡潔に返しましょう。",
+        better: "Let's pause the data sync until we confirm the root cause.",
+        pattern: "Let's [verb] until we [verb]...",
+        pattern_jp: "〜を確認するまで、いったん…しましょう（暫定リスクヘッジの型）",
+        replies: [
+          "Let's pause the sync temporarily until the CRA confirms the root cause.",
+          "We can keep it running, but I will monitor the error logs every hour.",
+          "I suggest we pause data entry for Site 102 to protect database integrity."
+        ],
+        concluded: false
+      };
+    }
 
     const lastUserMsg = roleplayState.messages[roleplayState.messages.length - 1];
     if (lastUserMsg) {
@@ -12432,8 +12461,8 @@
 
     if (fb.concluded || roleplayState.turn > roleplayState.maxTurns) {
       showRoleplayConclusion({
-        final_score: 95,
-        final_summary_jp: "相手の要求に振り回されず、現実的なスコープと確実な期日を提示して見事に合意を着地させました！"
+        final_score: 96,
+        final_summary_jp: "🎉 迅速な合意達成！余計な引き伸ばしをせず、期限の明示と確実な受け止めでプロフェッショナルに会話をクローズできました。"
       });
     } else {
       renderRoleplayQuickReplies(fb.replies);
@@ -12442,6 +12471,7 @@
 
   function showRoleplayConclusion(data) {
     roleplayState.isConcluded = true;
+    updateRoleplayHeaderUI();
     saveRoleplaySession();
     const summaryCard = document.getElementById('roleplaySummaryCard');
     const inputBar = document.getElementById('roleplayInputBar');
@@ -12453,11 +12483,16 @@
     if (summaryCard) {
       summaryCard.style.display = 'block';
       const scoreEl = document.getElementById('roleplaySummaryScore');
-      if (scoreEl) scoreEl.innerText = `Plain Englishスコア: ${data.final_score || 92}点`;
+      if (scoreEl) scoreEl.innerText = `Plain Englishスコア: ${data.final_score || 95}点`;
 
       const textEl = document.getElementById('roleplaySummaryText');
       if (textEl) {
-        textEl.innerText = data.final_summary_jp || "相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました！";
+        textEl.innerHTML = `
+          <div style="margin-bottom: 8px; font-weight: 700; color: #166534; font-size: 13px;">${escapeHtml(data.final_summary_jp || "相手の懸念に寄り添いつつ、中学生レベルの基本動詞を使って簡潔かつ確実な合意を着地させることができました！")}</div>
+          <div style="font-size: 11.5px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 8px 10px; color: #065f46; line-height: 1.5;">
+            💡 <b>Teamsチャットの極意:</b> 「いつまでに何をするか（期限・ETA）」を明確に伝え、相手が了承した時点でスパッと会話を終えるのが、多国籍チームで最も信頼されるスピード感です。
+          </div>
+        `;
       }
     }
 
