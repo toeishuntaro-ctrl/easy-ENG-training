@@ -1252,11 +1252,11 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
     }
   };
 
-  // Models priority list: stable 2.5-flash, 2.5-flash-lite, 3.1-flash-lite
+  // Active models priority list (deprecated 2.5 models removed)
   const modelsToTry = [
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-3.1-flash-lite'
+    'gemini-3.1-flash-lite',
+    'gemini-flash-latest',
+    'gemini-3.8-flash'
   ];
 
   let errors = [];
@@ -1273,6 +1273,7 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
           config: {
             systemInstruction: "You are an elite Global Business Communication Coach for non-native professionals. You generate structured 5-stage interactive dialogues teaching clear key patterns (型) combined with simple junior-high English parts, strictly conforming to the requested JSON schema.",
             temperature: 0.85,
+            thinkingConfig: { thinkingBudget: 0 },
             responseMimeType: "application/json",
             responseSchema: responseSchema
           }
@@ -1455,9 +1456,29 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
     }
   }
 
-  console.error('[AI Generate] All models failed. Detailed errors:', errors);
-  return res.status(500).json({
-    error: 'AI問題生成に失敗しました。',
-    details: errors
-  });
+  console.warn('[AI Generate] All online models temporarily busy or failed. Synthesizing 5 fresh non-duplicate stages from pattern catalog. Errors:', errors);
+  try {
+    const fallbackStages = selected5Categories.map((catKey, idx) => {
+      const cat = patternLibrary[catKey];
+      // Pick a pattern not seen in past history
+      const pattern = cat.patterns.find(p => !matchesPastFrame(p, pastStemsSet, pastPhrasesList)) || cat.patterns[idx % cat.patterns.length];
+      const stageObj = synthesizeStageFromPattern(
+        pattern,
+        cat,
+        "",
+        "",
+        activeRoles[idx % activeRoles.length],
+        idx + 1,
+        mode
+      );
+      return stageObj;
+    });
+    return res.status(200).json(fallbackStages);
+  } catch (synthErr) {
+    console.error('[AI Generate] Synthesis fallback error:', synthErr);
+    return res.status(500).json({
+      error: 'AI問題生成に失敗しました。',
+      details: errors
+    });
+  }
 }

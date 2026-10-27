@@ -5936,40 +5936,273 @@
         }
     ];
 
+    const clarifyPack = [
+        {
+          stage: 1,
+          ai_name: "Ken (Site Pharmacist)",
+          email_subject: "Temperature Monitoring Query",
+          ai_en: "The temperature excursion protocol is a bit vague on the required quarantine time for this shipment.",
+          ai_jp: "今回の貨物の隔離保管期間について、温度逸脱手順書の記載が少し曖昧です。",
+          key_pattern: "Could you clarify what you mean by [noun/clause]?",
+          key_pattern_jp: "〜について具体的にどのような意味かご教示いただけますか？",
+          pattern_rationale: "疑問点を放置せず、相手を責めずに手戻りを防ぐ確認の基本型です。",
+          parts_hint: "\"the quarantine timeframe\" を組み合わせるだけ！",
+          guide: "隔離保管の期間について具体的にどのような意味か確認してください。",
+          target: "Could you clarify what you mean by the quarantine timeframe?",
+          counterpart_reaction_en: "Sure. We need to hold the shipment until QA reviews the temperature logs.",
+          counterpart_reaction_jp: "承知しました。QAが温度ログを確認するまで貨物を留め置く必要があります。",
+          chunks: ["Could you clarify", "what you mean by", "the quarantine timeframe?"],
+          choices: [
+            { type: "PERFECT", text: "Could you clarify what you mean by the quarantine timeframe?", advice: "完璧です！『Could you clarify...』で角を立てずに具体的な確認ができています。" },
+            { type: "TOO_COMPLEX", text: "Could you clarify the exact chronological duration of the mandatory quarantine protocol?", advice: "同じ型ですが、chronological duration など言葉が過剰に硬直しています。" },
+            { type: "TOO_DIRECT", text: "Could you clarify why your documentation is so confusing and badly written?", advice: "相手の文書作成能力を攻撃しており、協調関係を破壊します。" }
+          ]
+        },
+        {
+          stage: 2,
+          ai_name: "Elena (QA Specialist)",
+          email_subject: "Batch Release Check",
+          ai_en: "We need to ensure compliance before releasing the batch to the clinic.",
+          ai_jp: "クリニックにバッチを払い出す前に、コンプライアンス（手順遵守）を担保する必要があります。",
+          key_pattern: "Just to be clear, are we expected to [verb]?",
+          key_pattern_jp: "念のための確認ですが、私たちは〜すべきという認識で合っていますか？",
+          pattern_rationale: "相手の期待値をオウム返しで確認し、タスクのスコープを明確にします。",
+          parts_hint: "\"pause the distribution for now\" を組み合わせるだけ！",
+          guide: "念のため確認ですが、現時点では配送を一時停止すべきでしょうか？",
+          target: "Just to be clear, are we expected to pause the distribution for now?",
+          counterpart_reaction_en: "Yes, exactly. Keep the units in quarantine until 2 PM today.",
+          counterpart_reaction_jp: "その通りです。本日14時まで隔離保管を維持してください。",
+          chunks: ["Just to be clear,", "are we expected to", "pause the distribution for now?"],
+          choices: [
+            { type: "PERFECT", text: "Just to be clear, are we expected to pause the distribution for now?", advice: "完璧です！『Just to be clear, are we expected to...』で期待値を冷静に確認できています。" },
+            { type: "TOO_COMPLEX", text: "Just to be clear, are we obligated to effectuate a moratorium on logistical operations?", advice: "effectuate a moratorium on logistical operations など学術的すぎて伝わりません。" },
+            { type: "TOO_DIRECT", text: "Just to be clear, are you telling me to stop doing my actual job?", advice: "被害妄想的で攻撃的なトーンです。" }
+          ]
+        },
+        {
+          stage: 3,
+          ai_name: "Marcus (Operations Lead)",
+          email_subject: "Sign-off Delegation",
+          ai_en: "Who will authorize the deviations if the primary monitor is off-site today?",
+          ai_jp: "主担当モニターが本日不在の場合、誰が逸脱を承認するのでしょうか？",
+          key_pattern: "Let me check with [team] and get back to you by [time]...",
+          key_pattern_jp: "〜に確認の上、[時間]までに回答いたします…",
+          pattern_rationale: "その場で当てずっぽうに答えず、確認先と期日を約束して持ち帰る防衛の型です。",
+          parts_hint: "\"the backup lead\" と \"by noon today\" を組み合わせるだけ！",
+          guide: "副担当リードに確認の上、本日正午までに折り返します。",
+          target: "Let me check with the backup lead and get back to you by noon today.",
+          counterpart_reaction_en: "Sounds like a solid plan. I will wait for your note at noon.",
+          counterpart_reaction_jp: "頼もしい対応です。正午のご連絡をお待ちしています。",
+          chunks: ["Let me check with", "the backup lead", "and get back to you", "by noon today."],
+          choices: [
+            { type: "PERFECT", text: "Let me check with the backup lead and get back to you by noon today.", advice: "完璧です！確実な確認先と具体的な期日（noon today）で安心感を与えられています。" },
+            { type: "TOO_COMPLEX", text: "Let me check with the auxiliary representative and articulate a definitive verdict prior to midday.", advice: "auxiliary representative, articulate a definitive verdict など気取りすぎています。" },
+            { type: "TOO_DIRECT", text: "Let me check, but you should already know who the backup is without asking.", advice: "相手に不必要な恥をかかせる無礼な言い回しです。" }
+          ]
+        },
+        {
+          stage: 4,
+          ai_name: "Sofia (Regulatory Specialist)",
+          email_subject: "Audit Scope Alignment",
+          ai_en: "Can we deliver the full corrective action plan to the agency by tomorrow afternoon?",
+          ai_jp: "当局への完全な是正措置計画（CAPA）を明日の午後までに提出できますか？",
+          key_pattern: "What if we [verb A] first and [verb B] next week?",
+          key_pattern_jp: "まず〜し、来週…する形にするのはいかがでしょうか？",
+          pattern_rationale: "無理な要求に対し、段階的な現実的代替案を提示する万能交渉術です。",
+          parts_hint: "\"send the initial draft first\" と \"submit the final report\" を組み合わせるだけ！",
+          guide: "まず初版ドラフトを提出し、最終報告書は来週提出する形にしてはいかがでしょうか？",
+          target: "What if we send the initial draft first and submit the final report next week?",
+          counterpart_reaction_en: "That compromise works well. That prevents any official filing delay.",
+          counterpart_reaction_jp: "その妥協案でいきましょう。それなら公式な提出遅延を防げます。",
+          chunks: ["What if we send", "the initial draft first", "and submit the final report", "next week?"],
+          choices: [
+            { type: "PERFECT", text: "What if we send the initial draft first and submit the final report next week?", advice: "完璧です！『What if we... first and... next week?』で明快な段階提案ができています。" },
+            { type: "TOO_COMPLEX", text: "What if we transmit the preliminary synopsis initially and furnish the comprehensive audit post-haste next week?", advice: "transmit preliminary synopsis, post-haste など不必要に難解です。" },
+            { type: "TOO_DIRECT", text: "What if you stop giving us crazy deadlines and just wait until we are ready?", advice: "相手の要請を「crazy」と罵倒しておりビジネス崩壊を招きます。" }
+          ]
+        },
+        {
+          stage: 5,
+          ai_name: "Carlos (Regional Director)",
+          email_subject: "Final Action Summary",
+          ai_en: "Great alignment. Let's make sure both teams follow this exact schedule.",
+          ai_jp: "素晴らしいすり合わせでした。双方のチームがこの日程を確実に遵守するようにしましょう。",
+          key_pattern: "Thanks for working together on this; I will [verb] by [time]...",
+          key_pattern_jp: "ご調整ありがとうございました。[時間]までに〜いたします…",
+          pattern_rationale: "協力への感謝を述べ、自分の即時アクションをコミットして気持ちよく締めます。",
+          parts_hint: "\"send the summary email\" と \"by 4 PM today\" を組み合わせるだけ！",
+          guide: "調整への感謝を伝え、本日16時までに要約メールを送る旨を伝えてください。",
+          target: "Thanks for working together on this; I will send the summary email by 4 PM today.",
+          counterpart_reaction_en: "Appreciate the quick wrap-up. Have a great afternoon!",
+          counterpart_reaction_jp: "素早い取りまとめに感謝します。良い午後をお過ごしください！",
+          chunks: ["Thanks for working together on this;", "I will send", "the summary email", "by 4 PM today."],
+          choices: [
+            { type: "PERFECT", text: "Thanks for working together on this; I will send the summary email by 4 PM today.", advice: "完璧です！感謝と具体的な次アクション（by 4 PM today）でプロフェッショナルに完結しています。" },
+            { type: "TOO_COMPLEX", text: "Thanks for working together on this; I shall disseminate the formalized synthesis by 16:00.", advice: "disseminate the formalized synthesis など無駄に大仰です。" },
+            { type: "TOO_DIRECT", text: "Thanks for working together on this; make sure your team does not drop the ball.", advice: "相手チームのミスを決めつける失礼な締めくくりです。" }
+          ]
+        }
+    ];
+
+    const issuePack = [
+        {
+          stage: 1,
+          ai_name: "Priya (Lead Data Manager)",
+          email_subject: "Database Lock Risk",
+          ai_en: "We have over 150 open queries on Site 102. At this rate, we will miss database lock.",
+          ai_jp: "Site 102に150件以上の未解決クエリが残っています。このペースだとデータベースロックに間に合いません。",
+          key_pattern: "I see your point, but we need to focus on [priority] first.",
+          key_pattern_jp: "おっしゃることは分かりますが、まずは〜に集中する必要があります。",
+          pattern_rationale: "相手の危機感を受け止めつつ、すべてを一度にやろうとせず最優先事項に絞り込みます。",
+          parts_hint: "\"the primary safety queries\" を組み合わせるだけ！",
+          guide: "おっしゃることは理解できますが、まずは主要な安全性クエリに集中する必要があります。",
+          target: "I see your point, but we need to focus on the primary safety queries first.",
+          counterpart_reaction_en: "Agreed. Let's filter out the minor administrative queries for now.",
+          counterpart_reaction_jp: "賛成です。事務的な軽微クエリは一旦後回しにしましょう。",
+          chunks: ["I see your point,", "but we need to focus on", "the primary safety queries", "first."],
+          choices: [
+            { type: "PERFECT", text: "I see your point, but we need to focus on the primary safety queries first.", advice: "完璧です！相手の懸念に理解を示しつつ、最優先項目への集中を促せています。" },
+            { type: "TOO_COMPLEX", text: "I see your point, but we must allocate our cognitive bandwidth toward critical pharmacovigilance parameters primarily.", advice: "allocate cognitive bandwidth など気取りすぎています。" },
+            { type: "TOO_DIRECT", text: "I see your point, but you created these stupid queries so fix them yourself.", advice: "他責的かつ攻撃的でチームワークを破壊します。" }
+          ]
+        },
+        {
+          stage: 2,
+          ai_name: "Thomas (Technical Lead)",
+          email_subject: "Sync Pipeline Decision",
+          ai_en: "The automated sync pipeline might overwrite site edits. Should we keep it active?",
+          ai_jp: "自動同期パイプラインが施設の入力データを上書きする恐れがあります。稼働を続けますか？",
+          key_pattern: "To be safe, let's [verb] while we [verb]...",
+          key_pattern_jp: "安全のため、〜している間は…しておきましょう…",
+          pattern_rationale: "リスク回避の理由を「To be safe（安全のために）」と明快に伝え、冷静な暫定対応を指示します。",
+          parts_hint: "\"pause the sync\" と \"check the data logs\" を組み合わせるだけ！",
+          guide: "安全のため、データログを調査している間は同期を一時停止しておきましょう。",
+          target: "To be safe, let's pause the sync while we check the data logs.",
+          counterpart_reaction_en: "Wise call. Pausing the sync right now.",
+          counterpart_reaction_jp: "賢明な判断です。今すぐ同期を停止します。",
+          chunks: ["To be safe,", "let's pause the sync", "while we check", "the data logs."],
+          choices: [
+            { type: "PERFECT", text: "To be safe, let's pause the sync while we check the data logs.", advice: "完璧です！『To be safe, let's... while we...』でリスクを最小化する指示が出せています。" },
+            { type: "TOO_COMPLEX", text: "To be safe, let us institute a cessation of the pipeline concurrent with our verification.", advice: "institute a cessation of the pipeline など無駄に難解です。" },
+            { type: "TOO_DIRECT", text: "To be safe, turn it off. I don't trust your code.", advice: "相手の開発スキルを侮辱する暴言です。" }
+          ]
+        },
+        {
+          stage: 3,
+          ai_name: "Hans (External Quality Auditor)",
+          email_subject: "CAPA Timeline Inquiry",
+          ai_en: "We need the finalized corrective action log before the audit committee meets tomorrow.",
+          ai_jp: "明日の監査委員会が開かれる前に、最終確定した是正措置ログが必要です。",
+          key_pattern: "I will make sure [clause], and please [verb]...",
+          key_pattern_jp: "私が確実に〜しますので、そちらは…をお願いできますか？",
+          pattern_rationale: "自らの責任範囲を即座に引き受けつつ、相手にも必要な協力を要請します。",
+          parts_hint: "\"we prepare the log by 5 PM\" と \"review the draft\" を組み合わせるだけ！",
+          guide: "17時までに確実にログを準備しますので、ドラフトのご確認をお願いできますか？",
+          target: "I will make sure we prepare the log by 5 PM, and please review the draft.",
+          counterpart_reaction_en: "Deal. I will review it as soon as it arrives in my inbox.",
+          counterpart_reaction_jp: "了解です。受信トレイに届き次第すぐにレビューします。",
+          chunks: ["I will make sure", "we prepare the log by 5 PM,", "and please review", "the draft."],
+          choices: [
+            { type: "PERFECT", text: "I will make sure we prepare the log by 5 PM, and please review the draft.", advice: "完璧です！『I will make sure..., and please...』で信頼関係とGive & Takeを両立しています。" },
+            { type: "TOO_COMPLEX", text: "I will make sure we formulate the documentation prior to 17:00, and please evaluate the preliminary iteration.", advice: "formulate documentation, preliminary iteration など硬直した表現です。" },
+            { type: "TOO_DIRECT", text: "I will make sure it is done, so stop breathing down my neck.", advice: "相手の催促に対して攻撃的に反発しています。" }
+          ]
+        },
+        {
+          stage: 4,
+          ai_name: "Clara (Drug Safety Lead)",
+          email_subject: "Expedited Report Feasibility",
+          ai_en: "Can we submit the expedited safety filing to the review board by tomorrow morning?",
+          ai_jp: "緊急安全性報告を明日の朝までに審査委員会へ提出することは可能ですか？",
+          key_pattern: "We cannot [verb A], but we can [verb B] instead.",
+          key_pattern_jp: "〜は難しいですが、代わりに…なら可能です。",
+          pattern_rationale: "「No」と突っぱねず、中学英語の「cannot..., but can... instead」でポジティブな実行可能枠を示します。",
+          parts_hint: "\"submit the full report\" と \"send the preliminary summary by 10 AM\" を組み合わせるだけ！",
+          guide: "完全な報告書の提出は難しいですが、代わりに午前10時までに暫定要約を送る形なら可能です。",
+          target: "We cannot submit the full report, but we can send the preliminary summary by 10 AM instead.",
+          counterpart_reaction_en: "The preliminary summary is plenty for tomorrow's briefing. Thanks!",
+          counterpart_reaction_jp: "明日のブリーフィングには暫定要約で十分です。助かります！",
+          chunks: ["We cannot submit the full report,", "but we can send", "the preliminary summary", "by 10 AM instead."],
+          choices: [
+            { type: "PERFECT", text: "We cannot submit the full report, but we can send the preliminary summary by 10 AM instead.", advice: "完璧です！『cannot... but can... instead』で前向きな境界線を引けています。" },
+            { type: "TOO_COMPLEX", text: "We cannot dispatch the exhaustive dossier, but we can furnish an interim synopsis by 10:00 instead.", advice: "exhaustive dossier, interim synopsis など大げさで相手を戸惑わせます。" },
+            { type: "TOO_DIRECT", text: "We cannot do that. That is an impossible ask and you know it.", advice: "相手の要請を全面的に否定し攻撃しています。" }
+          ]
+        },
+        {
+          stage: 5,
+          ai_name: "David (Medical Monitor)",
+          email_subject: "Pre-submission Quick Sync",
+          ai_en: "Let's do a fast sync to make sure we don't have any discrepancies before filing.",
+          ai_jp: "提出前に数値の食い違いがないか、手短に同期ミーティングを行いましょう。",
+          key_pattern: "Let's connect for a quick 10-minute sync around [time]...",
+          key_pattern_jp: "[時間]頃に10分だけクイックにすり合わせ通話しましょう…",
+          pattern_rationale: "長引かせない時間をあらかじめ提示し（10-minute sync）、スマートに意思決定を完了させます。",
+          parts_hint: "\"around 2 PM this afternoon\" を組み合わせるだけ！",
+          guide: "本日午後2時頃に10分だけクイックにすり合わせ通話しましょう。",
+          target: "Let's connect for a quick 10-minute sync around 2 PM this afternoon.",
+          counterpart_reaction_en: "Perfect. I will send a quick calendar invite for 2 PM.",
+          counterpart_reaction_jp: "完璧です。14時の招待をサクッとお送りしますね。",
+          chunks: ["Let's connect", "for a quick 10-minute sync", "around 2 PM", "this afternoon."],
+          choices: [
+            { type: "PERFECT", text: "Let's connect for a quick 10-minute sync around 2 PM this afternoon.", advice: "完璧です！『quick 10-minute sync』で負担をかけず確実に次のアクションを押さえられています。" },
+            { type: "TOO_COMPLEX", text: "Let us convene a brief ten-minute colloquium at approximately 14:00 post meridiem.", advice: "colloquium, post meridiem など完全に不自然な文語です。" },
+            { type: "TOO_DIRECT", text: "Let's talk at 2 PM so you can finally understand the numbers.", advice: "相手の理解力を侮蔑する失礼な物言いです。" }
+          ]
+        }
+    ];
+
     const pastStems = new Set(
       [...(excludePatterns || []), ...(excludeTopics || [])].map(s => {
         return (s || '').toLowerCase().replace(/\[.*?\]/g, ' ').replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
       }).filter(Boolean)
     );
 
-    const primaryPack = (mode === 'teams' || mode === 'chat') ? teamsPack : (mode === 'email' ? emailPack : (mode === 'sim' ? simPack : quizPack));
-    const allPacks = [primaryPack, teamsPack, emailPack, simPack, quizPack];
+    // 利用可能な全シナリオパック（トピック別・多様性担保）
+    const allAvailablePacks = [
+      { name: 'teams', pack: teamsPack },
+      { name: 'email', pack: emailPack },
+      { name: 'clarify', pack: clarifyPack },
+      { name: 'issue', pack: issuePack },
+      { name: 'sim', pack: simPack },
+      { name: 'quiz', pack: quizPack }
+    ];
 
-    // 1. 過去履歴や武器庫と重複のないパックを優先選択
-    for (const p of allPacks) {
-      const hasDuplicate = p.some(st => {
+    // 直近履歴の先頭アイテム（前回解いたレッスン）と同じパックは完全除外
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const latestStageTarget = history[0]?.data?.[0]?.target;
+
+    // 1. 各パックの過去履歴との重複スコア（重複ステージ数）を計算
+    const scoredPacks = allAvailablePacks.map(item => {
+      let dupCount = 0;
+      const isLatestDirectMatch = latestStageTarget && item.pack.some(st => st.target === latestStageTarget);
+      item.pack.forEach(st => {
         const tStem = (st.target || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
         const pStem = (st.key_pattern || '').toLowerCase().replace(/\[.*?\]/g, ' ').replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
-        return pastStems.has(tStem) || pastStems.has(pStem) || (excludeTopics || []).includes(st.target) || (excludePatterns || []).includes(st.key_pattern);
+        if (pastStems.has(tStem) || pastStems.has(pStem) || (excludeTopics || []).includes(st.target) || (excludePatterns || []).includes(st.key_pattern)) {
+          dupCount++;
+        }
       });
-      if (!hasDuplicate) {
-        return p;
-      }
-    }
-
-    // 2. 全パックから過去履歴と重複しない5ステージを動的に選出して合成
-    const allStages = [...teamsPack, ...emailPack, ...simPack, ...quizPack];
-    const cleanStages = allStages.filter(st => {
-      const tStem = (st.target || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
-      const pStem = (st.key_pattern || '').toLowerCase().replace(/\[.*?\]/g, ' ').replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join(' ');
-      return !pastStems.has(tStem) && !pastStems.has(pStem) && !(excludeTopics || []).includes(st.target) && !(excludePatterns || []).includes(st.key_pattern);
+      return { ...item, dupCount, isLatestDirectMatch };
     });
 
-    if (cleanStages.length >= 5) {
-      return cleanStages.slice(0, 5).map((st, idx) => ({ ...st, stage: idx + 1 }));
+    // 直近解いたものと完全一致するパックを除外した候補リスト
+    const viablePacks = scoredPacks.filter(p => !p.isLatestDirectMatch);
+    const candidateList = viablePacks.length > 0 ? viablePacks : scoredPacks;
+
+    // 重複ゼロのパックがあれば、日付（日・曜日）のローテーションで選出
+    const zeroDupPacks = candidateList.filter(p => p.dupCount === 0);
+    if (zeroDupPacks.length > 0) {
+      const dayOffset = (new Date().getDate() + new Date().getDay()) % zeroDupPacks.length;
+      return zeroDupPacks[dayOffset].pack;
     }
 
-    return primaryPack;
+    // 重複ゼロがない場合でも、重複が最も少ないパックから日付ローテーションで選出
+    candidateList.sort((a, b) => a.dupCount - b.dupCount);
+    const bestDupCount = candidateList[0].dupCount;
+    const bestCandidates = candidateList.filter(p => p.dupCount === bestDupCount);
+    const rotateIdx = (new Date().getDate() + new Date().getDay()) % bestCandidates.length;
+    return bestCandidates[rotateIdx].pack;
   }
 
   function saveScenariosToHistory(data) {
