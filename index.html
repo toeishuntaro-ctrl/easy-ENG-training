@@ -15,6 +15,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="PlainEnglish">
 
+  <!-- Typography: Plus Jakarta Sans + Noto Sans JP + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Noto+Sans+JP:wght@500;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
   <!-- Firebase Cloud Sync モジュール (Firestore & Auth) -->
   <script type="module" src="/firebase-sync.js"></script>
 
@@ -102,48 +107,158 @@
 
     :root {
       --primary: #2563eb;
-      --bg: #f8fafc;
+      --primary-deep: #1d4ed8;
+      --bg: #f1f5f9;
       --card: #ffffff;
       --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
       --success: #10b981;
       --error: #ef4444;
       --warning: #f59e0b;
+      --font-sans: "Plus Jakarta Sans", "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 16px 16px 85px 16px;
+      padding: 14px 14px 82px 14px;
       display: flex;
       justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+    .tabular-nums, .stat-value, .time-attack-digits, .srs-count-pill, .library-count-badge {
+      font-variant-numeric: tabular-nums;
     }
     .container {
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
       background: var(--card);
       border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
       box-sizing: border-box;
     }
 
-    /* 固定ボトムナビゲーションバー */
+    /* デスクトップ用トップナビゲーションバー (900px以上で表示) */
+    .desktop-top-nav {
+      display: none;
+    }
+    @media (min-width: 900px) {
+      body {
+        padding: 24px 24px 40px 24px;
+      }
+      .container {
+        max-width: 920px;
+        padding: 24px 28px;
+      }
+      .bottom-nav {
+        display: none !important;
+      }
+      .desktop-top-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .desktop-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+      }
+      .desktop-brand-mark {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .desktop-nav-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.15s ease;
+      }
+      .desktop-nav-btn:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+      .desktop-nav-btn.active {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+      }
+      .home-desktop-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+        align-items: start;
+      }
+      #libraryListContainer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      #libraryListContainer > .lib-item-card {
+        margin-bottom: 0;
+      }
+      #topicCarteList {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      #topicCarteList > .topic-carte-item {
+        margin-bottom: 0;
+      }
+    }
+
+    /* 固定ボトムナビゲーションバー (モバイル向け 56pxコンパクト設計) */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
-      max-width: 480px;
-      height: 60px;
-      background: #ffffff;
+      max-width: 500px;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
       border-top: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-around;
       align-items: center;
       z-index: 100;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.05);
       padding-bottom: env(safe-area-inset-bottom);
     }
     .nav-item {
@@ -154,18 +269,19 @@
       justify-content: center;
       color: #64748b;
       font-size: 10px;
-      font-weight: bold;
+      font-weight: 700;
       border: none;
       background: transparent;
       cursor: pointer;
-      padding: 6px 0;
+      padding: 4px 0;
+      white-space: nowrap;
     }
     .nav-item.active {
       color: var(--primary);
     }
     .nav-icon {
-      font-size: 18px;
-      margin-bottom: 2px;
+      font-size: 17px;
+      margin-bottom: 1px;
     }
 
     /* ホーム画面 UI */
@@ -645,13 +761,15 @@
       opacity: 0.9;
     }
 
-    /* Stage Top Control Bar (Compact Single-Line) */
+    /* Stage Top Control Bar */
     .stage-control-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 6px;
       margin-bottom: 8px;
       padding: 0 2px;
+      flex-wrap: wrap;
     }
     .audio-listen-btn {
       padding: 4px 9px;
@@ -660,6 +778,7 @@
       border-color: #bfdbfe;
       color: #1e40af;
       font-weight: 700;
+      white-space: nowrap;
     }
     .audio-listen-btn.playing {
       background: #2563eb;
@@ -667,21 +786,21 @@
       border-color: #1d4ed8;
     }
 
-    /* Stage Phase Stepper (Step 1: Lecture -> Step 2: Slot Drill -> Step 3: Recall Quiz) */
+    /* Stage Phase Stepper (モバイル幅でも見切れない均一3分割) */
     .stage-step-bar {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
-      border-radius: 9px;
+      border-radius: 10px;
       padding: 3px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       gap: 3px;
     }
     .stage-step-btn {
-      flex: 1;
       border: none;
       background: transparent;
-      padding: 5px 6px;
+      padding: 6px 4px;
       border-radius: 7px;
       font-size: 11px;
       font-weight: 700;
@@ -693,15 +812,17 @@
       gap: 4px;
       transition: all 0.15s ease;
       white-space: nowrap;
+      overflow: hidden;
+      min-width: 0;
     }
     .stage-step-btn.active {
       background: #ffffff;
-      color: #1e293b;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      color: #0f172a;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
     }
     .stage-step-btn .step-num {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: #e2e8f0;
       color: #475569;
@@ -1036,14 +1157,58 @@
     }
     .lecture-rationale-box {
       background: #ffffff;
-      border-left: 3px solid #10b981;
-      border-radius: 6px;
-      padding: 8px 10px;
+      border: 1px solid #d1fae5;
+      border-radius: 8px;
+      padding: 9px 11px;
       font-size: 11.5px;
       color: #334155;
-      line-height: 1.45;
+      line-height: 1.5;
       margin-bottom: 8px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    /* パターン解剖（固定の型 vs 中学パーツ 視覚分解） */
+    .pattern-anatomy-box {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+    .pattern-anatomy-box:hover {
+      border-color: #3b82f6;
+    }
+    .pattern-anatomy-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: #64748b;
+      margin-bottom: 5px;
+    }
+    .pattern-anatomy-sentence {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .anatomy-stem {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+    .anatomy-slot {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      padding: 2px 7px;
+      border-radius: 6px;
     }
     .lecture-parts-box {
       background: #ecfdf5;
@@ -1609,11 +1774,11 @@
     }
     .drill-pattern-reminder {
       background: #f8fafc;
-      border-left: 3px solid #3b82f6;
-      border-radius: 6px;
-      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 10px;
       margin: 6px 0 10px 0;
-      font-size: 11px;
+      font-size: 11.5px;
       color: #334155;
     }
     .drill-variation-box {
@@ -2944,20 +3109,261 @@
       font-size: 10.5px;
       color: #64748b;
     }
+
+    /* ========================================================
+       エキスパート改修: ランクバー / デイリークエスト / 語彙チップ / 反応カード
+       ======================================================== */
+    .rank-progress-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 7px 11px;
+      margin-bottom: 10px;
+    }
+    .rank-badge-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .rank-lv-tag {
+      font-family: var(--font-mono);
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+    .rank-bar-track {
+      flex: 1;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+    .rank-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #0ea5e9);
+      width: 0%;
+      transition: width 0.35s ease;
+    }
+    .rank-next-xp {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    /* 今日の3ステップ・デイリークエスト */
+    .daily-quest-strip {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .daily-quest-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .daily-quest-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .quest-step-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 7px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .quest-step-card:hover {
+      border-color: #93c5fd;
+    }
+    .quest-step-card.done {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
+    .quest-step-icon {
+      font-size: 13px;
+      line-height: 1;
+    }
+    .quest-step-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #334155;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .quest-step-card.done .quest-step-label {
+      color: #166534;
+    }
+    .quest-step-sub {
+      font-size: 9.5px;
+      color: #64748b;
+      margin-top: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* インラインビジネス用語解説ハイライト & ポップオーバー */
+    .vocab-term {
+      border-bottom: 1.5px dotted #2563eb;
+      color: #1e40af;
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 0 1px;
+      transition: background 0.12s ease;
+    }
+    .vocab-term:hover, .vocab-term:active {
+      background: #dbeafe;
+    }
+    .vocab-hint-caption {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .vocab-popover-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 1200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .vocab-popover-card {
+      width: 100%;
+      max-width: 380px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+      animation: modalFadeIn 0.16s ease-out;
+    }
+
+    /* 相手のリアクションカード & AIラリー接続ボタン */
+    .counterpart-reaction-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 10px 0;
+    }
+    .btn-continue-rally {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 8px;
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-continue-rally:hover {
+      background: #e0e7ff;
+    }
+    .btn-sound-toggle {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .analytics-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .analytics-kpi-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .analytics-kpi-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      font-variant-numeric: tabular-nums;
+    }
+    .analytics-kpi-lbl {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 2px;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- クラウド同期ステータスバー (Firebase Firestore連携) -->
+  <!-- デスクトップ専用トップナビ (900px以上) -->
+  <nav class="desktop-top-nav" aria-label="メインナビゲーション">
+    <div class="desktop-brand">
+      <span class="desktop-brand-mark">PE</span>
+      <span>Plain English Survival</span>
+    </div>
+    <div class="desktop-nav-links">
+      <button class="desktop-nav-btn active" id="dNavHome" onclick="switchTab('home')">🏠 ホーム</button>
+      <button class="desktop-nav-btn" id="dNavPlay" onclick="switchTab('play')">🎮 レッスン</button>
+      <button class="desktop-nav-btn" id="dNavRoleplay" onclick="switchTab('roleplay')">💬 AIラリー</button>
+      <button class="desktop-nav-btn" id="dNavAnalytics" onclick="switchTab('analytics')">📊 カルテ</button>
+      <button class="desktop-nav-btn" id="dNavLibrary" onclick="switchTab('library')">📚 フレーズ</button>
+    </div>
+  </nav>
+
+  <!-- クラウド同期＆効果音ユーティリティバー -->
   <div class="cloud-sync-bar" id="cloudSyncBar" onclick="openSyncModal()" style="cursor: pointer;" title="クリックして端末同期設定を開く">
     <div class="sync-status-indicator">
       <span class="sync-dot" id="cloudSyncDot"></span>
       <span id="cloudSyncText">☁️ クラウド同期準備中</span>
     </div>
-    <button class="btn-cloud-auth" id="btnCloudAuth" onclick="event.stopPropagation(); openSyncModal()" type="button" title="端末連携コード・Googleログイン設定">
-      📱 端末同期 (コード/Google)
-    </button>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <button class="btn-sound-toggle" id="btnSoundFxToggle" onclick="event.stopPropagation(); toggleSoundFx()" type="button" title="効果音 ON/OFF">
+        🔔 効果音 ON
+      </button>
+      <button class="btn-cloud-auth" id="btnCloudAuth" onclick="event.stopPropagation(); openSyncModal()" type="button" title="端末連携コード・Googleログイン設定">
+        📱 端末同期
+      </button>
+    </div>
   </div>
 
   <!-- 端末同期＆クラウドバックアップ用モーダル -->
@@ -3052,6 +3458,16 @@
     </div>
   </div>
 
+  <!-- ランク＆レベル進捗ストリップ -->
+  <div class="rank-progress-strip" id="rankProgressStrip">
+    <div class="rank-badge-label">
+      <span class="rank-lv-tag" id="userLevelTag">Lv.1</span>
+      <span id="userRankTitle">Trainee</span>
+    </div>
+    <div class="rank-bar-track"><div class="rank-bar-fill" id="rankBarFill"></div></div>
+    <div class="rank-next-xp" id="rankNextXpText">次まで 100 XP</div>
+  </div>
+
   <!-- トップ進捗ダッシュボード -->
   <div class="top-dashboard">
     <div class="stat-card"><div class="stat-value" id="xpValue">0</div><div class="stat-label">XP</div></div>
@@ -3063,84 +3479,109 @@
 
   <!-- 1. ホームビュー (トピック選択＆レッスン＋実践ハブ) -->
   <div id="viewHome">
-    <!-- 🎯 本日のデイリーフォーカス（今日の1レッスン: 迷わず3分で即スタート） -->
-    <div class="daily-focus-card" id="dailyFocusCard">
-      <div class="daily-focus-badge-row">
-        <span class="daily-focus-pill">🎯 今日の1レッスン</span>
-        <span class="daily-focus-time" id="dailyFocusTimeText">⏱️ 所要時間: 約3分 (全5問)</span>
+    <!-- 今日の3ステップ・デイリークエスト -->
+    <div class="daily-quest-strip" id="dailyQuestStrip">
+      <div class="daily-quest-head">
+        <span>🏁 本日の3ステップ学習ルート</span>
+        <span id="dailyQuestRatioText" style="color:#2563eb; font-variant-numeric:tabular-nums;">0 / 3 完了</span>
       </div>
-      <div class="daily-focus-title" id="dailyFocusTitle">「納期・スコープ交渉」×「I see your point, but...」</div>
-      <div class="daily-focus-meta" id="dailyFocusMeta">相手の意見を受け止めつつ、角を立てずにこちらの条件・現実的な納期を提示する万能の型を身体に染み込ませます。</div>
-      <div class="daily-focus-pattern-box" id="dailyFocusPatternBox">
-        💡 今日の重要型: <b>I see your point, but [文]</b> （おっしゃることは分かりますが、〜）
-      </div>
-      <button class="btn-daily-focus-start" id="btnDailyFocusStart" onclick="startDailyFocusSession()">
-        <span id="btnDailyFocusStartText">🚀 今日のデイリーレッスンを開始する</span>
-      </button>
-    </div>
-
-    <!-- 忘却曲線 (Spaced Repetition) 自動レコメンドカード -->
-    <div id="srsRecommendCard" class="srs-recommend-card" style="display: none;">
-      <div class="srs-header-row">
-        <span class="srs-badge">🔔 忘却曲線レコメンド</span>
-        <span class="srs-count-pill" id="srsDueCountPill">0件 要復習</span>
-      </div>
-      <div class="srs-title" id="srsTitleText">エビングハウスの忘却曲線に基づく今日の復習</div>
-      <div class="srs-desc" id="srsDescText">
-        記憶が薄れ始めている重要フレーズをピックアップしました。今復習すると定着率が最大化されます！
-      </div>
-      <div class="srs-item-preview-list" id="srsPreviewList">
-        <!-- JSで復習対象アイテムを動的表示 -->
-      </div>
-      <button class="btn-srs-start" id="btnStartSrsReview" onclick="startSrsReviewSession()">
-        🚀 今すぐ「今日の復習ドリル」を開始する
-      </button>
-      <div style="margin-top: 8px; text-align: center;">
-        <a href="javascript:void(0)" onclick="switchTab('library')" style="font-size: 11px; color: #b45309; text-decoration: underline; font-weight: 600;">
-          📚 保存元：「フレーズ（武器庫）」の確認・一括削除はこちら ➔
-        </a>
+      <div class="daily-quest-steps">
+        <div class="quest-step-card" id="questStep1" onclick="startDailyFocusSession()">
+          <div class="quest-step-icon" id="questStep1Icon">🎯</div>
+          <div class="quest-step-label">1. 即答レッスン</div>
+          <div class="quest-step-sub" id="questStep1Sub">0/5問</div>
+        </div>
+        <div class="quest-step-card" id="questStep2" onclick="handleQuestReviewClick()">
+          <div class="quest-step-icon" id="questStep2Icon">🔔</div>
+          <div class="quest-step-label">2. 忘却曲線復習</div>
+          <div class="quest-step-sub" id="questStep2Sub">未確認</div>
+        </div>
+        <div class="quest-step-card" id="questStep3" onclick="startTeamsRoleplayFromHome()">
+          <div class="quest-step-icon" id="questStep3Icon">💬</div>
+          <div class="quest-step-label">3. AIラリー実践</div>
+          <div class="quest-step-sub" id="questStep3Sub">未実践</div>
+        </div>
       </div>
     </div>
 
-    <!-- AI連続ラリー会話 (Teamsチャット＆社内会話 実践) クイック起動バナー -->
-    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 14px; margin-top: 12px; margin-bottom: 12px; color: #fff; box-shadow: 0 3px 8px rgba(30, 27, 75, 0.15);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-        <div>
+    <div class="home-desktop-grid">
+      <div class="home-col-main">
+        <!-- 🎯 本日のデイリーフォーカス（今日の1レッスン: 迷わず3分で即スタート） -->
+        <div class="daily-focus-card" id="dailyFocusCard">
+          <div class="daily-focus-badge-row">
+            <span class="daily-focus-pill">🎯 今日の1レッスン</span>
+            <span class="daily-focus-time" id="dailyFocusTimeText">⏱️ 約3分 (全5問)</span>
+          </div>
+          <div class="daily-focus-title" id="dailyFocusTitle">「納期・スコープ交渉」×「I see your point, but...」</div>
+          <div class="daily-focus-meta" id="dailyFocusMeta">相手の意見を受け止めつつ、角を立てずにこちらの条件・現実的な納期を提示する万能の型を身体に染み込ませます。</div>
+          <div class="daily-focus-pattern-box" id="dailyFocusPatternBox">
+            💡 今日の重要型: <b>I see your point, but [文]</b> （おっしゃることは分かりますが、〜）
+          </div>
+          <button class="btn-daily-focus-start" id="btnDailyFocusStart" onclick="startDailyFocusSession()">
+            <span id="btnDailyFocusStartText">🚀 今日のデイリーレッスンを開始する</span>
+          </button>
+        </div>
+
+        <!-- 進行中クイズの中断・再開カード -->
+        <div id="resumeSessionCard" style="display:none; background:#eff6ff; border:1.5px solid #3b82f6; border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="background:#2563eb; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">進行中</span>
+                <span id="resumeSessionModeBadge" style="font-size:11px; font-weight:700; color:#1e40af;">🎯 口頭クイズ</span>
+              </div>
+              <div id="resumeSessionTitle" style="font-size:14px; font-weight:800; color:#0f172a; margin-top:3px;">「納期・スコープ交渉」</div>
+              <div id="resumeSessionStage" style="font-size:12px; color:#2563eb; font-weight:700; margin-top:2px;">STAGE 1 / 5 (進捗 20%)</div>
+            </div>
+            <button class="btn-next" style="width:auto; padding:8px 14px; background:#2563eb; font-size:13px; font-weight:800; white-space:nowrap; margin-top:0;" onclick="resumeActiveSession()">
+              続きから ➔
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-col-side">
+        <!-- 忘却曲線 (Spaced Repetition) 自動レコメンドカード -->
+        <div id="srsRecommendCard" class="srs-recommend-card" style="display: none; margin-top: 0;">
+          <div class="srs-header-row">
+            <span class="srs-badge">🔔 忘却曲線レコメンド</span>
+            <span class="srs-count-pill" id="srsDueCountPill">0件 要復習</span>
+          </div>
+          <div class="srs-title" id="srsTitleText">エビングハウスの忘却曲線に基づく今日の復習</div>
+          <div class="srs-desc" id="srsDescText">
+            記憶が薄れ始めている重要フレーズをピックアップしました。今復習すると定着率が最大化されます！
+          </div>
+          <div class="srs-item-preview-list" id="srsPreviewList"></div>
+          <button class="btn-srs-start" id="btnStartSrsReview" onclick="startSrsReviewSession()">
+            🚀 今すぐ「今日の復習ドリル」を開始する
+          </button>
+          <div style="margin-top: 8px; text-align: center;">
+            <a href="javascript:void(0)" onclick="switchTab('library')" style="font-size: 11px; color: #b45309; text-decoration: underline; font-weight: 600;">
+              📚 保存元：「フレーズ（武器庫）」の確認・一括削除はこちら ➔
+            </a>
+          </div>
+        </div>
+
+        <!-- AI連続ラリー会話 (Teamsチャット＆社内会話 実践) クイック起動バナー -->
+        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 12px; padding: 14px; margin-bottom: 12px; color: #fff; box-shadow: 0 3px 8px rgba(30, 27, 75, 0.15);">
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="background: #4f46e5; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">Teams / 会議実践</span>
-            <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">社内ビジネスカジュアル</span>
+            <span style="font-size: 11px; font-weight: 700; color: #c7d2fe;">3〜4往復の合意形成</span>
           </div>
-          <div style="font-size: 14px; font-weight: 800; margin-top: 3px; color: #ffffff;">💬 AI連続ラリー対話（Teamsチャット＆社内会話 実践）</div>
-          <div style="font-size: 11.5px; color: #e0e7ff; margin-top: 2px; line-height: 1.4;">
-            Teamsチャットでの時短送信や会議での即答！3〜4往復の会話で合意形成。中学動詞で即レス＆Teams時短度アドバイス！
+          <div style="font-size: 14px; font-weight: 800; margin-top: 4px; color: #ffffff;">💬 AI連続ラリー対話</div>
+          <div style="font-size: 11.5px; color: #e0e7ff; margin-top: 3px; line-height: 1.45;">
+            中学動詞での即答と期限（ETA）の提示を、リアルな相手との対話で実践・添削！
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button onclick="startTeamsRoleplayFromHome()" style="flex: 1.2; background: #6366f1; color: #ffffff; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;">
+              <span style="background: #fff; color: #4338ca; width: 17px; height: 17px; border-radius: 4px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center;">T</span>
+              Teamsチャット即答 ➔
+            </button>
+            <button onclick="startRandomRoleplay()" style="flex: 1; background: #fbbf24; color: #78350f; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;">
+              🎲 おまかせ即興
+            </button>
           </div>
         </div>
-      </div>
-      <div style="display: flex; gap: 8px; margin-top: 10px;">
-        <button onclick="startTeamsRoleplayFromHome()" style="flex: 1.2; background: #6366f1; color: #ffffff; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(99,102,241,0.3);">
-          <span style="background: #fff; color: #4338ca; width: 17px; height: 17px; border-radius: 4px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center;">T</span>
-          Teamsチャット即答ラリー ➔
-        </button>
-        <button onclick="startRandomRoleplay()" style="flex: 1; background: #fbbf24; color: #78350f; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(251,191,36,0.3);">
-          🎲 おまかせ即興
-        </button>
-      </div>
-    </div>
-
-    <!-- 進行中クイズの中断・再開カード -->
-    <div id="resumeSessionCard" style="display:none; background:#eff6ff; border:1.5px solid #3b82f6; border-radius:12px; padding:12px 14px; margin-top:12px; margin-bottom:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-        <div style="flex:1;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="background:#2563eb; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">進行中のトレーニング</span>
-            <span id="resumeSessionModeBadge" style="font-size:11px; font-weight:700; color:#1e40af;">🎯 口頭クイズ</span>
-          </div>
-          <div id="resumeSessionTitle" style="font-size:14px; font-weight:800; color:#0f172a; margin-top:3px;">「納期・スコープ交渉」</div>
-          <div id="resumeSessionStage" style="font-size:12px; color:#2563eb; font-weight:700; margin-top:2px;">STAGE 1 / 5 (進捗 20%)</div>
-        </div>
-        <button class="btn-next" style="width:auto; padding:8px 14px; background:#2563eb; font-size:13px; font-weight:800; white-space:nowrap; margin-top:0;" onclick="resumeActiveSession()">
-          続きから再開 ➔
-        </button>
       </div>
     </div>
 
@@ -3225,29 +3666,9 @@
       </div>
     </div>
 
-    <!-- トレーニング形式（口頭即答クイズに完全集約） -->
-    <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-top: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:0.5px;">トレーニング形式</div>
-        <span style="background:#eff6ff; color:#1d4ed8; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; border:1px solid #bfdbfe;">口頭即答特化</span>
-      </div>
-      <div style="font-size:14.5px; font-weight:800; color:#0f172a; margin-top:4px;">🎯 口頭即答クイズ（3ステップ集中学習）</div>
-      <div style="font-size:11.5px; color:#64748b; margin-top:4px; line-height:1.45;">
-        <b>💡 型習得</b> ➔ <b>🔄 スロット変形ドリル</b> ➔ <b>🎯 実戦テスト（想起）</b> の3段階で、ビジネス現場で瞬時に口から英語が出る反射神経を鍛えます。
-      </div>
-    </div>
-
-    <div style="font-size: 11px; color: #475569; margin-top: -4px; margin-bottom: 12px; line-height: 1.4; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
-      💬 <b>Teamsチャットや社内会話のラリー実践</b>は、下の「<a href="javascript:void(0)" onclick="startTeamsRoleplayFromHome()" style="color: #4f46e5; font-weight: 700; text-decoration: underline;">💬 AIラリー</a>」タブで3〜4往復の対話形式で行えます。
-    </div>
-
-    <button class="btn-targeted-start" id="btnStartTargeted" onclick="startTargetedSession()">
+    <button class="btn-targeted-start" id="btnStartTargeted" onclick="startTargetedSession()" style="margin-top: 10px;">
       <span id="btnStartTargetedText">🎲 おまかせランダムで開始 (全トピックから即答トレーニング)</span>
-      <span class="btn-targeted-start-sub">型インプット ➔ 中学単語の組み合わせで実践 (全5問)</span>
-    </button>
-
-    <button class="btn-next" id="btnResumeBottom" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:12px; font-size:13px;" onclick="resumeActiveSession()">
-      ▶️ 進行中クイズの続きから再開する
+      <span class="btn-targeted-start-sub">💡 型習得 ➔ 🔄 応用ドリル ➔ 🎯 実戦テスト (全5問)</span>
     </button>
   </div>
 
@@ -3320,11 +3741,11 @@
       </button>
       <button class="stage-step-btn" id="stepBtnDrill" onclick="switchStagePhase('drill')">
         <span class="step-num">2</span>
-        <span>🔄 スロット変形ドリル</span>
+        <span>🔄 応用ドリル</span>
       </button>
       <button class="stage-step-btn" id="stepBtnQuiz" onclick="switchStagePhase('quiz')">
         <span class="step-num">3</span>
-        <span>🎯 実戦テスト (想起)</span>
+        <span>🎯 実戦テスト</span>
       </button>
     </div>
 
@@ -3338,6 +3759,7 @@
         <button class="micro-btn" style="padding:2px 7px; font-size:10px; background:#fff;" onclick="speakAiSpeech()">🔊 発言を聴く</button>
       </div>
       <div class="ai-speech-en" id="aiResponseEn">"..."</div>
+      <div class="vocab-hint-caption" id="vocabHintCaption" style="display:none;">💡 青い点線の単語をタップすると中学英語の言い換えが表示されます</div>
       <div class="ai-speech-jp" id="aiResponseJp">（...）</div>
     </div>
 
@@ -3381,8 +3803,17 @@
 
       <!-- なぜこの型が効くのか（実務レクチャー解説） -->
       <div class="lecture-rationale-box">
-        <div style="font-weight:800; color:#065f46; font-size:11px; margin-bottom:2px;">📘 実務レクチャー（なぜこの型が通じるのか）:</div>
+        <div style="font-weight:800; color:#065f46; font-size:11px; margin-bottom:2px;">📘 実務レクチャー（なぜこの型が通じるのか）</div>
         <span id="lessonPatternRationale">相手の意見を受け止めつつ、中学英語の平易な動詞で制約や期日を伝えることで、非ネイティブ相手でも角を立てずに誤解なく合意できます。</span>
+      </div>
+
+      <!-- 構造解剖プレビュー（固定する型 vs 中学パーツ） -->
+      <div class="pattern-anatomy-box" id="patternAnatomyBox" onclick="speakTarget()" title="タップして模範英文を聴く">
+        <div class="pattern-anatomy-label">
+          <span>🧱 構造分解（青＝固定の型 ／ 緑＝中学パーツ）</span>
+          <span style="color:#2563eb;">🔊 聴く</span>
+        </div>
+        <div class="pattern-anatomy-sentence" id="patternAnatomyPreview"></div>
       </div>
 
       <!-- 中学単語パーツの組み合わせ術 -->
@@ -3562,8 +3993,22 @@
         <div class="reflex-badge-xp" id="reflexXpBadge">+15 XP</div>
       </div>
       
-      <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-top: 8px; padding: 6px 8px; background:#fff; border-radius:6px; border:1px solid #cbd5e1;" id="resultFullSentence"></div>
-      <p style="font-size: 13px; margin: 8px 0; color: #334155; line-height: 1.45;" id="adviceText"></p>
+      <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-top: 8px; padding: 8px 10px; background:#fff; border-radius:8px; border:1px solid #cbd5e1;" id="resultFullSentence"></div>
+      <p style="font-size: 13px; margin: 8px 0; color: #334155; line-height: 1.5;" id="adviceText"></p>
+
+      <!-- 相手のリアルな反応カード -->
+      <div class="counterpart-reaction-box" id="counterpartReactionCard" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:11px; font-weight:800; color:#475569;" id="reactionSenderName">👤 相手の反応</span>
+          <button class="micro-btn" style="padding:2px 7px; font-size:10px;" onclick="speakReactionSpeech()">🔊 反応を聴く</button>
+        </div>
+        <div style="font-size:13px; font-weight:700; color:#0f172a; line-height:1.4;" id="reactionSpeechEn"></div>
+        <div style="font-size:11px; color:#64748b; margin-top:2px; line-height:1.35;" id="reactionSpeechJp"></div>
+      </div>
+
+      <button class="btn-continue-rally" onclick="continueStageInRoleplay()">
+        💬 この相手とそのまま「AIラリー」で交渉を続ける ➔
+      </button>
 
       <button class="btn-next" onclick="nextStage()">次の問題へ ➔</button>
     </div>
@@ -3999,6 +4444,22 @@
 
   <!-- 7. 弱点カルテ＆学習ヒートマップ（アナリティクス）ビュー -->
   <div id="viewAnalytics" style="display: none; padding-bottom: 90px;">
+    <!-- アナリティクスKPIサマリー -->
+    <div class="analytics-kpi-grid">
+      <div class="analytics-kpi-card">
+        <div class="analytics-kpi-val" id="kpiWeaponsCount">0</div>
+        <div class="analytics-kpi-lbl">保存した武器数</div>
+      </div>
+      <div class="analytics-kpi-card">
+        <div class="analytics-kpi-val" id="kpiAvgReflex">--</div>
+        <div class="analytics-kpi-lbl">平均反応速度</div>
+      </div>
+      <div class="analytics-kpi-card">
+        <div class="analytics-kpi-val" id="kpiRallyDoneCount">0回</div>
+        <div class="analytics-kpi-lbl">AIラリー完了</div>
+      </div>
+    </div>
+
     <!-- カルテヘッダー -->
     <div class="carte-header-card">
       <div class="carte-title">
@@ -4215,6 +4676,24 @@
           🚀 一括インポート実行
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ビジネス語彙インライン解説ポップオーバー -->
+<div id="vocabPopover" class="vocab-popover-backdrop" onclick="if(event.target===this) closeVocabPopover()">
+  <div class="vocab-popover-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span id="vocabPopWord" style="font-size:17px; font-weight:800; color:#1d4ed8;">discrepancy</span>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button class="micro-btn" onclick="speakVocabWord()" style="padding:3px 9px; font-size:11px; background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">🔊 発音</button>
+        <button onclick="closeVocabPopover()" style="border:none; background:transparent; font-size:18px; color:#64748b; cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div id="vocabPopMeaning" style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:8px;">相違・データの食い違い</div>
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:8px 10px;">
+      <div style="font-size:10.5px; font-weight:800; color:#15803d; margin-bottom:2px;">💡 中学英語 (Plain English) で言い換えると：</div>
+      <div id="vocabPopPlain" style="font-size:13px; font-weight:700; color:#065f46;">a gap / numbers do not match</div>
     </div>
   </div>
 </div>
@@ -4989,6 +5468,327 @@
     if (window.fbSync) window.fbSync.saveStats(stats);
   }
 
+  // ==========================================
+  // 効果音 (Web Audio API)・ランク・3ステップクエスト・語彙解説・構文解剖
+  // ==========================================
+  let soundFxEnabled = localStorage.getItem('plain_sound_fx') !== 'false';
+  let __audioCtx = null;
+
+  function getAudioCtx() {
+    if (!__audioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) __audioCtx = new Ctx();
+    }
+    if (__audioCtx && __audioCtx.state === 'suspended') {
+      __audioCtx.resume().catch(() => {});
+    }
+    return __audioCtx;
+  }
+
+  function playSoundFX(type) {
+    if (!soundFxEnabled) return;
+    try {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const tone = (freq, start, dur, oscType = 'sine', vol = 0.06) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = oscType;
+        osc.frequency.setValueAtTime(freq, now + start);
+        gain.gain.setValueAtTime(0.0001, now + start);
+        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + start);
+        osc.stop(now + start + dur + 0.02);
+      };
+      if (type === 'tap') {
+        tone(540, 0, 0.045, 'triangle', 0.04);
+      } else if (type === 'correct') {
+        tone(523.25, 0, 0.11, 'sine', 0.07);
+        tone(659.25, 0.08, 0.18, 'sine', 0.08);
+      } else if (type === 'combo') {
+        tone(523.25, 0, 0.09, 'sine', 0.07);
+        tone(659.25, 0.07, 0.10, 'sine', 0.07);
+        tone(783.99, 0.14, 0.22, 'sine', 0.08);
+      } else if (type === 'wrong') {
+        tone(220, 0, 0.12, 'triangle', 0.06);
+        tone(175, 0.10, 0.16, 'triangle', 0.05);
+      } else if (type === 'complete') {
+        tone(523.25, 0, 0.10, 'sine', 0.07);
+        tone(659.25, 0.08, 0.10, 'sine', 0.07);
+        tone(783.99, 0.16, 0.11, 'sine', 0.07);
+        tone(1046.5, 0.25, 0.30, 'sine', 0.08);
+      }
+    } catch (e) {}
+  }
+
+  function updateSoundFxUI() {
+    const btn = document.getElementById('btnSoundFxToggle');
+    if (!btn) return;
+    btn.innerText = soundFxEnabled ? '🔔 効果音 ON' : '🔇 効果音 OFF';
+    btn.style.background = soundFxEnabled ? '#ffffff' : '#f1f5f9';
+    btn.style.color = soundFxEnabled ? '#334155' : '#64748b';
+  }
+
+  function toggleSoundFx() {
+    soundFxEnabled = !soundFxEnabled;
+    localStorage.setItem('plain_sound_fx', soundFxEnabled ? 'true' : 'false');
+    updateSoundFxUI();
+    if (soundFxEnabled) playSoundFX('tap');
+    toast(soundFxEnabled ? '🔔 効果音をONにしました' : '🔇 効果音をOFFにしました');
+  }
+
+  function getRankInfo(xp) {
+    const safeXp = Math.max(0, Number(xp) || 0);
+    const tiers = [
+      { lv: 1, min: 0, max: 100, title: 'Trainee' },
+      { lv: 2, min: 100, max: 300, title: 'Practitioner' },
+      { lv: 3, min: 300, max: 700, title: 'Active Speaker' },
+      { lv: 4, min: 700, max: 1500, title: 'Global Contributor' },
+      { lv: 5, min: 1500, max: 3000, title: 'Lead Negotiator' }
+    ];
+    for (const t of tiers) {
+      if (safeXp < t.max) {
+        const span = t.max - t.min;
+        const pct = Math.min(100, Math.round(((safeXp - t.min) / span) * 100));
+        return { level: t.lv, title: t.title, progressPct: pct, xpToNext: t.max - safeXp, isMaxTier: false };
+      }
+    }
+    const extraLv = Math.floor((safeXp - 3000) / 1000);
+    const curMin = 3000 + extraLv * 1000;
+    const curMax = curMin + 1000;
+    const pct = Math.min(100, Math.round(((safeXp - curMin) / 1000) * 100));
+    return { level: 6 + extraLv, title: 'Executive Strategist', progressPct: pct, xpToNext: curMax - safeXp, isMaxTier: false };
+  }
+
+  const DAILY_QUEST_STORAGE_KEY = 'plain_daily_quest_state';
+
+  function getTodayQuestState() {
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      const raw = JSON.parse(localStorage.getItem(DAILY_QUEST_STORAGE_KEY) || 'null');
+      if (raw && raw.date === today) return raw;
+    } catch (e) {}
+    return { date: today, roleplayDone: false };
+  }
+
+  function markTodayRoleplayDone() {
+    const today = new Date().toISOString().slice(0, 10);
+    const nextState = { date: today, roleplayDone: true };
+    localStorage.setItem(DAILY_QUEST_STORAGE_KEY, JSON.stringify(nextState));
+    if (typeof updateDailyQuestUI === 'function') updateDailyQuestUI();
+  }
+
+  function updateDailyQuestUI() {
+    const step1 = document.getElementById('questStep1');
+    const step2 = document.getElementById('questStep2');
+    const step3 = document.getElementById('questStep3');
+    const ratioEl = document.getElementById('dailyQuestRatioText');
+    if (!step1 || !step2 || !step3) return;
+
+    const s = getStats();
+    const todayAnswered = getTodayAnsweredCount(s);
+    const step1Done = todayAnswered >= 5;
+    step1.classList.toggle('done', step1Done);
+    const s1Icon = document.getElementById('questStep1Icon');
+    const s1Sub = document.getElementById('questStep1Sub');
+    if (s1Icon) s1Icon.innerText = step1Done ? '✅' : '🎯';
+    if (s1Sub) s1Sub.innerText = `${Math.min(todayAnswered, 5)}/5問`;
+
+    const dueLessons = typeof getDueSrsLessons === 'function' ? getDueSrsLessons() : [];
+    const dueItems = typeof getDueSrsItems === 'function' ? getDueSrsItems() : [];
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    const hasSavedContent = library.length > 0 || history.length > 0;
+    const dueCount = dueLessons.length > 0 ? dueLessons.length : dueItems.length;
+    const step2Done = hasSavedContent && dueCount === 0;
+    step2.classList.toggle('done', step2Done);
+    const s2Icon = document.getElementById('questStep2Icon');
+    const s2Sub = document.getElementById('questStep2Sub');
+    if (s2Icon) s2Icon.innerText = step2Done ? '✅' : (dueCount > 0 ? '🔔' : '📚');
+    if (s2Sub) {
+      if (step2Done) s2Sub.innerText = '本日完了';
+      else if (dueCount > 0) s2Sub.innerText = `要復習 ${dueCount}件`;
+      else s2Sub.innerText = '武器庫を確認';
+    }
+
+    const quest = getTodayQuestState();
+    const step3Done = !!quest.roleplayDone;
+    step3.classList.toggle('done', step3Done);
+    const s3Icon = document.getElementById('questStep3Icon');
+    const s3Sub = document.getElementById('questStep3Sub');
+    if (s3Icon) s3Icon.innerText = step3Done ? '✅' : '💬';
+    if (s3Sub) s3Sub.innerText = step3Done ? '達成済み' : '未実践';
+
+    const doneCount = (step1Done ? 1 : 0) + (step2Done ? 1 : 0) + (step3Done ? 1 : 0);
+    if (ratioEl) {
+      ratioEl.innerText = doneCount === 3 ? '3 / 3 全達成 🎉' : `${doneCount} / 3 完了`;
+      ratioEl.style.color = doneCount === 3 ? '#059669' : '#2563eb';
+    }
+  }
+
+  function handleQuestReviewClick() {
+    const dueLessons = typeof getDueSrsLessons === 'function' ? getDueSrsLessons() : [];
+    if (dueLessons.length > 0) {
+      startLessonReview(dueLessons[0].id);
+      return;
+    }
+    const dueItems = typeof getDueSrsItems === 'function' ? getDueSrsItems() : [];
+    if (dueItems.length > 0) {
+      startSrsReviewSession();
+      return;
+    }
+    switchTab('library');
+    toast('📚 本日の復習は完了しています！武器庫のフレーズを確認できます');
+  }
+
+  const VOCAB_GLOSSARY = {
+    discrepancy: { meaning: 'データの食い違い・不一致', plain: 'a gap / numbers do not match' },
+    quarantine: { meaning: '隔離・使用保留にする', plain: 'keep apart / hold safely' },
+    compliance: { meaning: '規則・手順の遵守', plain: 'following the rules' },
+    deviation: { meaning: '手順からの逸脱・変更', plain: 'a change from the plan / rule' },
+    expedite: { meaning: '急ぐ・処理を早める', plain: 'speed up / do faster' },
+    mitigate: { meaning: 'リスクや影響を軽減する', plain: 'reduce the risk / make less bad' },
+    stakeholder: { meaning: '関係者・利害関係者', plain: 'people involved / key members' },
+    deliverable: { meaning: '成果物・提出物', plain: 'work to hand in / final output' },
+    milestone: { meaning: '重要な節目・中間目標', plain: 'key goal / target date' },
+    backlog: { meaning: '未処理タスクの積み残し', plain: 'unfinished work / waiting tasks' },
+    unblinding: { meaning: '盲検解除（治験の割付公開）', plain: 'opening the hidden group info' },
+    protocol: { meaning: '実施計画書・規定手順', plain: 'the study plan / main rules' },
+    audit: { meaning: '監査・公式チェック', plain: 'official check / review' },
+    excursion: { meaning: '（温度等の）許容範囲逸脱', plain: 'going outside the safe range' },
+    feasibility: { meaning: '実現可能性・実行できるか', plain: 'whether we can really do it' },
+    contingency: { meaning: '緊急時対応策・プランB', plain: 'backup plan / Plan B' },
+    escalation: { meaning: '上位者への報告・引き継ぎ', plain: 'asking higher-ups for help' },
+    constraint: { meaning: '制約・制限事項', plain: 'a limit (time / budget / staff)' },
+    alignment: { meaning: '認識合わせ・足並みを揃えること', plain: 'being on the same page' },
+    bottleneck: { meaning: '進行を妨げる箇所・停滞点', plain: 'the step slowing everything down' },
+    turnaround: { meaning: '折り返し時間・対応所要時間', plain: 'how fast we reply or finish' },
+    scope: { meaning: '作業範囲・対象範囲', plain: 'what is included in the job' },
+    rollout: { meaning: '段階的展開・全体導入', plain: 'launch / putting it out to everyone' },
+    consensus: { meaning: '全員の合意・意見の一致', plain: 'everyone agrees' },
+    workaround: { meaning: '暫定回避策・代替手段', plain: 'a temporary fix for now' },
+    verify: { meaning: '事実かどうか確認・検証する', plain: 'double-check if it is true' },
+    criteria: { meaning: '判定基準・条件', plain: 'the rules to decide / pass' },
+    clarify: { meaning: '曖昧な点をはっきりさせる', plain: 'make clear / ask what they mean' },
+    revamp: { meaning: '大幅に作り直す・刷新する', plain: 'redo / rebuild from scratch' },
+    allocation: { meaning: '人員や予算の配分', plain: 'how we share time or staff' },
+    integrity: { meaning: 'データの完全性・正確さ', plain: 'keeping data clean and true' },
+    timeline: { meaning: '日程表・スケジュール', plain: 'schedule / dates' },
+    deadline: { meaning: '締切・最終期限', plain: 'due date / by when' },
+    concurrent: { meaning: '同時進行の・並行した', plain: 'happening at the same time' },
+    sponsor: { meaning: '治験依頼者（製薬会社等）', plain: 'the client company' },
+    monitoring: { meaning: '進捗や品質の継続確認', plain: 'checking regularly' },
+    enrollment: { meaning: '被験者登録・参加受付', plain: 'signing up patients' },
+    amendment: { meaning: '計画書などの改訂・修正', plain: 'an official update / change' },
+    corrective: { meaning: '是正のための・修正する', plain: 'fixing what went wrong' },
+    preventive: { meaning: '予防のための・再発防止の', plain: 'stopping it from happening again' },
+    impact: { meaning: '影響・インパクト', plain: 'effect / how much it hurts' },
+    priority: { meaning: '優先順位・最優先事項', plain: 'what comes first' },
+    capacity: { meaning: '処理能力・チームの余力', plain: 'how much work we can take' },
+    packed: { meaning: '予定がいっぱいで手一杯の', plain: 'completely full / too busy' },
+    slip: { meaning: 'スケジュールが遅れる・ずれる', plain: 'miss the date / fall behind' },
+    baseline: { meaning: '比較の基準値・当初計画', plain: 'our starting plan' },
+    approval: { meaning: '承認・GOサイン', plain: 'yes / green light' },
+    pending: { meaning: '保留中・承認待ち', plain: 'still waiting' },
+    validation: { meaning: '妥当性検証・正常動作確認', plain: 'testing if it works right' },
+    reconciliation: { meaning: 'データの照合・突合', plain: 'matching two sets of numbers' },
+    retention: { meaning: '継続率・離脱防止', plain: 'keeping people in the study' },
+    inspection: { meaning: '規制当局などによる実地査察', plain: 'official check on site' },
+    dependency: { meaning: '他作業への依存関係', plain: 'waiting on another team first' },
+    blocker: { meaning: '作業を止めている障害', plain: 'what is stopping us' },
+    contractor: { meaning: '外部委託先・業務委託スタッフ', plain: 'outside helper / vendor' },
+    reschedule: { meaning: '日程を組み直す', plain: 'move to another date' }
+  };
+
+  let currentVocabWord = '';
+
+  function renderInteractiveEnSpeech(rawText) {
+    if (!rawText || typeof rawText !== 'string') return { html: '', hasTerms: false };
+    let hasTerms = false;
+    const parts = rawText.split(/(\b[A-Za-z]+\b)/g);
+    const html = parts.map(part => {
+      if (/^[A-Za-z]+$/.test(part)) {
+        const key = part.toLowerCase();
+        if (VOCAB_GLOSSARY[key]) {
+          hasTerms = true;
+          return `<span class="vocab-term" onclick="openVocabPopover('${key}')">${escapeHtml(part)}</span>`;
+        }
+      }
+      return escapeHtml(part);
+    }).join('');
+    return { html, hasTerms };
+  }
+
+  function openVocabPopover(wordKey) {
+    const key = (wordKey || '').toLowerCase();
+    const entry = VOCAB_GLOSSARY[key];
+    if (!entry) return;
+    currentVocabWord = key;
+    const wEl = document.getElementById('vocabPopWord');
+    const mEl = document.getElementById('vocabPopMeaning');
+    const pEl = document.getElementById('vocabPopPlain');
+    const modal = document.getElementById('vocabPopover');
+    if (wEl) wEl.innerText = key;
+    if (mEl) mEl.innerText = entry.meaning;
+    if (pEl) pEl.innerText = entry.plain;
+    if (modal) modal.style.display = 'flex';
+    playSoundFX('tap');
+  }
+
+  function closeVocabPopover() {
+    const modal = document.getElementById('vocabPopover');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function speakVocabWord() {
+    if (currentVocabWord) speakText(currentVocabWord);
+  }
+
+  function renderPatternAnatomy(stageData) {
+    const box = document.getElementById('patternAnatomyBox');
+    const preview = document.getElementById('patternAnatomyPreview');
+    if (!box || !preview) return;
+    const target = (stageData && stageData.target) ? stageData.target.trim() : '';
+    const pattern = (stageData && stageData.key_pattern) ? stageData.key_pattern.trim() : '';
+    if (!target) {
+      box.style.display = 'none';
+      return;
+    }
+
+    const stemRaw = pattern.split(/\[|\.\.\./)[0].trim().replace(/[,:]+$/, '').trim();
+    let stemText = '';
+    let slotText = target;
+
+    if (stemRaw && stemRaw.length >= 3) {
+      const idx = target.toLowerCase().indexOf(stemRaw.toLowerCase());
+      if (idx === 0) {
+        stemText = target.slice(0, stemRaw.length);
+        slotText = target.slice(stemRaw.length).trim();
+      } else {
+        const stemWords = stemRaw.split(/\s+/).slice(0, 3).join(' ');
+        const idx2 = target.toLowerCase().indexOf(stemWords.toLowerCase());
+        if (idx2 === 0 && stemWords.length >= 3) {
+          stemText = target.slice(0, stemWords.length);
+          slotText = target.slice(stemWords.length).trim();
+        }
+      }
+    }
+
+    if (!stemText) {
+      const words = target.split(/\s+/);
+      const splitAt = Math.min(4, Math.max(2, Math.floor(words.length * 0.4)));
+      stemText = words.slice(0, splitAt).join(' ');
+      slotText = words.slice(splitAt).join(' ');
+    }
+
+    box.style.display = 'block';
+    preview.innerHTML = `<span class="anatomy-stem">${escapeHtml(stemText)}</span>${slotText ? `<span class="anatomy-slot">${escapeHtml(slotText)}</span>` : ''}`;
+  }
+
   function updateDashboard() {
     const s = getStats();
     const todayAnswered = getTodayAnsweredCount(s);
@@ -5005,6 +5805,18 @@
     if (streakEl) streakEl.innerText = `${s.streak || 0}🔥`;
     if (accEl) accEl.innerText = accuracy;
     if (comboEl) comboEl.innerText = `Combo ×${combo}`;
+
+    const rank = getRankInfo(s.xp || 0);
+    const lvEl = document.getElementById('userLevelTag');
+    const titleEl = document.getElementById('userRankTitle');
+    const rankFillEl = document.getElementById('rankBarFill');
+    const rankNextEl = document.getElementById('rankNextXpText');
+    if (lvEl) lvEl.innerText = `Lv.${rank.level}`;
+    if (titleEl) titleEl.innerText = rank.title;
+    if (rankFillEl) rankFillEl.style.width = `${rank.progressPct}%`;
+    if (rankNextEl) rankNextEl.innerText = `次まで ${rank.xpToNext} XP`;
+
+    if (typeof updateDailyQuestUI === 'function') updateDailyQuestUI();
 
     const dailyTarget = 5;
     const dailyPct = Math.min(100, Math.round((todayAnswered / dailyTarget) * 100));
@@ -5126,6 +5938,22 @@
     const topicCarteList = document.getElementById('topicCarteList');
     const aiDiagnosisText = document.getElementById('aiDiagnosisText');
     const aiDiagnosisActionArea = document.getElementById('aiDiagnosisActionArea');
+
+    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    const kpiWeaponsEl = document.getElementById('kpiWeaponsCount');
+    const kpiReflexEl = document.getElementById('kpiAvgReflex');
+    const kpiRallyEl = document.getElementById('kpiRallyDoneCount');
+    if (kpiWeaponsEl) kpiWeaponsEl.innerText = `${library.length}個`;
+    const metricsRaw = getTopicMetrics();
+    let totalAnsSum = 0;
+    let totalSecSum = 0;
+    Object.values(metricsRaw).forEach(m => {
+      totalAnsSum += (m.answered || 0);
+      totalSecSum += (m.totalSeconds || 0);
+    });
+    if (kpiReflexEl) kpiReflexEl.innerText = totalAnsSum > 0 ? `${(totalSecSum / totalAnsSum).toFixed(1)}秒` : '--';
+    const rallyDoneCount = parseInt(localStorage.getItem('plain_rally_completed_count') || '0', 10) || 0;
+    if (kpiRallyEl) kpiRallyEl.innerText = `${rallyDoneCount}回`;
 
     // 1. 過去30日間のヒートマップ集計
     const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -5391,6 +6219,12 @@
     if (document.getElementById('navHistory')) document.getElementById('navHistory').classList.toggle('active', tabName === 'history');
     if (document.getElementById('navLibrary')) document.getElementById('navLibrary').classList.toggle('active', tabName === 'library');
 
+    if (document.getElementById('dNavHome')) document.getElementById('dNavHome').classList.toggle('active', tabName === 'home');
+    if (document.getElementById('dNavPlay')) document.getElementById('dNavPlay').classList.toggle('active', tabName === 'play');
+    if (document.getElementById('dNavRoleplay')) document.getElementById('dNavRoleplay').classList.toggle('active', tabName === 'roleplay');
+    if (document.getElementById('dNavAnalytics')) document.getElementById('dNavAnalytics').classList.toggle('active', tabName === 'analytics' || tabName === 'script' || tabName === 'history');
+    if (document.getElementById('dNavLibrary')) document.getElementById('dNavLibrary').classList.toggle('active', tabName === 'library');
+
     if (document.getElementById('viewHome')) document.getElementById('viewHome').style.display = tabName === 'home' ? 'block' : 'none';
     if (document.getElementById('viewPlay')) document.getElementById('viewPlay').style.display = tabName === 'play' ? 'block' : 'none';
     if (document.getElementById('viewRoleplay')) document.getElementById('viewRoleplay').style.display = tabName === 'roleplay' ? 'block' : 'none';
@@ -5425,6 +6259,7 @@
       updateResumeCardUI(); // ホームに戻った際に「続きから再開」カードを最新化
       updateSrsRecommendUI(); // 忘却曲線レコメンドカードを最新化
       initDailyFocusCard(); // デイリー推奨レッスンカードを最新化
+      updateDailyQuestUI(); // 3ステップクエスト進捗を最新化
     }
     if (tabName !== 'script' && isHandsFree) toggleHandsFree();
     updateDashboard();
@@ -6429,7 +7264,9 @@
       loadStage(false);
     }
     updateAutoSpeakUI();
+    updateSoundFxUI();
     updateDashboard();
+    updateDailyQuestUI();
     updateResumeCardUI();
     initDailyFocusCard();
     populateQuickModeSelect();
@@ -6458,6 +7295,11 @@
   window.saveCurrentPhrase = saveCurrentPhrase;
   window.cleanAndDeduplicatePhraseLibrary = cleanAndDeduplicatePhraseLibrary;
   window.deleteLibraryItem = deleteLibraryItem;
+  window.toggleSoundFx = toggleSoundFx;
+  window.openVocabPopover = openVocabPopover;
+  window.closeVocabPopover = closeVocabPopover;
+  window.speakVocabWord = speakVocabWord;
+  window.handleQuestReviewClick = handleQuestReviewClick;
 
   // --- 端末同期モーダル操作関数 (トップレベル公開) ---
   function openSyncModal() {
@@ -7521,6 +8363,7 @@
     const item = drill.pool.find(i => i.id === chunkId);
     if (!item || item.used) return;
 
+    playSoundFX('tap');
     item.used = true;
     drill.assembled.push(item);
     renderDrillPhaseUI();
@@ -7558,6 +8401,7 @@
 
     if (correct) {
       drill.completed = true;
+      playSoundFX('correct');
       awardXP(15, true);
       toast("🎯 スロット変形クリア！ 型の応用力が身につきました");
       speakText(drill.target);
@@ -7566,6 +8410,7 @@
         feedbackEl.innerHTML = `🎉 <b>PERFECT!</b> "${escapeHtml(drill.target)}"`;
       }
     } else {
+      playSoundFX('wrong');
       awardXP(2, false);
       toast("💡 語順を再確認してみましょう");
       if (feedbackEl) {
@@ -7997,6 +8842,7 @@
     const item = chunkPoolItems.find(i => i.id === chunkId);
     if (!item || item.used) return;
 
+    playSoundFX('tap');
     item.used = true;
     assembledChunks.push(item);
     renderBuilderUI();
@@ -8048,6 +8894,7 @@
     if (correct) {
       combo++;
       sessionCorrect++;
+      playSoundFX(combo >= 2 ? 'combo' : 'correct');
       awardXP(trainingMode === 'sim' ? 30 : 25, true);
       toast(`🎯 正解！ Combo ×${combo}`);
       showResultCard(true, current);
@@ -8055,6 +8902,7 @@
       if (typeof advanceSrsItemLevel === 'function') advanceSrsItemLevel(current.target);
     } else {
       combo = 0;
+      playSoundFX('wrong');
       awardXP(3, false);
       recordMistake(current);
       toast('💡 順番が惜しい！もう一度見直してみましょう');
@@ -8170,6 +9018,7 @@
     const partnerCard = document.getElementById('partnerCard');
     const btnCopyEmailResult = document.getElementById('btnCopyEmailResult');
 
+    const vocabCapEl = document.getElementById('vocabHintCaption');
     if (trainingMode === 'bizmail' || trainingMode === 'email') {
       if (emailClientContainer) emailClientContainer.style.display = 'block';
       if (partnerCard) partnerCard.style.display = 'none';
@@ -8183,16 +9032,23 @@
       const subj = data.email_subject || (data.ai_en?.startsWith("Subject:") ? data.ai_en.split("\n")[0].replace("Subject:", "").trim() : "Project Update and Next Steps");
       if (subjectEl) subjectEl.innerText = `Subject: ${subj}`;
       if (senderNameEl) senderNameEl.innerText = data.ai_name || "Sponsor Study Manager";
-      if (bodyEnEl) bodyEnEl.innerText = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
+      const cleanBody = data.ai_en?.replace(/^Subject:.*?\n+/i, '') || data.ai_en || '';
+      if (bodyEnEl) {
+        const renderedMail = renderInteractiveEnSpeech(cleanBody);
+        bodyEnEl.innerHTML = renderedMail.html;
+      }
       if (bodyJpEl) bodyJpEl.innerText = data.ai_jp ? `（${data.ai_jp.replace(/^件名:.*?\n+/i, '')}）` : '';
+      if (vocabCapEl) vocabCapEl.style.display = 'none';
     } else {
       if (emailClientContainer) emailClientContainer.style.display = 'none';
       if (partnerCard) partnerCard.style.display = 'block';
       if (btnCopyEmailResult) btnCopyEmailResult.style.display = 'none';
 
       document.getElementById('aiName').innerText = data.ai_name || "Colleague";
-      document.getElementById('aiResponseEn').innerText = `"${data.ai_en || ''}"`;
+      const renderedSpeech = renderInteractiveEnSpeech(data.ai_en || '');
+      document.getElementById('aiResponseEn').innerHTML = `"${renderedSpeech.html}"`;
       document.getElementById('aiResponseJp').innerText = `（${data.ai_jp || ''}）`;
+      if (vocabCapEl) vocabCapEl.style.display = renderedSpeech.hasTerms ? 'flex' : 'none';
     }
     
     // レッスン型 & なぜこの型が効くのか（厚いレクチャー解説）の反映
@@ -8207,6 +9063,7 @@
       rationaleEl.innerText = data.pattern_rationale || "相手の立場や要求をまず受け止め、中学英語の平易な基本動詞で期限やアクションを明快に伝えることで、非ネイティブ相手でも角を立てずに誤解なく合意できます。";
     }
     if (partsHintEl) partsHintEl.innerText = data.parts_hint || "中学英単語のパーツを組み合わせて声に出してみましょう！";
+    renderPatternAnatomy(data);
 
     // クイズ用お助けヒント（アコーディオン）初期化（初期状態は隠す）
     const hintPatternText = document.getElementById('hintPatternText');
@@ -9789,21 +10646,38 @@
       const customBadge = item.custom 
         ? `<span style="background:#e0e7ff; color:#3730a3; font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:4px;">自作</span>` 
         : '';
+      const srsLv = item.srsLevel || 1;
+      const srsBadgeStyle = srsLv >= 5
+        ? 'background:#dcfce7; color:#166534; border:1px solid #86efac;'
+        : 'background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;';
+      const srsBadgeHtml = `<span style="${srsBadgeStyle} font-size:9.5px; font-weight:800; padding:1px 6px; border-radius:4px;">Lv.${srsLv}${srsLv >= 5 ? ' 定着' : ''}</span>`;
+
+      const rawTarget = item.target || '';
+      const stemRaw = (patternInfo.key_pattern || '').split(/\[|\.\.\./)[0].trim().replace(/[,:]+$/, '');
+      let targetHtml = escapeHtml(rawTarget);
+      if (stemRaw.length >= 3 && rawTarget.toLowerCase().startsWith(stemRaw.toLowerCase())) {
+        const prefix = rawTarget.slice(0, stemRaw.length);
+        const rest = rawTarget.slice(stemRaw.length);
+        targetHtml = `<span style="color:#1d4ed8;">${escapeHtml(prefix)}</span>${escapeHtml(rest)}`;
+      }
 
       return `
         <div class="lib-item-card ${isCurrentlyPlaying ? 'playing-active' : ''}" id="libItem_${item.id}">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <span class="lib-item-topic">🎯 ${topicName} ${customBadge}</span>
-            <span style="font-size:10px; color:#94a3b8;">${item.addedDate || ''}</span>
+            <div style="display:flex; align-items:center; gap:5px;">
+              ${srsBadgeHtml}
+              <span style="font-size:10px; color:#94a3b8;">${item.addedDate || ''}</span>
+            </div>
           </div>
-          <div class="lib-item-target">${escapeHtml(item.target)}</div>
+          <div class="lib-item-target">${targetHtml}</div>
           <div class="lib-item-guide">💬 ${escapeHtml(item.guide || patternInfo.guide)}</div>
           ${patternHtml}
           <div class="lib-item-actions">
             <button class="btn-action btn-play" onclick="startSinglePhraseQuiz(${item.id})" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700; font-size:11.5px; padding:4px 10px;">
               🎯 この問を特訓
             </button>
-            <button class="btn-action btn-play" onclick="speakText('${item.target.replace(/'/g, "\\'")}')" style="font-size:11.5px; padding:4px 8px;" title="ネイティブ音声を再生">
+            <button class="btn-action btn-play" onclick="speakText('${rawTarget.replace(/'/g, "\\'")}')" style="font-size:11.5px; padding:4px 8px;" title="ネイティブ音声を再生">
               🔊
             </button>
             <button class="btn-action btn-delete" onclick="deleteLibraryItem(${item.id})" style="font-size:11.5px; padding:4px 8px;" title="ライブラリから削除">
@@ -10696,8 +11570,92 @@
       adviceText.innerText = chosenAdvice;
     }
 
+    if (reactionCard) {
+      const cpName = scenario.ai_name || 'Colleague';
+      const reactEn = scenario.counterpart_reaction_en || (correct
+        ? "Got it. Thank you for being clear and realistic about the next steps."
+        : "I see. Let's align on the exact plan and deadline so we stay on track.");
+      const reactJp = scenario.counterpart_reaction_jp || (correct
+        ? "承知しました。次のステップを明確かつ現実的に伝えてくれて助かります。"
+        : "なるほど。認識にズレが出ないよう、具体的な対応方針と期限をすり合わせましょう。");
+      if (reactionSenderName) reactionSenderName.innerText = `👤 ${cpName} の反応`;
+      if (reactionSpeechEn) reactionSpeechEn.innerText = `"${reactEn}"`;
+      if (reactionSpeechJp) reactionSpeechJp.innerText = `（${reactJp}）`;
+      reactionCard.style.display = 'block';
+    }
+
     const checkBtn = document.getElementById('btnCheckBuilder');
     if (checkBtn) checkBtn.disabled = true;
+  }
+
+  function speakReactionSpeech() {
+    const el = document.getElementById('reactionSpeechEn');
+    if (!el) return;
+    const txt = (el.innerText || '').replace(/^"|"$/g, '').trim();
+    if (txt) speakText(txt);
+  }
+
+  function continueStageInRoleplay() {
+    const current = (scenarios && scenarios[currentStageIndex]) ? scenarios[currentStageIndex] : null;
+    if (!current) {
+      switchTab('roleplay');
+      return;
+    }
+    const aiNameLower = (current.ai_name || '').toLowerCase();
+    let charKey = 'sarah';
+    if (aiNameLower.includes('rajesh')) charKey = 'rajesh';
+    else if (aiNameLower.includes('david')) charKey = 'david';
+    else if (aiNameLower.includes('elena')) charKey = 'elena';
+    else if (aiNameLower.includes('alex')) charKey = 'alex';
+    else if (aiNameLower.includes('michael')) charKey = 'michael';
+
+    const topicMap = {
+      pushback: 'pushback',
+      clarify: 'clarify',
+      issue: 'issue',
+      meeting: 'freeze',
+      negotiation: 'cost',
+      clinical: 'issue',
+      all: 'pushback'
+    };
+    const rTopicKey = topicMap[selectedTopic] || 'pushback';
+    const char = ROLEPLAY_CHARACTERS[charKey] || ROLEPLAY_CHARACTERS.sarah;
+
+    roleplayState.characterKey = charKey;
+    roleplayState.topicKey = rTopicKey;
+    roleplayState.turn = 1;
+    roleplayState.isConcluded = false;
+    roleplayState.messages = [
+      {
+        role: 'ai',
+        name: current.ai_name || char.name,
+        avatar: char.avatar,
+        text: current.ai_en || "Let's align on the timeline and next steps.",
+        textJp: current.ai_jp || "",
+        coach: null
+      }
+    ];
+
+    const charSelect = document.getElementById('roleplayCharSelect');
+    if (charSelect) charSelect.value = charKey;
+    const topicSelect = document.getElementById('roleplayTopicSelect');
+    if (topicSelect) topicSelect.value = rTopicKey;
+
+    const summaryCard = document.getElementById('roleplaySummaryCard');
+    const inputBar = document.getElementById('roleplayInputBar');
+    const inputField = document.getElementById('roleplayInputField');
+    if (summaryCard) summaryCard.style.display = 'none';
+    if (inputBar) inputBar.style.display = 'flex';
+    if (inputField && current.target) inputField.value = current.target;
+
+    switchTab('roleplay');
+    setRoleplayChatStyle(roleplayState.chatStyle || 'teams', false);
+    updateRoleplayHeaderUI();
+    renderRoleplayTimeline();
+    const suggestions = [current.target, ...(ROLEPLAY_TOPICS[rTopicKey]?.starterSuggestions || [])].filter(Boolean).slice(0, 3);
+    renderRoleplayQuickReplies(suggestions);
+    saveRoleplaySession();
+    toast('💬 このステージの状況を引き継ぎました！送信して対話を続けられます');
   }
 
   function copyEmailDraft() {
@@ -10738,6 +11696,7 @@
     recordTopicMetric(selectedTopic, correct, parseFloat(lastReflexElapsedSec) || 3);
     if (correct) {
       combo++; sessionCorrect++;
+      playSoundFX(combo >= 2 ? 'combo' : 'correct');
       awardXP(trainingMode === 'sim' ? 30 : 20, true);
       if (trainingMode === 'sim') {
         const sk = getSkills();
@@ -10753,6 +11712,7 @@
     }
     else {
       combo = 0;
+      playSoundFX('wrong');
       awardXP(2, false);
       recordMistake(current);
       toast('💡 表現の違いを確認してみましょう');
@@ -11199,6 +12159,7 @@
 
   function showSessionSummary() {
     isSessionCompleted = true;
+    playSoundFX('complete');
     // コース完了処理: 履歴を完了にし、アクティブセッションをリセット
     if (currentHistoryId) {
       let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
@@ -11370,12 +12331,39 @@
     switchTab('home');
   }
 
+  function getPreferredVoice(lang = 'en-US') {
+    if (!window.speechSynthesis || typeof window.speechSynthesis.getVoices !== 'function') return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    if (!voices.length) return null;
+    if (lang.startsWith('ja')) {
+      return voices.find(v => v.lang.startsWith('ja') && /Google|Natural|Nanami|Keita|Kyoko/i.test(v.name))
+        || voices.find(v => v.lang.startsWith('ja'))
+        || null;
+    }
+    const enVoices = voices.filter(v => v.lang.startsWith('en'));
+    if (!enVoices.length) return null;
+    const priorityPatterns = [
+      /Google US English/i,
+      /Natural.*English|Aria|Jenny|Guy|Andrew/i,
+      /Samantha|Daniel|Alex|Karen/i,
+      /en[-_]US/i
+    ];
+    for (const pat of priorityPatterns) {
+      const hit = enVoices.find(v => pat.test(v.name) || pat.test(v.lang));
+      if (hit) return hit;
+    }
+    return enVoices[0];
+  }
+
   function speakText(text, onEndCallback = null, lang = 'en-US') {
+    if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     if (!text) return;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
     utterance.rate = speechRate;
+    const preferred = getPreferredVoice(lang);
+    if (preferred) utterance.voice = preferred;
     if (onEndCallback) utterance.onend = onEndCallback;
     window.speechSynthesis.speak(utterance);
   }
@@ -12706,6 +13694,10 @@
     roleplayState.isConcluded = true;
     updateRoleplayHeaderUI();
     saveRoleplaySession();
+    const prevCount = parseInt(localStorage.getItem('plain_rally_completed_count') || '0', 10) || 0;
+    localStorage.setItem('plain_rally_completed_count', String(prevCount + 1));
+    if (typeof markTodayRoleplayDone === 'function') markTodayRoleplayDone();
+    playSoundFX('complete');
     const summaryCard = document.getElementById('roleplaySummaryCard');
     const inputBar = document.getElementById('roleplayInputBar');
     const repliesSec = document.getElementById('roleplayQuickRepliesSection');
@@ -12915,6 +13907,8 @@
   window.startDailyFocusSession = startDailyFocusSession;
   window.renderAnalyticsView = renderAnalyticsView;
   window.startFocusTopicTraining = startFocusTopicTraining;
+  window.speakReactionSpeech = speakReactionSpeech;
+  window.continueStageInRoleplay = continueStageInRoleplay;
 
   try {
     initApp();
