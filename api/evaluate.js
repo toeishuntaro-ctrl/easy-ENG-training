@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     required: ["status", "clarity_score", "politeness_score", "feedback_jp", "improved_plain_en", "highlights"]
   };
 
-  const models = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  const models = ['gemini-3.1-flash-lite', 'gemini-4-hydrogen', 'gemini-flash-latest'];
   let lastError = null;
 
   for (const model of models) {

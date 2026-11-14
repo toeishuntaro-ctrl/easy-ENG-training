@@ -734,14 +734,14 @@ export default async function handler(req, res) {
 
     if (pastStemsSet.has(roots.threeWord) || pastStemsSet.has(roots.fourWord)) return true;
 
-    // Distinctive 2-word openings that define a reusable frame
+    // Distinctive 2-word openings that define a reusable frame (exclude overly broad pronouns like "i am" / "we are")
     const distinctTwoWords = [
       'i see', 'let me', 'thanks for', 'we cannot', 'would it', 'could you', 'could we',
-      'i am', 'to keep', 'looks great', 'makes sense', 'how about', 'give me', 'fair point',
+      'to keep', 'looks great', 'makes sense', 'how about', 'give me', 'fair point',
       'i suggest', 'rest assured', 'to prevent', 'to avoid', 'to ensure', 'our main',
       'just to', 'before we', 'we need', 'what if', 'my main', 'taking on', 'our budget',
       'where do', 'to recap', 'so that', 'to summarize', 'to safeguard', 'due to',
-      'company compliance', 'what is', 'you can', 'please rest', 'we are'
+      'company compliance', 'please rest'
     ];
     if (distinctTwoWords.includes(roots.twoWord) && pastStemsSet.has(roots.twoWord)) {
       return true;
@@ -1030,9 +1030,9 @@ export default async function handler(req, res) {
   // Shuffle categories
   const shuffledKeys = [...allCategoryKeys].sort(() => 0.5 - Math.random());
   
-  const excludedPatternList = Array.isArray(excludePatterns) ? excludePatterns.filter(Boolean) : [];
-  const excludedTopicList = Array.isArray(excludeTopics) ? excludeTopics.filter(Boolean) : [];
-  const excludedStemsList = Array.isArray(excludeStems) ? excludeStems.filter(Boolean) : [];
+  const excludedPatternList = Array.isArray(excludePatterns) ? excludePatterns.filter(Boolean).slice(-80) : [];
+  const excludedTopicList = Array.isArray(excludeTopics) ? excludeTopics.filter(Boolean).slice(-80) : [];
+  const excludedStemsList = Array.isArray(excludeStems) ? excludeStems.filter(Boolean).slice(-100) : [];
 
   // Build a set of all normalized 2-to-4 word opening stems and roots from past history & library
   const pastStemsSet = new Set();
@@ -1252,32 +1252,35 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
     }
   };
 
-  // Active models priority list (deprecated 2.5 models removed)
+  // Active models priority list
   const modelsToTry = [
     'gemini-3.1-flash-lite',
-    'gemini-flash-latest',
-    'gemini-3.8-flash'
+    'gemini-4-hydrogen',
+    'gemini-flash-latest'
   ];
 
   let errors = [];
 
   for (const modelName of modelsToTry) {
-    // Retry up to 2 times for each model in case of temporary 503 spike
+    // Retry up to 2 times only for transient 503/429 spikes
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         console.log(`[AI Generate] Attempting model: ${modelName} (attempt ${attempt + 1})`);
         
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: prompt,
-          config: {
-            systemInstruction: "You are an elite Global Business Communication Coach for non-native professionals. You generate structured 5-stage interactive dialogues teaching clear key patterns (型) combined with simple junior-high English parts, strictly conforming to the requested JSON schema.",
-            temperature: 0.85,
-            thinkingConfig: { thinkingBudget: 0 },
-            responseMimeType: "application/json",
-            responseSchema: responseSchema
-          }
-        });
+        const response = await Promise.race([
+          ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: {
+              systemInstruction: "You are an elite Global Business Communication Coach for non-native professionals. You generate structured 5-stage interactive dialogues teaching clear key patterns (型) combined with simple junior-high English parts, strictly conforming to the requested JSON schema.",
+              temperature: 0.85,
+              thinkingConfig: { thinkingBudget: 0 },
+              responseMimeType: "application/json",
+              responseSchema: responseSchema
+            }
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout after 22000ms on ${modelName}`)), 22000))
+        ]);
 
         const rawText = response.text;
         if (!rawText) {
@@ -1445,13 +1448,16 @@ ${JSON.stringify(excludedTopicList.slice(-60))}
         return res.status(200).json(formattedScenarios);
 
       } catch (err) {
-        console.warn(`[AI Generate] ${modelName} attempt ${attempt + 1} failed:`, err.message);
-        errors.push(`${modelName} (attempt ${attempt + 1}): ${err.message}`);
+        const msg = err?.message || String(err);
+        console.warn(`[AI Generate] ${modelName} attempt ${attempt + 1} failed:`, msg);
+        errors.push(`${modelName} (attempt ${attempt + 1}): ${msg}`);
         
-        // Wait briefly before retry if 503 / 429
-        if (err.message && (err.message.includes('503') || err.message.includes('429') || err.message.includes('demand'))) {
-          await new Promise(r => setTimeout(r, 1200));
+        // Skip retrying immediately on non-transient errors (404/400/Timeout) to move swiftly to next model
+        const isTransient = msg.includes('503') || msg.includes('429') || msg.includes('demand') || msg.includes('UNAVAILABLE');
+        if (!isTransient) {
+          break;
         }
+        await new Promise(r => setTimeout(r, 900));
       }
     }
   }

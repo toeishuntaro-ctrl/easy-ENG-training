@@ -3675,14 +3675,29 @@
   <!-- 2. メインクイズビュー -->
   <div id="viewPlay" style="display: none;">
     
-    <!-- モード表示 & 過去生成ログ選択ドロップダウン -->
+    <!-- モード表示 & 過去生成ログ選択ドロップダウン ＋ 新規生成ボタン -->
     <div class="mode-switcher-bar">
-      <div class="mode-label-row">
-        <span>📌 プレイ中: <span id="modeBadgeText" style="color:var(--primary);">🎯 口頭クイズ</span></span>
-        <span id="logStatusBadgeDisplay" class="log-status-badge unplayed">🔵 未学習</span>
+      <div class="mode-label-row" style="justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>📌 プレイ中: <span id="modeBadgeText" style="color:var(--primary);">🎯 口頭クイズ</span></span>
+          <span id="logStatusBadgeDisplay" class="log-status-badge unplayed">🔵 未学習</span>
+        </div>
+        <button class="micro-btn" id="btnNewLessonInPlay" onclick="generateNewLessonFromPlayTab()" style="background:#2563eb; color:#ffffff; border-color:#1d4ed8; font-weight:800; padding:4px 10px; font-size:11px; white-space:nowrap;">
+          ✨ 新しいレッスン生成
+        </button>
       </div>
       <select class="mode-select" id="quickModeSelect" onchange="quickSwitchMode(this.value)">
       </select>
+    </div>
+
+    <!-- バックアップ切替時の再試行バナー -->
+    <div id="genStatusBanner" style="display:none; background:#fffbeb; border:1.5px solid #fcd34d; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:#92400e;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span id="genStatusBannerText">⚠️ 通信混雑のためバックアップコースを読み込みました。</span>
+        <button class="micro-btn" onclick="downloadDailyScenarios(selectedTopic)" style="background:#d97706; color:#fff; border-color:#b45309; font-weight:800; padding:4px 10px; font-size:11px; white-space:nowrap;">
+          🔄 AI生成を再試行
+        </button>
+      </div>
     </div>
 
     <!-- AI問題生成中ローディングインジケーター -->
@@ -4150,6 +4165,30 @@
       <button class="btn-next" style="margin-top:14px; background:#2563eb;" onclick="closeStatsModal()">
         閉じる
       </button>
+    </div>
+  </div>
+
+  <!-- 3.6 進行中レッスン確認モーダル (iframe環境でも確実に動作する非ブロッキングUI) -->
+  <div class="session-modal-backdrop" id="confirmNewLessonModal" style="display:none;" onclick="if(event.target===this) closeConfirmNewLessonModal()">
+    <div class="session-modal-content" style="max-width:420px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="font-size:15.5px; font-weight:800; color:#0f172a;">🎯 新しいレッスンを生成しますか？</div>
+        <button onclick="closeConfirmNewLessonModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b;">✕</button>
+      </div>
+      <div id="confirmNewLessonDesc" style="font-size:12.5px; color:#475569; line-height:1.55; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; margin-bottom:14px;">
+        現在受講中のレッスン（STAGE 2 / 5）があります。新しく生成するか、今の続きから再開するかをお選びください。
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn-next" style="margin-top:0; background:#2563eb; font-weight:800;" onclick="confirmStartNewLesson()">
+          ✨ 新しくレッスンを生成する
+        </button>
+        <button class="btn-next" style="margin-top:0; background:#ecfdf5; color:#047857; border:1.5px solid #10b981; font-weight:800;" onclick="cancelAndResumeLesson()">
+          ▶️ 今の続きから再開する
+        </button>
+        <button class="btn-next" style="margin-top:0; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;" onclick="closeConfirmNewLessonModal()">
+          キャンセル
+        </button>
+      </div>
     </div>
   </div>
 
@@ -4882,18 +4921,42 @@
   }
 
   function startTargetedSession() {
-    // 進行中の未完了クイズがある場合、誤ってリセットしないよう確認
-    if (scenarios && scenarios.length > 0 && currentStageIndex > 0 && currentStageIndex < scenarios.length) {
+    // 進行中の未完了クイズがある場合、iframeでも確実に動作するアプリ内モーダルで確認
+    const activeSession = JSON.parse(localStorage.getItem('english_active_session') || 'null');
+    const hasInProgress = activeSession && !isSessionCompleted && scenarios && scenarios.length > 0 && currentStageIndex > 0 && currentStageIndex < scenarios.length;
+    if (hasInProgress) {
       const topicName = TOPIC_NAMES[selectedTopic] || '選択トピック';
-      const ok = confirm(`現在受講中のコース（STAGE ${currentStageIndex + 1} / ${scenarios.length}）があります。\n\n進行中の進捗を破棄して「${topicName}」で新しく開始しますか？\n（「キャンセル」を押すと現在のステージの続きから再開できます）`);
-      if (!ok) {
-        resumeActiveSession();
+      const descEl = document.getElementById('confirmNewLessonDesc');
+      const modal = document.getElementById('confirmNewLessonModal');
+      if (descEl && modal) {
+        descEl.innerHTML = `現在受講中のコース（<b>STAGE ${currentStageIndex + 1} / ${scenarios.length}</b>）があります。<br><b>「${escapeHtml(topicName)}」</b>で新しく生成するか、今の続きから再開するかを選択できます。（※途中経過も履歴に保存されます）`;
+        modal.style.display = 'flex';
         return;
       }
     }
+    confirmStartNewLesson();
+  }
+
+  function closeConfirmNewLessonModal() {
+    const modal = document.getElementById('confirmNewLessonModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function confirmStartNewLesson() {
+    closeConfirmNewLessonModal();
     setTrainingMode(selectedMode);
-    switchTab('play');
+    switchTab('play', true);
     downloadDailyScenarios(selectedTopic);
+  }
+
+  function cancelAndResumeLesson() {
+    closeConfirmNewLessonModal();
+    resumeActiveSession();
+  }
+
+  function generateNewLessonFromPlayTab() {
+    setTrainingMode(selectedMode || trainingMode || 'quiz');
+    downloadDailyScenarios(selectedTopic || 'all');
   }
 
   // 進行中セッションの保存と再開管理
@@ -6209,7 +6272,7 @@
 
   let currentTab = 'home';
 
-  function switchTab(tabName) {
+  function switchTab(tabName, skipPlayLoad = false) {
     currentTab = tabName;
     if (document.getElementById('navHome')) document.getElementById('navHome').classList.toggle('active', tabName === 'home');
     if (document.getElementById('navPlay')) document.getElementById('navPlay').classList.toggle('active', tabName === 'play');
@@ -6239,10 +6302,12 @@
     if (tabName === 'roleplay') initRoleplayIfNeeded();
     if (tabName === 'analytics') renderAnalyticsView();
     if (tabName === 'play') {
-      if (!scenarios || scenarios.length === 0) {
-        resumeActiveSession();
-      } else {
-        loadStage();
+      if (!skipPlayLoad) {
+        if (!scenarios || scenarios.length === 0) {
+          resumeActiveSession();
+        } else {
+          loadStage();
+        }
       }
       populateQuickModeSelect();
     }
@@ -6267,7 +6332,7 @@
 
   function generateAndStart(selectedMode) {
     setTrainingMode(selectedMode);
-    switchTab('play');
+    switchTab('play', true);
     downloadDailyScenarios(selectedTopic);
   }
 
@@ -7040,6 +7105,28 @@
     return bestCandidates[rotateIdx].pack;
   }
 
+  let isGeneratingLesson = false;
+
+  function safeSaveHistory(historyArray) {
+    try {
+      // 最新25件に上限管理しlocalStorage容量圧迫による失敗を防止
+      let list = Array.isArray(historyArray) ? historyArray.slice(0, 25) : [];
+      while (list.length > 0) {
+        try {
+          localStorage.setItem('english_scenarios_history', JSON.stringify(list));
+          return true;
+        } catch (quotaErr) {
+          // 容量超過時は古い履歴から削って確実に保存する
+          if (list.length <= 1) break;
+          list = list.slice(0, Math.max(1, Math.floor(list.length * 0.7)));
+        }
+      }
+    } catch (e) {
+      console.warn('[safeSaveHistory] failed:', e);
+    }
+    return false;
+  }
+
   function saveScenariosToHistory(data) {
     const now = new Date();
     const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -7056,9 +7143,12 @@
       data: data
     };
 
-    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    let history = [];
+    try {
+      history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    } catch (e) { history = []; }
     history.unshift(historyItem);
-    localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+    safeSaveHistory(history);
     currentHistoryId = id;
     if (window.fbSync) window.fbSync.saveQuizHistory(historyItem);
     saveActiveSession();
@@ -7067,7 +7157,10 @@
 
   function updateHistoryStatus(isCorrect) {
     if (!currentHistoryId) return;
-    let history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    let history = [];
+    try {
+      history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+    } catch (e) { history = []; }
     const idx = history.findIndex(item => String(item.id) === String(currentHistoryId));
     if (idx !== -1) {
       history[idx].answered = (history[idx].answered || 0) + 1;
@@ -7084,39 +7177,56 @@
       } else {
         history[idx].status = 'in_progress';
       }
-      localStorage.setItem('english_scenarios_history', JSON.stringify(history));
+      safeSaveHistory(history);
       populateQuickModeSelect();
       if (window.fbSync && history[idx]) window.fbSync.saveQuizHistory(history[idx]);
     }
   }
 
   async function downloadDailyScenarios(topic = selectedTopic) {
+    if (isGeneratingLesson) {
+      toast('⏳ 現在レッスンを生成中です。少々お待ちください...');
+      return;
+    }
+    isGeneratingLesson = true;
+
     const loadingArea = document.getElementById('playLoadingArea');
     const stageArea = document.getElementById('playStageArea');
     const genTitle = document.getElementById('genLoadingTitle');
     const genSub = document.getElementById('genLoadingSub');
+    const statusBanner = document.getElementById('genStatusBanner');
+    const newBtn = document.getElementById('btnNewLessonInPlay');
+
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (typeof stopTimeAttackTimer === 'function') stopTimeAttackTimer();
+    if (statusBanner) statusBanner.style.display = 'none';
+    if (newBtn) newBtn.disabled = true;
 
     const topicLabel = TOPIC_NAMES[topic] || 'ビジネス英会話';
     if (loadingArea) {
       loadingArea.style.display = 'block';
       if (genTitle) genTitle.innerText = `Gemini AIが【${topicLabel}】レッスン＆問題を生成中...`;
-      if (genSub) genSub.innerText = '毎回異なる5つの重要構文（型）・中学パーツ・会話ラリーを構成しています';
+      if (genSub) genSub.innerText = '毎回異なる5つの重要構文（型）・中学パーツ・会話ラリーを構成しています（約10〜15秒）';
     }
     if (stageArea) stageArea.style.display = 'none';
 
     toast(`⏳ AIが【${topicLabel}】コースを生成中...`);
 
-    const history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
-    const library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    let history = [];
+    let library = [];
+    try {
+      history = JSON.parse(localStorage.getItem('english_scenarios_history') || '[]');
+      library = JSON.parse(localStorage.getItem('english_phrase_library') || '[]');
+    } catch (e) {}
 
-    // 過去履歴と武器庫（保存済みフレーズ）の双方からターゲット英文とキーパターンを網羅抽出
-    const historyTargets = history.flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
-    const libraryTargets = library.map(item => item.target).filter(Boolean);
-    const excludeTopics = Array.from(new Set([...historyTargets, ...libraryTargets]));
+    // 過去履歴と武器庫（保存済みフレーズ）の双方からターゲット英文とキーパターンを抽出（ペイロード肥大防止のため上限設定）
+    const historyTargets = history.slice(0, 15).flatMap(h => (h.data || []).map(s => s.target)).filter(Boolean);
+    const libraryTargets = library.slice(0, 40).map(item => item.target).filter(Boolean);
+    const excludeTopics = Array.from(new Set([...historyTargets, ...libraryTargets])).slice(-80);
 
-    const historyPatterns = history.flatMap(h => (h.data || []).map(s => s.key_pattern)).filter(Boolean);
-    const libraryPatterns = library.map(item => item.key_pattern).filter(Boolean);
-    const excludePatterns = Array.from(new Set([...historyPatterns, ...libraryPatterns]));
+    const historyPatterns = history.slice(0, 15).flatMap(h => (h.data || []).map(s => s.key_pattern)).filter(Boolean);
+    const libraryPatterns = library.slice(0, 40).map(item => item.key_pattern).filter(Boolean);
+    const excludePatterns = Array.from(new Set([...historyPatterns, ...libraryPatterns])).slice(-80);
 
     // キーフレーズ・フレーム（型）の冒頭語幹（ステム）を網羅抽出して完全重複排除
     function extractFrameStem(str) {
@@ -7130,12 +7240,16 @@
         .join(' ');
     }
     const allPastStrings = [...historyTargets, ...libraryTargets, ...historyPatterns, ...libraryPatterns];
-    const excludeStems = Array.from(new Set(allPastStrings.map(extractFrameStem).filter(Boolean)));
+    const excludeStems = Array.from(new Set(allPastStrings.map(extractFrameStem).filter(Boolean))).slice(-100);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 35000);
 
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({ 
           mode: trainingMode, 
           topic: topic, 
@@ -7151,33 +7265,46 @@
       const data = await res.json();
       if (!Array.isArray(data) || data.length === 0) throw new Error("生成データが空でした。");
 
-      saveScenariosToHistory(data);
+      // 先にメモリ上のセッション状態を確実に切り替えてから履歴保存（保存失敗で描画が止まらないよう保護）
       scenarios = data;
       currentStageIndex = 0;
       sessionCorrect = 0;
       sessionAnswered = 0;
       isSessionCompleted = false;
       reviewMode = false;
+      saveScenariosToHistory(data);
       
       toast(`🎯 AIが「${topicLabel}」(全5ステージ)を生成しました！`);
     } catch (e) {
-      console.warn("API取得に失敗したため、バックアップ問題を読み込みます:", e.message);
+      console.warn("API取得に失敗したため、バックアップ問題を読み込みます:", e?.message || e);
       
       const fallbackData = getFallbackScenarios(trainingMode, excludePatterns, excludeTopics);
-      saveScenariosToHistory(fallbackData);
-
       scenarios = fallbackData;
       currentStageIndex = 0;
       sessionCorrect = 0;
       sessionAnswered = 0;
       isSessionCompleted = false;
       reviewMode = false;
+      saveScenariosToHistory(fallbackData);
 
+      if (statusBanner) {
+        const bannerText = document.getElementById('genStatusBannerText');
+        if (bannerText) {
+          bannerText.innerText = (e && e.name === 'AbortError')
+            ? '⏱️ AI生成がタイムアウトしたため、バックアップレッスンを表示しています。'
+            : '⚠️ 一時的な通信エラーのため、バックアップレッスンを表示しています。';
+        }
+        statusBanner.style.display = 'block';
+      }
       toast("💡 バックアップコースを読み込みました！");
     } finally {
+      clearTimeout(timeoutId);
+      isGeneratingLesson = false;
+      if (newBtn) newBtn.disabled = false;
       if (loadingArea) loadingArea.style.display = 'none';
       if (stageArea) stageArea.style.display = 'block';
       loadStage();
+      populateQuickModeSelect();
     }
   }
 
@@ -9418,7 +9545,7 @@
       reviewMode = true;
       isSessionCompleted = false;
 
-      const loadingArea = document.getElementById('stageLoadingArea');
+      const loadingArea = document.getElementById('playLoadingArea');
       const stageArea = document.getElementById('playStageArea');
       if (loadingArea) loadingArea.style.display = 'none';
       if (stageArea) stageArea.style.display = 'block';
@@ -11452,6 +11579,7 @@
   function toggleHint() {
     const hintBox = document.getElementById('targetPhrase');
     const hintBtn = document.getElementById('hintToggleBtn');
+    if (!hintBox || !hintBtn) return;
     if (hintBox.style.display === 'none') {
       hintBox.style.display = 'block';
       hintBtn.innerText = "🙈 ヒントを隠す";
@@ -12914,7 +13042,7 @@
       reviewMode = true;
       isSessionCompleted = false;
 
-      const loadingArea = document.getElementById('stageLoadingArea');
+      const loadingArea = document.getElementById('playLoadingArea');
       const stageArea = document.getElementById('playStageArea');
       if (loadingArea) loadingArea.style.display = 'none';
       if (stageArea) stageArea.style.display = 'block';
@@ -13905,6 +14033,10 @@
   window.toggleSpeakingMode = toggleSpeakingMode;
   window.toggleSpeakingEvaluation = toggleSpeakingEvaluation;
   window.startDailyFocusSession = startDailyFocusSession;
+  window.confirmStartNewLesson = confirmStartNewLesson;
+  window.cancelAndResumeLesson = cancelAndResumeLesson;
+  window.closeConfirmNewLessonModal = closeConfirmNewLessonModal;
+  window.generateNewLessonFromPlayTab = generateNewLessonFromPlayTab;
   window.renderAnalyticsView = renderAnalyticsView;
   window.startFocusTopicTraining = startFocusTopicTraining;
   window.speakReactionSpeech = speakReactionSpeech;

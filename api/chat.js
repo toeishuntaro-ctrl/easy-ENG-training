@@ -123,7 +123,7 @@ Output strictly JSON adhering to the schema.`;
     ]
   };
 
-  const models = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  const models = ['gemini-3.1-flash-lite', 'gemini-4-hydrogen', 'gemini-flash-latest'];
   let lastError = null;
 
   for (const model of models) {
